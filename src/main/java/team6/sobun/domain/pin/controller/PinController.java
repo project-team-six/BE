@@ -13,14 +13,14 @@ import team6.sobun.global.security.UserDetailsImpl;
 
 
 @Controller
-@RequestMapping("/api/post/{postId}/like")
+@RequestMapping("/post/{postId}/pin")
 @RequiredArgsConstructor
 public class PinController {
 
     private final PinService pinService;
 
     @PostMapping
-    public ResponseEntity<?> updateLike(@PathVariable Long postId,
+    public ResponseEntity<?> updatePin(@PathVariable Long postId,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         User user = userDetailsImpl.getUser();
         return ResponseEntity.ok(pinService.updatePin(postId, user));

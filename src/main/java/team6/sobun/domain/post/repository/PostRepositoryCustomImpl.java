@@ -33,7 +33,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                         QPost.post.content,
                         QPost.post.createdAt,
                         QPost.post.image,
-                        QPost.post.liked,
+                        QPost.post.pined,
                         QPost.post.views,
                         QPost.post.commentList.size().intValue()
                 ))
@@ -60,7 +60,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                         QPost.post.content,
                         QPost.post.createdAt,
                         QPost.post.image,
-                        QPost.post.liked,
+                        QPost.post.pined,
                         QPost.post.views,
                         QPost.post.commentList.size().intValue()
                 ))
@@ -68,7 +68,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .where(
                         usernameEq(condition.getNickname()),
                         titleEq(condition.getTitle()))
-                .orderBy(QPost.post.liked.desc())
+                .orderBy(QPost.post.pined.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
@@ -87,7 +87,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                         QPost.post.content,
                         QPost.post.createdAt,
                         QPost.post.image,
-                        QPost.post.liked,
+                        QPost.post.pined,
                         QPost.post.views,
                         QPost.post.commentList.size().intValue()
                 ))

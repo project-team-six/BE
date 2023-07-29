@@ -8,14 +8,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.filter.OncePerRequestFilter;
+import team6.sobun.domain.user.entity.RefreshToken;
 import team6.sobun.global.security.UserDetailsServiceImpl;
+import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 
 import java.io.IOException;
 
@@ -25,6 +29,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final UserDetailsServiceImpl userDetailsService;
+    private final RefreshTokenRedisRepository redisRepository;
 
     /**
      * 요청을 필터링하여 JWT 인증 및 인가를 처리합니다.
@@ -59,12 +64,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     setAuthentication(info.getSubject());
                 } catch (ExpiredJwtException e) {
                     // 액세스 토큰이 만료된 경우
-                    String refreshToken = req.getHeader("Refresh-Token");
-                    if (StringUtils.hasText(refreshToken)) {
+                    RefreshToken refreshToken = redisRepository.findByAccessToken(tokenValue)
+                            .orElseThrow(() -> new HttpStatusCodeException(HttpStatus.UNAUTHORIZED, "만료된 access 토큰에 대한 refresh 토큰이 만료되었습니다.") {
+                            });
+
+                    if (StringUtils.hasText(refreshToken.getToken())) { // refreshToken.getToken()으로 변경
                         // 리프레시 토큰이 유효한지 검사
-                        if (jwtProvider.validateToken(refreshToken)) {
+                        if (jwtProvider.validateToken(refreshToken.getToken())) { // refreshToken.getToken()으로 변경
                             // 리프레시 토큰으로 새로운 액세스 토큰 발급
-                            String newAccessToken = jwtProvider.createToken(info.getSubject(), jwtProvider.getUserRoleEnumFromToken(refreshToken));
+                            String newAccessToken = jwtProvider.createToken(info.getSubject(), jwtProvider.getUserRoleEnumFromToken(refreshToken.getToken())); // refreshToken.getToken()으로 변경
                             // 새로운 액세스 토큰을 응답 헤더에 추가
                             jwtProvider.addJwtHeader(newAccessToken, res);
                             // 인증 정보 설정 (새로운 액세스 토큰으로 갱신)
@@ -84,7 +92,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         // 다음 필터로 요청을 전달합니다.
         chain.doFilter(req, res);
     }

@@ -11,6 +11,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByKakaoId(Long kakaoId);
+
+    Optional<User> findByNickname(String nickname);
+
     @Query(value = "select UserName from user", nativeQuery = true)
     User findUserName();
 

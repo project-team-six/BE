@@ -23,11 +23,17 @@ public class QUser extends EntityPathBase<User> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final StringPath kakaoEmail = createString("kakaoEmail");
+
+    public final NumberPath<Long> kakaoId = createNumber("kakaoId", Long.class);
+
     public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");
 
     public final StringPath phonenumber = createString("phonenumber");
+
+    public final StringPath profileImageUrl = createString("profileImageUrl");
 
     public final EnumPath<UserRoleEnum> role = createEnum("role", UserRoleEnum.class);
 

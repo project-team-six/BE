@@ -81,7 +81,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtProvider, userDetailsService);
+        return new JwtAuthorizationFilter(jwtProvider, userDetailsService, redisRepository);
     }
 
     @Bean
@@ -122,6 +122,8 @@ public class WebSecurityConfig {
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/auth/kakao").permitAll()
+                                .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers(GET,"/post/**").permitAll()
                                 .requestMatchers(GET,"/chat").permitAll()
                                 .requestMatchers(GET,"/ws/chat").permitAll()

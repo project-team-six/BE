@@ -117,17 +117,10 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers(GET,"/post/**").permitAll()
                                 .requestMatchers(GET,"/chat").permitAll()
                                 .requestMatchers(GET,"/ws/chat").permitAll()
-                                .requestMatchers(GET,"/api/**").permitAll()
-                                .requestMatchers(GET, "/api/post").permitAll()
-                                .requestMatchers(GET, "/api/post/popular").permitAll()
-                                .requestMatchers(GET, "/ranking").permitAll()
-                                .requestMatchers(GET, "/ranking/master").permitAll()
-                                .requestMatchers(GET, "/ranking/all").permitAll()
-                                .requestMatchers(GET, "/ranking/top10").permitAll()
-                                .requestMatchers(GET,"/api/search/test").permitAll()
                                 .anyRequest().authenticated()) // 그 외 모든 요청 인증처리
                 .addFilter(corsFilter())
                 .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)

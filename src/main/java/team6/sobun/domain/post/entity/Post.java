@@ -47,7 +47,7 @@ public class Post extends Timestamped {
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
     private List<Comment> commentList = new ArrayList<>();
 
-    private long liked;
+    private long pined;
 
     private String image;
 
@@ -63,7 +63,7 @@ public class Post extends Timestamped {
         this.content = postRequestDto.getContent();
         this.image = image;
         this.views = 0;
-        this.liked = 0;
+        this.pined = 0;
         this.user = user;
     }
 
@@ -87,12 +87,12 @@ public class Post extends Timestamped {
     }
 
     public void increaseLike() {
-        this.liked += 1;
+        this.pined += 1;
     }
 
     public void decreaseLike() {
-        if (this.liked > 0) {
-            this.liked -= 1;
+        if (this.pined > 0) {
+            this.pined -= 1;
         }
     }
 

@@ -9,7 +9,7 @@ import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 
 @RestController
-@RequestMapping("/api/post/{postId}/comment")
+@RequestMapping("/post/{postId}/comment")
 @RequiredArgsConstructor
 public class CommentController {
 

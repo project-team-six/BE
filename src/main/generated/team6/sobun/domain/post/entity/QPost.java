@@ -37,9 +37,9 @@ public class QPost extends EntityPathBase<Post> {
 
     public final StringPath image = createString("image");
 
-    public final NumberPath<Long> liked = createNumber("liked", Long.class);
-
     public final StringPath nickname = createString("nickname");
+
+    public final NumberPath<Long> pined = createNumber("pined", Long.class);
 
     public final StringPath title = createString("title");
 

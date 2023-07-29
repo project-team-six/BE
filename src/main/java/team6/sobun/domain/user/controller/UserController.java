@@ -11,7 +11,7 @@ import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.responseDto.ApiResponse;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class UserController {
 

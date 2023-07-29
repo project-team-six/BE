@@ -11,9 +11,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import team6.sobun.domain.user.dto.LoginRequestDto;
+import team6.sobun.domain.user.entity.RefreshToken;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
+import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 
@@ -25,18 +27,22 @@ import static team6.sobun.global.utils.ResponseUtils.*;
  * JWT 인증 필터 클래스입니다.
  * 사용자의 로그인 요청을 인증하고 JWT를 생성하여 응답에 추가합니다.
  */
-@Slf4j
+@Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtProvider jwtProvider;
+    private final RefreshTokenRedisRepository redisRepository;
+
 
     /**
      * JwtAuthenticationFilter 생성자입니다.
      *
-     * @param jwtProvider JwtProvider 인스턴스
+     * @param jwtProvider     JwtProvider 인스턴스
+     * @param redisRepository
      */
-    public JwtAuthenticationFilter(JwtProvider jwtProvider) {
+    public JwtAuthenticationFilter(JwtProvider jwtProvider, RefreshTokenRedisRepository redisRepository) {
         this.jwtProvider = jwtProvider;
+        this.redisRepository = redisRepository;
         setFilterProcessesUrl("/auth/login");
     }
 
@@ -51,6 +57,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("로그인 시도");
+
         try {
             LoginRequestDto loginRequestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
@@ -62,7 +69,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                     )
             );
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error("로그인 시도 중 예외 발생: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -85,7 +92,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
 
         String token = jwtProvider.createToken(username, role);
+        String refreshToken = jwtProvider.createRefreshToken();
         jwtProvider.addJwtHeader(token, response);
+
+        // refresh 토큰은 redis에 저장
+        RefreshToken refresh = RefreshToken.builder()
+                .id(username)
+                .token(token)
+                .refreshToken(refreshToken)
+                .build();
+        redisRepository.save(refresh);
 
         ApiResponse<?> apiResponse = okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
 

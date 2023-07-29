@@ -9,8 +9,5 @@ public interface PostRepositoryCustom {
 
     Page<PostResponseDto> serachPostByPage(PostSearchCondition condition, Pageable pageable);
 
-    Page<PostResponseDto> searchPostByPageByPopularity(PostSearchCondition condition, Pageable pageable);
-
-    Page<PostResponseDto> searchPostByPageByMostView(PostSearchCondition condition, Pageable pageable);
 
 }

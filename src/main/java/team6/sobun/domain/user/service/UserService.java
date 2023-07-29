@@ -2,6 +2,7 @@ package team6.sobun.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
@@ -24,6 +26,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRedisRepository redisRepository;
 
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto) {
         String email = signupRequestDto.getEmail();
@@ -38,8 +41,22 @@ public class UserService {
 
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
 
-        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_SIGNUP_SUCCESS);
+        return ApiResponse.okWithMessage(SuccessCodeEnum.USER_SIGNUP_SUCCESS);
     }
+
+    public ApiResponse<?> withdraw(User user) {
+        userRepository.delete(user);
+        redisRepository.deleteById(user.getEmail());
+
+        return ApiResponse.okWithMessage(SuccessCodeEnum.USER_WITHRAW_SUCCESS);
+    }
+
+    public ApiResponse<?> logout(User user) {
+        redisRepository.deleteById(user.getEmail());
+
+        return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGOUT_SUCCESS);
+    }
+
 
 
     private void checkDuplicatedEmail(String email) {

@@ -23,6 +23,9 @@ public class User {
     @Column(unique = true)
     private String nickname;
 
+    @Column(unique = true)
+    private String phonenumber;
+
     @Column(nullable = false)
     private String password;
 
@@ -32,6 +35,7 @@ public class User {
 
     public User(String email, String nickname, String password, UserRoleEnum role) {
         this.email = email;
+        this.phonenumber = phonenumber;
         this.nickname = nickname;
         this.password = password;
         this.role = role;

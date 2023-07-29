@@ -23,14 +23,6 @@ public class PostController {
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return postService.searchPost(condition, pageable);
     }
-    @GetMapping("/popular")
-    public ApiResponse<?> searchPostByPopularity(PostSearchCondition condition, Pageable pageable) {
-        return postService.searchPostByPopularity(condition, pageable);
-    }
-    @GetMapping("/mostView")
-    public ApiResponse<?> searchPostByMostView(PostSearchCondition condition, Pageable pageable) {
-        return postService.searchPostByMostView(condition, pageable);
-    }
 
 
     @GetMapping("/{postId}")

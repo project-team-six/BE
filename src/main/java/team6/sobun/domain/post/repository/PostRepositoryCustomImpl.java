@@ -49,59 +49,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
         return new PageImpl<>(result, pageable, result.size());
     }
 
-    @Override
-    public Page<PostResponseDto> searchPostByPageByPopularity(PostSearchCondition condition, Pageable pageable) {
-        List<PostResponseDto> result = query
-                .select(new QPostResponseDto(
-                        QPost.post.id,
-                        QPost.post.category,
-                        QPost.post.title,
-                        QPost.post.user.nickname,
-                        QPost.post.content,
-                        QPost.post.createdAt,
-                        QPost.post.image,
-                        QPost.post.pined,
-                        QPost.post.views,
-                        QPost.post.commentList.size().intValue()
-                ))
-                .from(QPost.post)
-                .where(
-                        usernameEq(condition.getNickname()),
-                        titleEq(condition.getTitle()))
-                .orderBy(QPost.post.pined.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
-                .fetch();
-
-        return new PageImpl<>(result, pageable, result.size());
-    }
-
-    @Override
-    public Page<PostResponseDto> searchPostByPageByMostView(PostSearchCondition condition, Pageable pageable) {
-        List<PostResponseDto> result = query
-                .select(new QPostResponseDto(
-                        QPost.post.id,
-                        QPost.post.category,
-                        QPost.post.title,
-                        QPost.post.user.nickname,
-                        QPost.post.content,
-                        QPost.post.createdAt,
-                        QPost.post.image,
-                        QPost.post.pined,
-                        QPost.post.views,
-                        QPost.post.commentList.size().intValue()
-                ))
-                .from(QPost.post)
-                .where(
-                        usernameEq(condition.getNickname()),
-                        titleEq(condition.getTitle()))
-                .orderBy(QPost.post.views.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
-                .fetch();
-
-        return new PageImpl<>(result, pageable, result.size());
-    }
     /**
      * 사용자명에 대한 검색 조건을 생성하는 메소드입니다.
      *

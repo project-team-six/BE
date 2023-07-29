@@ -27,7 +27,9 @@ public class JwtProvider {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long TOKEN_TIME = 60 * 60 * 1000L * 168;
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L * 168;
+    private static final long REFRESH_TOKEN_EXPIRE_TIME =  14 * 24 * 60 * 60 * 1000L; // 2주
+
 
     @Value("${jwt.secret.key}")
     private String secretKey;
@@ -99,14 +101,23 @@ public class JwtProvider {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(username)
+                        .setSubject(username) // 시용자 식별
                         .claim(AUTHORIZATION_KEY, role)
-                        .setExpiration(new Date(date.getTime() + TOKEN_TIME))
+                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
                         .setIssuedAt(date)
                         .signWith(key, signatureAlgorithm)
                         .compact();
     }
 
+    public String createRefreshToken() {
+        Date date = new Date();
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // 만료시간
+                        .setIssuedAt(date)
+                        .signWith(key, signatureAlgorithm)
+                        .compact();
+    }
     /**
      * 토큰의 유효성을 검사합니다.
      *
@@ -137,4 +148,13 @@ public class JwtProvider {
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
+    public UserRoleEnum getUserRoleEnumFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return UserRoleEnum.valueOf(claims.get(JwtProvider.AUTHORIZATION_KEY, String.class));
+    }
+
+
+
 }
+
+

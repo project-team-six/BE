@@ -19,6 +19,7 @@ import team6.sobun.global.jwt.JwtAuthorizationFilter;
 import team6.sobun.global.jwt.JwtExceptionFilter;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.security.UserDetailsServiceImpl;
+import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -32,6 +33,7 @@ public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final RefreshTokenRedisRepository redisRepository;
 
     /**
      * JwtExceptionFilter를 빈으로 생성합니다.
@@ -66,7 +68,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider, redisRepository);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
@@ -87,6 +89,8 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:3000"); // 프론트앤드
+        config.addAllowedOrigin("http://localhost:8080"); // 백앤드
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

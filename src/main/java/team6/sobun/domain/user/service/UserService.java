@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
@@ -48,5 +49,19 @@ public class UserService {
         if (found.isPresent()) {
             throw new InvalidConditionException(ErrorCodeEnum.DUPLICATE_USERNAME_EXIST);
         }
+    }
+
+    @Transactional
+    public ApiResponse<?> nicknameChange(Long id, MypageRequestDto mypageRequestDto, User user) {
+        log.info("닉네임 변경 들어옴");
+        User checkUser = userRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("존재하지 않는 사용자 입니다."));
+
+        if (!checkUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+
+        checkUser.update(mypageRequestDto);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_NICKNAME_SUCCESS);
     }
 }

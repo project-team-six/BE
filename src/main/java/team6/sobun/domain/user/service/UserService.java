@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.KakaoDto;
+import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
@@ -62,10 +63,11 @@ public class UserService {
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) {
         String email = signupRequestDto.getEmail();
         String nickname = signupRequestDto.getNickname();
+        String location = signupRequestDto.getLocation();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
+        UserRoleEnum role = UserRoleEnum.USER;
 
         checkDuplicatedEmail(email);
-        UserRoleEnum role = UserRoleEnum.USER;
 
         String profileImageUrl = null;
         if (image != null && !image.isEmpty()) {
@@ -75,6 +77,9 @@ public class UserService {
 
         // 프로필 이미지 URL을 사용하여 User 객체 생성
         User user = new User(email, nickname, password, role, profileImageUrl);
+
+        User user = new User(email, nickname, password, location, role);
+
         userRepository.save(user);
 
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
@@ -199,5 +204,19 @@ public class UserService {
         if (found.isPresent()) {
             throw new InvalidConditionException(ErrorCodeEnum.DUPLICATE_USERNAME_EXIST);
         }
+    }
+
+    @Transactional
+    public ApiResponse<?> nicknameChange(Long id, MypageRequestDto mypageRequestDto, User user) {
+        log.info("닉네임 변경 들어옴");
+        User checkUser = userRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("존재하지 않는 사용자 입니다."));
+
+        if (!checkUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+
+        checkUser.update(mypageRequestDto);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_NICKNAME_SUCCESS);
     }
 }

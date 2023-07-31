@@ -5,7 +5,14 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import team6.sobun.domain.user.dto.KakaoDto;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import team6.sobun.domain.user.dto.MypageRequestDto;
+import team6.sobun.global.utils.Timestamped;
+
+import java.util.Date;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -14,7 +21,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @Table(name = "users")
-public class User {
+public class User extends Timestamped {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     @Column(name = "user_id")
@@ -34,18 +41,37 @@ public class User {
     private String profileImageUrl;
 
     @Column(nullable = false)
+    private String location;
+
+    @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
     public User(String email, String nickname, String password, UserRoleEnum role, String profileImageUrl) {
+    @Builder
+    public User(String email, String nickname, String password, String location, UserRoleEnum role) {
         this.email = email;
         this.nickname = nickname;
+        this.password = password;
+        this.location = location;
+        this.role = role;
+    }
+
+    @Builder
+    public User(String nickname, String location, String password, UserRoleEnum role) {
+        this.nickname = nickname;
+        this.location = location;
         this.password = password;
         this.role = role;
         this.profileImageUrl = profileImageUrl;
     }
 
+    public void update(MypageRequestDto mypageRequestDto) {
+        this.nickname = mypageRequestDto.getNickname();
+    }
 
+    public void setRoles(String role) {
+      
     public User(KakaoDto kakaoDto, String password,String profileImageUrl){
         this.email = kakaoDto.getEmail();
         this.nickname = kakaoDto.getNickname();

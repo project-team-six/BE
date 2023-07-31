@@ -9,7 +9,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import team6.sobun.domain.user.dto.KakaoDto;
+import team6.sobun.domain.user.dto.KakaoDt
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.entity.RefreshToken;
 import team6.sobun.domain.user.entity.User;
@@ -20,11 +24,11 @@ import team6.sobun.global.security.UserDetailsImpl;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 
+
 import java.io.IOException;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -39,6 +43,7 @@ public class UserController {
     private final UserService userService;
     private final JwtProvider jwtProvider;
     private final RefreshTokenRedisRepository redisRepository;
+
 
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
@@ -89,6 +94,17 @@ public class UserController {
         log.info("JWT 토큰을 쿠키에 추가하여 응답합니다.");
 
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
+    @PostMapping("/auth/signup")
+    public ApiResponse<?> signup(@RequestBody @Valid SignupRequestDto signupRequestDto) {
+        return userService.signup(signupRequestDto);
+
+    }
+
+    @PatchMapping("/mypage/{id}")
+    public ApiResponse<?> nicknameChange(@PathVariable Long id,
+                                         @RequestBody MypageRequestDto mypageRequestDto,
+                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return userService.nicknameChange(id, mypageRequestDto, userDetailsImpl.getUser());
     }
 }
 

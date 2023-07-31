@@ -38,6 +38,10 @@ public class User extends Timestamped {
     @Column
     private String location;
 
+
+
+    private double mannerTemperature = 36.5;
+
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
@@ -53,17 +57,41 @@ public class User extends Timestamped {
         this.profileImageUrl = profileImageUrl;
     }
 
+    public User(String email, String location, String nickname, String password, UserRoleEnum role) {
+        super();
+    }
+
+    public void updateMannerTemperature(double newTemperature) {
+        this.mannerTemperature = newTemperature;
+    }
+
     public void update(MypageRequestDto mypageRequestDto) {
         this.nickname = mypageRequestDto.getNickname();
     }
 
-    public User(KakaoDto kakaoDto, String password,String location){
+    public User(KakaoDto kakaoDto, String password,String profileImageUrl){
         this.email = kakaoDto.getEmail();
         this.nickname = kakaoDto.getNickname();
         this.password = password;
-        this.location = location;
         //카카오 유저는 기본 USER
         this.role = UserRoleEnum.USER;
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public User(String email, String nickname, String password, String location, String profileImageUrl) {
+        this.email = email;
+        this.nickname = nickname;
+        this.password = password;
+        this.location = location;
+        this.role = UserRoleEnum.USER;
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
 

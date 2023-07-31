@@ -22,6 +22,7 @@ import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
@@ -91,6 +92,17 @@ public class PostService {
         postRepository.delete(post);
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
+    }
+    public ApiResponse<?> markPostInProgress(Long postId) {
+        Post post = findPost(postId);
+        post.markInProgress();
+        return ApiResponse.okWithMessage(SuccessCodeEnum.valueOf("해당 게시물은 진행중 입니다."));
+    }
+
+    public ApiResponse<?> markPostClosed(Long postId) {
+        Post post = findPost(postId);
+        post.markClosed();
+        return ApiResponse.okWithMessage(SuccessCodeEnum.valueOf("해당 게시물은 완료 입니다."));
     }
 
 

@@ -30,6 +30,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath location = createString("location");
 
+    public final NumberPath<Double> mannerTemperature = createNumber("mannerTemperature", Double.class);
+
     public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");

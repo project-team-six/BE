@@ -43,7 +43,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public JwtExceptionFilter jwtExceptionFilter() {
-        return new JwtExceptionFilter();
+        return new JwtExceptionFilter(jwtProvider);
     }
 
     /**
@@ -89,8 +89,6 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000"); // 프론트앤드
-        config.addAllowedOrigin("http://localhost:8080"); // 백앤드
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
@@ -123,6 +121,8 @@ public class WebSecurityConfig {
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/auth/kakao").permitAll()
+                                .requestMatchers("/auth/kakao/logout").permitAll()
+                                .requestMatchers("/auth/kakao/login").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers(GET,"/post/**").permitAll()
                                 .requestMatchers(GET,"/chat").permitAll()

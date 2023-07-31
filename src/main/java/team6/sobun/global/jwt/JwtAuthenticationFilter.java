@@ -20,6 +20,8 @@ import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import static team6.sobun.global.utils.ResponseUtils.*;
 
@@ -88,9 +90,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
         ObjectMapper objectMapper = new ObjectMapper();
+
+        // 사용자 정보 가져오기
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
 
+        // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
         String token = jwtProvider.createToken(username, role);
         String refreshToken = jwtProvider.createRefreshToken();
         jwtProvider.addJwtHeader(token, response);
@@ -112,6 +117,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
+
     /**
      * 로그인 실패 시 실패 응답을 반환합니다.
      *
@@ -126,13 +132,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         log.info("로그인 실패");
         ObjectMapper objectMapper = new ObjectMapper();
 
+        // 로그인 실패 응답 반환
         ApiResponse<?> apiResponse = customError(ErrorCodeEnum.LOGIN_FAIL);
-
         String jsonResponse = objectMapper.writeValueAsString(apiResponse);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(jsonResponse);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
-}
 
+}

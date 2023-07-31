@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -27,7 +28,7 @@ public class JwtProvider {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L * 168;
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L;
     private static final long REFRESH_TOKEN_EXPIRE_TIME =  14 * 24 * 60 * 60 * 1000L; // 2주
 
 
@@ -131,13 +132,15 @@ public class JwtProvider {
         } catch (SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT token, 만료된 JWT token 입니다.");
+            log.error("Expired JWT token, 만료된 JWT token 입니다.");
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
         } catch (IllegalArgumentException e) {
             log.info("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
-        } return false;
+        }
+        return false;
     }
+
 
     /**
      * 토큰에서 사용자 정보를 추출합니다.
@@ -153,8 +156,42 @@ public class JwtProvider {
         return UserRoleEnum.valueOf(claims.get(JwtProvider.AUTHORIZATION_KEY, String.class));
     }
 
-
-
+    /**
+     * 리프레시 토큰을 사용하여 새로운 액세스 토큰을 생성합니다.
+     *
+     * @param refreshToken 리프레시 토큰
+     * @return 새로운 액세스 토큰
+     */
+    public String createAccessTokenFromRefreshToken(String refreshToken) {
+        try {
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken).getBody();
+            String id = claims.getSubject();
+            UserRoleEnum role = UserRoleEnum.valueOf(claims.get(AUTHORIZATION_KEY, String.class));
+            Date date = new Date();
+            return BEARER_PREFIX +
+                    Jwts.builder()
+                            .setSubject(id) // 사용자 식별
+                            .claim(AUTHORIZATION_KEY, role)
+                            .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료 시간
+                            .setIssuedAt(date)
+                            .signWith(key, signatureAlgorithm)
+                            .compact();
+        } catch (Exception e) {
+            log.error("Failed to create new access token from refresh token: {}", e.getMessage());
+            throw new RuntimeException("Failed to create new access token from refresh token");
+        }
+    }
+    public void handleExpiredAccessToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 액세스 토큰이 만료된 경우, 리프레시 토큰이 있는지 확인
+        String refreshToken = getTokenFromHeader(request);
+        if (refreshToken != null && validateToken(refreshToken)) {
+            // 유효한 리프레시 토큰인 경우, 새로운 액세스 토큰 발급
+            String newAccessToken = createAccessTokenFromRefreshToken(refreshToken);
+            addJwtHeader(newAccessToken, response);
+        } else {
+            log.error("유효하지 않은 리프레시 토큰이거나 리프레시 토큰이 존재하지 않습니다.");
+        }
+    }
 }
 
 

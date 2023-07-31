@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -93,13 +94,26 @@ public class IdenticonService {
             byte[] imageInByte = baos.toByteArray();
             baos.close();
 
-            MockMultipartFile multipartFile = new MockMultipartFile("file", text + ".png", "image/png", imageInByte);
+            // 파일 이름을 날짜와 랜덤 UUID를 사용하여 유니크하게 설정
+            String fileName = generateFileName(text);
 
-            return s3Service.upload(multipartFile);
+            // MultipartFile 생성
+            MockMultipartFile multipartFile = new MockMultipartFile(
+                    "file", fileName, "image/png", imageInByte);
+
+            // S3에 이미지 업로드
+            String imageUrl = s3Service.upload(multipartFile);
+            return imageUrl;
 
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // 이미지 업로드 시 사용될 파일 이름을 생성하는 메서드
+    private String generateFileName(String text) {
+        String uniqueId = UUID.randomUUID().toString();
+        return uniqueId + ".png";
     }
 }

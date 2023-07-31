@@ -22,6 +22,8 @@ import team6.sobun.global.security.UserDetailsServiceImpl;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 @Slf4j(topic = "JWT 검증, 인가")
 @RequiredArgsConstructor
@@ -57,34 +59,22 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             if (!jwtProvider.validateToken(tokenValue)) {
                 // 액세스 토큰이 유효하지 않은 경우
                 log.error("유효하지 않은 액세스 토큰입니다.");
+
+                // 리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급하고, 인증 정보를 갱신합니다.
+                jwtProvider.handleExpiredAccessToken(req, res);
+
+                // 다시 인증 정보 설정을 시도합니다.
+                tokenValue = jwtProvider.getTokenFromHeader(req);
+                if (StringUtils.hasText(tokenValue)) {
+                    tokenValue = jwtProvider.substringHeaderToken(tokenValue);
+                    info = jwtProvider.getUserInfoFromToken(tokenValue);
+                    setAuthentication(info.getSubject());
+                }
             } else {
                 try {
                     // 유효한 액세스 토큰일 경우, 해당 사용자로 인증 정보를 설정합니다.
                     info = jwtProvider.getUserInfoFromToken(tokenValue);
                     setAuthentication(info.getSubject());
-                } catch (ExpiredJwtException e) {
-                    // 액세스 토큰이 만료된 경우
-                    RefreshToken refreshToken = redisRepository.findByAccessToken(tokenValue)
-                            .orElseThrow(() -> new HttpStatusCodeException(HttpStatus.UNAUTHORIZED, "만료된 access 토큰에 대한 refresh 토큰이 만료되었습니다.") {
-                            });
-
-                    if (StringUtils.hasText(refreshToken.getToken())) { // refreshToken.getToken()으로 변경
-                        // 리프레시 토큰이 유효한지 검사
-                        if (jwtProvider.validateToken(refreshToken.getToken())) { // refreshToken.getToken()으로 변경
-                            // 리프레시 토큰으로 새로운 액세스 토큰 발급
-                            String newAccessToken = jwtProvider.createToken(info.getSubject(), jwtProvider.getUserRoleEnumFromToken(refreshToken.getToken())); // refreshToken.getToken()으로 변경
-                            // 새로운 액세스 토큰을 응답 헤더에 추가
-                            jwtProvider.addJwtHeader(newAccessToken, res);
-                            // 인증 정보 설정 (새로운 액세스 토큰으로 갱신)
-                            setAuthentication(info.getSubject());
-                        } else {
-                            // 리프레시 토큰이 유효하지 않은 경우
-                            log.error("유효하지 않은 리프레시 토큰입니다.");
-                        }
-                    } else {
-                        // 리프레시 토큰이 헤더에 없는 경우
-                        log.error("요청 헤더에서 리프레시 토큰을 찾을 수 없습니다.");
-                    }
                 } catch (Exception e) {
                     // 인증 정보 설정 중 에러가 발생한 경우
                     log.error("인증 정보 설정 중 예외 발생: {}", e.getMessage());

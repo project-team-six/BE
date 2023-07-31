@@ -1,9 +1,13 @@
+// User.java
 package team6.sobun.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import team6.sobun.domain.user.dto.KakaoDto;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.global.utils.Timestamped;
@@ -26,11 +30,15 @@ public class User extends Timestamped {
     @Column(unique = true)
     private String email;
 
+
     @Column(unique = true)
     private String nickname;
 
     @Column(nullable = false)
     private String password;
+
+    @Column
+    private String profileImageUrl;
 
     @Column(nullable = false)
     private String location;
@@ -39,6 +47,7 @@ public class User extends Timestamped {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
+    public User(String email, String nickname, String password, UserRoleEnum role, String profileImageUrl) {
     @Builder
     public User(String email, String nickname, String password, String location, UserRoleEnum role) {
         this.email = email;
@@ -54,6 +63,7 @@ public class User extends Timestamped {
         this.location = location;
         this.password = password;
         this.role = role;
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void update(MypageRequestDto mypageRequestDto) {
@@ -61,7 +71,22 @@ public class User extends Timestamped {
     }
 
     public void setRoles(String role) {
+      
+    public User(KakaoDto kakaoDto, String password,String profileImageUrl){
+        this.email = kakaoDto.getEmail();
+        this.nickname = kakaoDto.getNickname();
+        this.password = password;
+        //카카오 유저는 기본 USER
+        this.role = UserRoleEnum.USER;
+        this.profileImageUrl = profileImageUrl;
+    }
 
+    // 사용자의 역할 정보를 반환하는 메서드 추가
+    public UserRoleEnum getRole() {
+        return this.role;
+    }
+
+    public User kakaoIdUpdate(KakaoDto kakaoDto){
+        return this;
     }
 }
-

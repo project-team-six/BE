@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
@@ -14,8 +15,15 @@ import team6.sobun.global.utils.ResponseUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-
+import java.net.URLEncoder;
+@Slf4j
 public class JwtExceptionFilter extends OncePerRequestFilter {
+
+    private final JwtProvider jwtProvider;
+
+    public JwtExceptionFilter(JwtProvider jwtProvider) {
+        this.jwtProvider = jwtProvider;
+    }
 
     /**
      * 예외 처리 필터를 통해 JWT 예외를 처리합니다.
@@ -56,4 +64,5 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             e.printStackTrace();
         }
     }
+
 }

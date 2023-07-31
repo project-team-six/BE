@@ -45,14 +45,6 @@ public class PostService {
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return ok(postRepository.serachPostByPage(condition, pageable));
     }
-    // 좋아요 (인기순) 조회
-    public ApiResponse<?> searchPostByPopularity(PostSearchCondition condition, Pageable pageable) {
-        return ok(postRepository.searchPostByPageByPopularity(condition, pageable));
-    }
-    // 조회수 조회
-    public ApiResponse<?> searchPostByMostView(PostSearchCondition condition, Pageable pageable) {
-        return ok(postRepository.searchPostByPageByMostView(condition, pageable));
-    }
 
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, MultipartFile image, User user) {

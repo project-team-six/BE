@@ -7,6 +7,8 @@ public enum SuccessCodeEnum {
 
     USER_SIGNUP_SUCCESS("회원가입 성공"),
     USER_LOGIN_SUCCESS("로그인 성공"),
+    USER_LOGOUT_SUCCESS("로그아웃 성공"),
+    USER_WITHRAW_SUCCESS("회원탈퇴 성공"),
     POST_CREATE_SUCCESS("게시글 작성 성공"),
     POST_UPDATE_SUCCESS("게시글 수정 성공"),
     POST_DELETE_SUCCESS("게시글 삭제 성공"),

@@ -19,6 +19,7 @@ import team6.sobun.global.jwt.JwtAuthorizationFilter;
 import team6.sobun.global.jwt.JwtExceptionFilter;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.security.UserDetailsServiceImpl;
+import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -32,6 +33,7 @@ public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final RefreshTokenRedisRepository redisRepository;
 
     /**
      * JwtExceptionFilter를 빈으로 생성합니다.
@@ -41,7 +43,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public JwtExceptionFilter jwtExceptionFilter() {
-        return new JwtExceptionFilter();
+        return new JwtExceptionFilter(jwtProvider);
     }
 
     /**
@@ -66,7 +68,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider, redisRepository);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
@@ -79,7 +81,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtProvider, userDetailsService);
+        return new JwtAuthorizationFilter(jwtProvider, userDetailsService, redisRepository);
     }
 
     @Bean
@@ -118,6 +120,10 @@ public class WebSecurityConfig {
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/auth/kakao").permitAll()
+                                .requestMatchers("/auth/kakao/logout").permitAll()
+                                .requestMatchers("/auth/kakao/login").permitAll()
+                                .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers(GET,"/post/**").permitAll()
                                 .requestMatchers(GET,"/chat").permitAll()
                                 .requestMatchers(GET,"/ws/chat").permitAll()

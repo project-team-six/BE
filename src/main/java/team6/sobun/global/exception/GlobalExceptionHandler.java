@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.utils.ResponseUtils;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ import static team6.sobun.global.utils.ResponseUtils.error;
  */
 @ControllerAdvice
 @ResponseBody
-public class GGExceptionHandler {
+public class GlobalExceptionHandler {
 
     /**
      * IllegalArgumentException을 처리하는 예외 핸들러입니다.

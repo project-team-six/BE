@@ -73,6 +73,9 @@ public class Post extends Timestamped {
 
     private String image;
 
+    @Enumerated(EnumType.STRING)
+    private PostStatus status; // 게시물 상태 (진행중, 마감)
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @OnDelete(action = CASCADE)
@@ -91,8 +94,16 @@ public class Post extends Timestamped {
         this.views = 0;
         this.pined = 0;
         this.user = user;
+
     }
 
+    public void markInProgress() {
+        this.status = PostStatus.IN_PROGRESS;
+    }
+
+    public void markClosed() {
+        this.status = PostStatus.COMPLETED;
+    }
     public void update(PostRequestDto postRequestDto) {
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();

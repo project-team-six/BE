@@ -123,6 +123,8 @@ public class WebSecurityConfig {
                                 .requestMatchers("/auth/kakao").permitAll()
                                 .requestMatchers("/auth/kakao/logout").permitAll()
                                 .requestMatchers("/auth/kakao/login").permitAll()
+                                .requestMatchers("/auth/google").permitAll()
+                                .requestMatchers("/auth/google/login").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers(GET,"/post/**").permitAll()
                                 .requestMatchers(GET,"/chat").permitAll()

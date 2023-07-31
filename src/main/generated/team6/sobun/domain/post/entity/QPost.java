@@ -45,6 +45,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final DatePath<java.util.Date> PurchaseDate = createDate("PurchaseDate", java.util.Date.class);
 
+    public final EnumPath<PostStatus> status = createEnum("status", PostStatus.class);
+
     public final StringPath title = createString("title");
 
     public final DatePath<java.util.Date> transactionEndDate = createDate("transactionEndDate", java.util.Date.class);

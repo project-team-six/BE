@@ -1,7 +1,6 @@
 package team6.sobun.domain.user.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,10 +8,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import team6.sobun.domain.user.dto.KakaoDt
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.entity.RefreshToken;
@@ -24,14 +19,12 @@ import team6.sobun.global.security.UserDetailsImpl;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 
-
 import java.io.IOException;
 
 @Slf4j
-@RestController
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class UserController {
-
 
 
     @Value("${kakao.login.client.id}")
@@ -49,6 +42,13 @@ public class UserController {
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) {
         return userService.signup(signupRequestDto, image);
+    }
+
+    @PatchMapping("/mypage/{id}")
+    public ApiResponse<?> nicknameChange(@PathVariable Long id,
+                                         @RequestBody MypageRequestDto mypageRequestDto,
+                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return userService.nicknameChange(id, mypageRequestDto, userDetailsImpl.getUser());
     }
 
     @DeleteMapping("/withdraw")
@@ -94,17 +94,7 @@ public class UserController {
         log.info("JWT 토큰을 쿠키에 추가하여 응답합니다.");
 
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
-    @PostMapping("/auth/signup")
-    public ApiResponse<?> signup(@RequestBody @Valid SignupRequestDto signupRequestDto) {
-        return userService.signup(signupRequestDto);
 
-    }
-
-    @PatchMapping("/mypage/{id}")
-    public ApiResponse<?> nicknameChange(@PathVariable Long id,
-                                         @RequestBody MypageRequestDto mypageRequestDto,
-                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return userService.nicknameChange(id, mypageRequestDto, userDetailsImpl.getUser());
     }
 }
 

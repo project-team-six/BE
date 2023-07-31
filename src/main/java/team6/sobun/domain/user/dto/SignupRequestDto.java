@@ -17,6 +17,8 @@ public class SignupRequestDto {
     @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
     private String password;
 
+    private  String profileImageUrl;
+
     private String location = "대구시";
 
     private boolean admin = false;

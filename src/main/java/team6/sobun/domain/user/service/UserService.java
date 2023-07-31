@@ -76,9 +76,8 @@ public class UserService {
         }
 
         // 프로필 이미지 URL을 사용하여 User 객체 생성
-        User user = new User(email, nickname, password, role, profileImageUrl);
+        User user = new User(email, location, nickname, password, role, profileImageUrl);
 
-        User user = new User(email, nickname, password, location, role);
 
         userRepository.save(user);
 

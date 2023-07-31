@@ -65,9 +65,10 @@ public class UserService {
         String nickname = signupRequestDto.getNickname();
         String location = signupRequestDto.getLocation();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
-        UserRoleEnum role = UserRoleEnum.USER;
 
         checkDuplicatedEmail(email);
+        UserRoleEnum role = UserRoleEnum.USER;
+
 
         String profileImageUrl = null;
         if (image != null && !image.isEmpty()) {
@@ -77,8 +78,6 @@ public class UserService {
 
         // 프로필 이미지 URL을 사용하여 User 객체 생성
         User user = new User(email, location, nickname, password, role, profileImageUrl);
-
-
         userRepository.save(user);
 
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
@@ -118,10 +117,6 @@ public class UserService {
             log.info("기존 사용자와 연결되는 카카오 사용자로 등록합니다.");
         }
         return user;
-    }
-    public String createTokenForUser(String username, UserRoleEnum role) {
-        // JWT 토큰 생성 로직
-        return jwtProvider.createToken(username, role);
     }
 
     private KakaoDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
@@ -184,6 +179,7 @@ public class UserService {
         }
     }
 
+
     @Transactional
     public User registerKakaoUser(KakaoDto kakaoUserDto) {
         User user = userRepository.findByEmail(kakaoUserDto.getEmail()).orElse(null);
@@ -198,12 +194,14 @@ public class UserService {
         return user;
     }
 
+
     private void checkDuplicatedEmail(String email) {
         Optional<User> found = userRepository.findByEmail(email);
         if (found.isPresent()) {
             throw new InvalidConditionException(ErrorCodeEnum.DUPLICATE_USERNAME_EXIST);
         }
     }
+
 
     @Transactional
     public ApiResponse<?> nicknameChange(Long id, MypageRequestDto mypageRequestDto, User user) {

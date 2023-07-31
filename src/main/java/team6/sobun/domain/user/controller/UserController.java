@@ -22,9 +22,11 @@ import team6.sobun.global.stringCode.SuccessCodeEnum;
 import java.io.IOException;
 
 @Slf4j
+@RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class UserController {
+
 
 
     @Value("${kakao.login.client.id}")
@@ -42,13 +44,13 @@ public class UserController {
                                  @RequestPart(value = "file", required = false) MultipartFile image) {
         return userService.signup(signupRequestDto, image);
     }
-
     @PatchMapping("/mypage/{id}")
     public ApiResponse<?> nicknameChange(@PathVariable Long id,
                                          @RequestBody MypageRequestDto mypageRequestDto,
                                          @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return userService.nicknameChange(id, mypageRequestDto, userDetailsImpl.getUser());
     }
+
 
     @DeleteMapping("/withdraw")
     public ApiResponse<?> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -93,9 +95,9 @@ public class UserController {
         log.info("JWT 토큰을 쿠키에 추가하여 응답합니다.");
 
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
-
     }
 }
+
 
 
 

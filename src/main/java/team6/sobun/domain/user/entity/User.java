@@ -35,7 +35,7 @@ public class User extends Timestamped {
     @Column
     private String profileImageUrl;
 
-    @Column(nullable = false)
+    @Column
     private String location;
 
     @Column(nullable = false)
@@ -57,16 +57,14 @@ public class User extends Timestamped {
         this.nickname = mypageRequestDto.getNickname();
     }
 
-    public User(KakaoDto kakaoDto, String password,String profileImageUrl){
+    public User(KakaoDto kakaoDto, String password,String location){
         this.email = kakaoDto.getEmail();
         this.nickname = kakaoDto.getNickname();
         this.password = password;
-        this.location = getLocation();
+        this.location = location;
         //카카오 유저는 기본 USER
         this.role = UserRoleEnum.USER;
         this.profileImageUrl = profileImageUrl;
-    }
-    public void setRoles(String role){
     }
 
     // 사용자의 역할 정보를 반환하는 메서드 추가

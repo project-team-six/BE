@@ -28,6 +28,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final ListPath<team6.sobun.domain.comment.entity.Comment, team6.sobun.domain.comment.entity.QComment> commentList = this.<team6.sobun.domain.comment.entity.Comment, team6.sobun.domain.comment.entity.QComment>createList("commentList", team6.sobun.domain.comment.entity.Comment.class, team6.sobun.domain.comment.entity.QComment.class, PathInits.DIRECT2);
 
+    public final DatePath<java.util.Date> consumerPeriod = createDate("consumerPeriod", java.util.Date.class);
+
     public final StringPath content = createString("content");
 
     //inherited
@@ -41,7 +43,13 @@ public class QPost extends EntityPathBase<Post> {
 
     public final NumberPath<Long> pined = createNumber("pined", Long.class);
 
+    public final DatePath<java.util.Date> PurchaseDate = createDate("PurchaseDate", java.util.Date.class);
+
     public final StringPath title = createString("title");
+
+    public final DatePath<java.util.Date> transactionEndDate = createDate("transactionEndDate", java.util.Date.class);
+
+    public final DatePath<java.util.Date> transactionStartDate = createDate("transactionStartDate", java.util.Date.class);
 
     public final team6.sobun.domain.user.entity.QUser user;
 

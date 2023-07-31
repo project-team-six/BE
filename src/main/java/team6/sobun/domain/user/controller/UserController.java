@@ -37,7 +37,6 @@ public class UserController {
     private final JwtProvider jwtProvider;
     private final RefreshTokenRedisRepository redisRepository;
 
-
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) {

@@ -57,16 +57,16 @@ public class User extends Timestamped {
         this.nickname = mypageRequestDto.getNickname();
     }
 
-    public void setRoles(String role){
-    }
-
     public User(KakaoDto kakaoDto, String password,String profileImageUrl){
         this.email = kakaoDto.getEmail();
         this.nickname = kakaoDto.getNickname();
         this.password = password;
+        this.location = getLocation();
         //카카오 유저는 기본 USER
         this.role = UserRoleEnum.USER;
         this.profileImageUrl = profileImageUrl;
+    }
+    public void setRoles(String role){
     }
 
     // 사용자의 역할 정보를 반환하는 메서드 추가

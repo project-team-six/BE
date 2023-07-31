@@ -28,12 +28,13 @@ public class UserService {
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto) {
         String email = signupRequestDto.getEmail();
         String nickname = signupRequestDto.getNickname();
+        String location = signupRequestDto.getLocation();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
-
-        checkDuplicatedEmail(email);
         UserRoleEnum role = UserRoleEnum.USER;
 
-        User user = new User(email, nickname, password, role);
+        checkDuplicatedEmail(email);
+
+        User user = new User(email, nickname, password, location, role);
         userRepository.save(user);
 
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);

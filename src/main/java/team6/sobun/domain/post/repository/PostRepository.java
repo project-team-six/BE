@@ -16,8 +16,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Query("select p from Post p left join fetch p.commentList cl where p.id = :postId")
     Optional<Post> findDetailPost(@Param("postId") Long postId);
 
-    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.liked WHERE p.id = :id")
-    Post findByIdWithLikes(@Param("id") Long id);
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.pined WHERE p.id = :id")
+    Post findByIdWithPins(@Param("id") Long id);
 
     @Query(value = "SELECT * FROM post WHERE title LIKE %?1% OR content LIKE %?1% ORDER BY createDate DESC" , nativeQuery = true)
     List<Post> findByContent(String content);

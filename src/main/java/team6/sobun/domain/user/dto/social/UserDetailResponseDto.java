@@ -1,4 +1,4 @@
-package team6.sobun.domain.user.dto;
+package team6.sobun.domain.user.dto.social;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

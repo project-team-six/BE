@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.pin.entity.Pin;
-import team6.sobun.domain.user.dto.KakaoDto;
 import team6.sobun.domain.user.dto.MypageRequestDto;
+import team6.sobun.domain.user.dto.social.KakaoDto;
 import team6.sobun.global.utils.Timestamped;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class User extends Timestamped {
     @Column(unique = true)
     private String email;
 
-    @Column(unique = true)
+    @Column(nullable = false)
     private String username;
 
     @Column(unique = true)
@@ -44,6 +44,7 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private String location;
 
+
     private double mannerTemperature = 36.5;
 
     @OneToMany(mappedBy = "user")
@@ -55,29 +56,16 @@ public class User extends Timestamped {
 
 
     @Builder
-    public User(String email, String username,String nickname, String location, String password, UserRoleEnum role, String profileImageUrl) {
+    public User(String email, String location,String nickname,String password, String username,  String profileImageUrl,UserRoleEnum role) {
         this.email = email;
-        this.username = username;
-        this.nickname = nickname;
         this.location = location;
+        this.nickname = nickname;
+        this.username = username;
         this.password = password;
         this.role = role;
         this.profileImageUrl = profileImageUrl;
     }
-
-    public User(String email, String location, String nickname, String password, UserRoleEnum role) {
-        super();
-    }
-
-    public void updateMannerTemperature(double newTemperature) {
-        this.mannerTemperature = newTemperature;
-    }
-
-    public void update(MypageRequestDto mypageRequestDto) {
-        this.nickname = mypageRequestDto.getNickname();
-    }
-
-    public User(KakaoDto kakaoDto,String password, String profileImageUrl){
+    public User(KakaoDto kakaoDto, String password, String profileImageUrl){
         this.email = kakaoDto.getEmail();
         this.location = kakaoDto.getLocation();
         this.nickname = kakaoDto.getNickname();
@@ -87,16 +75,15 @@ public class User extends Timestamped {
         this.role = UserRoleEnum.USER;
         this.profileImageUrl = profileImageUrl;
     }
-
-    public User(String email, String nickname,String username, String password, String location, String profileImageUrl) {
-        this.email = email;
-        this.nickname = nickname;
-        this.username = username;
-        this.password = password;
-        this.location = location;
-        this.role = UserRoleEnum.USER;
-        this.profileImageUrl = profileImageUrl;
+    public void update(MypageRequestDto mypageRequestDto) {
+        this.nickname = mypageRequestDto.getNickname();
     }
+
+
+    public void updateMannerTemperature(double newTemperature) {
+        this.mannerTemperature = newTemperature;
+    }
+
 
     public void setNickname(String nickname) {
         this.nickname = nickname;

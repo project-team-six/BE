@@ -119,6 +119,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                                .requestMatchers(GET,"/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/auth/naver/login").permitAll()
                                 .requestMatchers("/auth/naver").permitAll()

@@ -20,9 +20,10 @@ public class SignupRequestDto {
     @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
     private String password;
 
-    private  String profileImageUrl;
+    @NotBlank(message = "위치는 필수 입력 값입니다.")
+    private String location;
 
-    private String location = null; // 기본값으로 null 허용
+    private  String profileImageUrl;
 
     private boolean admin = false;
     private String adminToken = "";

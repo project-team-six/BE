@@ -1,4 +1,4 @@
-package team6.sobun.domain.user.entity;
+package team6.sobun.domain.user.dto.social;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

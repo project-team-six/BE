@@ -1,6 +1,6 @@
 // NaverUserInfo.java 파일
 
-package team6.sobun.domain.user.dto;
+package team6.sobun.domain.user.dto.social;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ public class NaverUserInfo {
     private String email;
     private String profileImageUrl;
 
-    public NaverUserInfo(String id,String username, String nickname, String email, String profileImageUrl) {
+    public NaverUserInfo(String id, String username, String nickname, String email, String profileImageUrl) {
         this.id = id;
         this.username = username;
         this.nickname = nickname;

@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -19,13 +20,26 @@ public class QUser extends EntityPathBase<User> {
 
     public static final QUser user = new QUser("user");
 
+    public final team6.sobun.global.utils.QTimestamped _super = new team6.sobun.global.utils.QTimestamped(this);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
     public final StringPath email = createString("email");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final StringPath location = createString("location");
+
+    public final NumberPath<Double> mannerTemperature = createNumber("mannerTemperature", Double.class);
+
     public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");
+
+    public final ListPath<team6.sobun.domain.pin.entity.Pin, team6.sobun.domain.pin.entity.QPin> pins = this.<team6.sobun.domain.pin.entity.Pin, team6.sobun.domain.pin.entity.QPin>createList("pins", team6.sobun.domain.pin.entity.Pin.class, team6.sobun.domain.pin.entity.QPin.class, PathInits.DIRECT2);
+
+    public final StringPath profileImageUrl = createString("profileImageUrl");
 
     public final EnumPath<UserRoleEnum> role = createEnum("role", UserRoleEnum.class);
 

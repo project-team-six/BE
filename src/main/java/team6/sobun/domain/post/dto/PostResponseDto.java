@@ -5,6 +5,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
+import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.entity.Category;
 import team6.sobun.domain.post.entity.Post;
 
@@ -26,7 +27,7 @@ public class PostResponseDto {
     private List<CommentResponseDto> commentList;
     private String image;
     private long pined;
-    private Boolean isLike;
+    private Boolean isPin;
     private int views;
     private int commentCount;
 
@@ -45,7 +46,7 @@ public class PostResponseDto {
     }
 
 
-    public PostResponseDto(Post post, Boolean isLike) {
+    public PostResponseDto(Post post, Boolean isPin) {
         this.id = post.getId();
         this.category = post.getCategory();
         this.title = post.getTitle();
@@ -58,6 +59,6 @@ public class PostResponseDto {
         this.image = post.getImage();
         this.pined = post.getPined();
         this.views = post.getViews();
-        this.isLike = isLike;
+        this.isPin = isPin;
     }
 }

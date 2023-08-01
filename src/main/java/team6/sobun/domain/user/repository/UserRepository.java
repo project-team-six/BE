@@ -9,7 +9,13 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    Optional<User> findById(Long id);
+
+
     Optional<User> findByEmail(String email);
+
+
+    Optional<User> findByNickname(String nickname);
 
     @Query(value = "select UserName from user", nativeQuery = true)
     User findUserName();

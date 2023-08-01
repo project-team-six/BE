@@ -9,13 +9,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
+import team6.sobun.domain.user.dto.UserDetailResponseDto;
 import team6.sobun.domain.user.entity.RefreshToken;
 import team6.sobun.domain.user.entity.User;
-import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.domain.user.service.UserService;
+import team6.sobun.domain.user.service.social.FacebookService;
+import team6.sobun.domain.user.service.social.GoogleService;
+import team6.sobun.domain.user.service.social.KakaoService;
+import team6.sobun.domain.user.service.social.NaverService;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
@@ -29,7 +32,6 @@ import java.io.IOException;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class UserController {
-
 
     @Value("${kakao.login.client.id}")
     private String YOUR_KAKAO_LOGIN_CLIENT_ID;
@@ -55,14 +57,13 @@ public class UserController {
     @Value("${google.login.redirect.uri}")
     private String YOUR_GOOGLE_REDIRECT_URI;
 
-
-
-
     private final UserService userService;
+    private final KakaoService kakaoService;
+    private final GoogleService googleService;
+    private final NaverService naverService;
+    private  final FacebookService facebookService;
     private final JwtProvider jwtProvider;
-    private final PinRepository pinRepository;
     private final RefreshTokenRedisRepository redisRepository;
-    private final UserRepository userRepository;
 
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
@@ -71,8 +72,20 @@ public class UserController {
     }
 
     @GetMapping("/mypage/{userid}")
-    public ApiResponse<?> userDetailView(@PathVariable Long userid, HttpServletRequest req) {
-        return userService.getUserDetails(userid);
+    public ApiResponse<?> userDetailView(@PathVariable Long userid, HttpServletRequest req,
+                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long requestingUserId = userDetails != null ? userDetails.getUser().getId() : null;
+        if (requestingUserId != null && requestingUserId.equals(userid)) {
+            // 로그인한 사용자와 조회 대상 사용자가 같은 경우 (본인 페이지 조회)
+            log.info("사용자 ID '{}'가 본인 페이지를 조회합니다.", userid);
+            UserDetailResponseDto responseDto = userService.getCurrentUserDetails(requestingUserId);
+            return ApiResponse.success(responseDto);
+        } else {
+            // 로그인한 사용자와 조회 대상 사용자가 다른 경우 (일반 사용자 페이지 조회)
+            log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userid);
+            UserDetailResponseDto responseDto = userService.getUserDetails(userid);
+            return ApiResponse.success(responseDto);
+        }
     }
 
     @PatchMapping("/mypage/{userid}")
@@ -107,7 +120,7 @@ public class UserController {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
         // 카카오 로그인에 성공한 후, 사용자 정보 가져오기
-        User user = userService.kakaoSignUpOrLinkUser(code);
+        User user = kakaoService.kakaoSignUpOrLinkUser(code);
         log.info("카카오 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(user.getEmail(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken();
@@ -143,7 +156,7 @@ public class UserController {
         log.info("네이버 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
         // 네이버 로그인에 성공한 후, 사용자 정보 가져오기
-        User user = userService.naverSignUpOrLinkUser(code);
+        User user = naverService.naverSignUpOrLinkUser(code);
         log.info("네이버 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(user.getEmail(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken();
@@ -178,7 +191,7 @@ public class UserController {
         log.info("페이스북 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
         // 페이스북 로그인에 성공한 후, 사용자 정보 가져오기
-        User user = userService.facebookSignUpOrLinkUser(code);
+        User user = facebookService.facebookSignUpOrLinkUser(code);
         log.info("페이스북 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(user.getEmail(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken();
@@ -214,7 +227,7 @@ public class UserController {
         log.info("구글 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
         // 구글 로그인에 성공한 후, 사용자 정보 가져오기
-        User user = userService.googleSignUpOrLinkUser(code);
+        User user = googleService.googleSignUpOrLinkUser(code);
         log.info("구글 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(user.getEmail(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken();

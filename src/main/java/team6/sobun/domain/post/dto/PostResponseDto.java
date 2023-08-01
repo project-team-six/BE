@@ -5,6 +5,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
+import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.entity.Category;
 import team6.sobun.domain.post.entity.Post;
 

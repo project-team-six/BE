@@ -7,6 +7,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.OnDelete;
 import org.springframework.format.annotation.DateTimeFormat;
 import team6.sobun.domain.comment.entity.Comment;
+import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.global.utils.Timestamped;
@@ -123,11 +124,11 @@ public class Post extends Timestamped {
         comment.initPost(this);
     }
 
-    public void increaseLike() {
+    public void increasePin() {
         this.pined += 1;
     }
 
-    public void decreaseLike() {
+    public void decreasePin() {
         if (this.pined > 0) {
             this.pined -= 1;
         }

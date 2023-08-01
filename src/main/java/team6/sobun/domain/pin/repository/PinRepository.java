@@ -5,9 +5,11 @@ import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.user.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PinRepository extends JpaRepository<Pin, Long> {
 
     Optional<Pin> findByPostAndUser(Post post, User user);
+    List<Post> findByUser_Id(Long userId);
 }

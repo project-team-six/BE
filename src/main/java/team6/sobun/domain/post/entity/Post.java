@@ -1,5 +1,6 @@
 package team6.sobun.domain.post.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -66,6 +67,7 @@ public class Post extends Timestamped {
     @Column
     private Date PurchaseDate;
 
+
     @Fetch(SUBSELECT)
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
     private List<Comment> commentList = new ArrayList<>();
@@ -77,6 +79,7 @@ public class Post extends Timestamped {
     @Enumerated(EnumType.STRING)
     private PostStatus status; // 게시물 상태 (진행중, 마감)
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @OnDelete(action = CASCADE)

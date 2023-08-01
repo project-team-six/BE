@@ -16,6 +16,9 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Query("select p from Post p left join fetch p.commentList cl where p.id = :postId")
     Optional<Post> findDetailPost(@Param("postId") Long postId);
 
+    @Query("SELECT p FROM Post p WHERE p.user.id = :userId")
+    List<Post> findPostsByUserId(@Param("userId") Long userId);
+
     @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.pined WHERE p.id = :id")
     Post findByIdWithPins(@Param("id") Long id);
 

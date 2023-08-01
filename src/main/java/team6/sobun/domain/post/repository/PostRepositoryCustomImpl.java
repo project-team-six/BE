@@ -10,7 +10,9 @@ import org.springframework.data.domain.SliceImpl;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.dto.QPostResponseDto;
+import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.entity.QPost;
+import team6.sobun.domain.user.entity.QUser;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ import static org.springframework.util.StringUtils.hasText;
 
 
 @RequiredArgsConstructor
-public class PostRepositoryCustomImpl implements PostRepositoryCustom{
+public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
     private final JPAQueryFactory query;
 
@@ -48,6 +50,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
 
         return new PageImpl<>(result, pageable, result.size());
     }
+
 
     /**
      * 사용자명에 대한 검색 조건을 생성하는 메소드입니다.

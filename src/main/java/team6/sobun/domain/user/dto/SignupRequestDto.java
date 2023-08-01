@@ -14,12 +14,15 @@ public class SignupRequestDto {
     @NotBlank(message = "닉네임은 필수 입력 값입니다.")
     private String nickname;
 
+    @NotBlank(message = "이름은 필수 입력 값입니다.")
+    private String username;
+
     @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
     private String password;
 
     private  String profileImageUrl;
 
-    private String location = "대구시";
+    private String location = null; // 기본값으로 null 허용
 
     private boolean admin = false;
     private String adminToken = "";

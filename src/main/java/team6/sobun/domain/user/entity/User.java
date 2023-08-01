@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.pin.entity.Pin;
-import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.user.dto.KakaoDto;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.global.utils.Timestamped;
@@ -30,6 +29,8 @@ public class User extends Timestamped {
     @Column(unique = true)
     private String email;
 
+    @Column(unique = true)
+    private String username;
 
     @Column(unique = true)
     private String nickname;
@@ -40,7 +41,7 @@ public class User extends Timestamped {
     @Column
     private String profileImageUrl;
 
-    @Column
+    @Column(nullable = false)
     private String location;
 
     private double mannerTemperature = 36.5;
@@ -54,8 +55,9 @@ public class User extends Timestamped {
 
 
     @Builder
-    public User(String email, String nickname, String location, String password, UserRoleEnum role, String profileImageUrl) {
+    public User(String email, String username,String nickname, String location, String password, UserRoleEnum role, String profileImageUrl) {
         this.email = email;
+        this.username = username;
         this.nickname = nickname;
         this.location = location;
         this.password = password;
@@ -75,18 +77,21 @@ public class User extends Timestamped {
         this.nickname = mypageRequestDto.getNickname();
     }
 
-    public User(KakaoDto kakaoDto, String password,String profileImageUrl){
+    public User(KakaoDto kakaoDto,String password, String profileImageUrl){
         this.email = kakaoDto.getEmail();
+        this.location = kakaoDto.getLocation();
         this.nickname = kakaoDto.getNickname();
+        this.username = kakaoDto.getUsername();
         this.password = password;
         //카카오 유저는 기본 USER
         this.role = UserRoleEnum.USER;
         this.profileImageUrl = profileImageUrl;
     }
 
-    public User(String email, String nickname, String password, String location, String profileImageUrl) {
+    public User(String email, String nickname,String username, String password, String location, String profileImageUrl) {
         this.email = email;
         this.nickname = nickname;
+        this.username = username;
         this.password = password;
         this.location = location;
         this.role = UserRoleEnum.USER;

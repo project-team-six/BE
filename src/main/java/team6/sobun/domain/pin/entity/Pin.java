@@ -19,7 +19,8 @@ import static org.hibernate.annotations.OnDeleteAction.CASCADE;
 @Table(name = "pins")
 public class Pin {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = LAZY)
@@ -30,6 +31,7 @@ public class Pin {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
 
     public Pin(Post post, User user) {
         this.post = post;

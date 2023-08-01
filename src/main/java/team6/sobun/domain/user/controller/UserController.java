@@ -1,5 +1,6 @@
 package team6.sobun.domain.user.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,10 +9,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.entity.RefreshToken;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
@@ -44,20 +47,25 @@ public class UserController {
 
     private final UserService userService;
     private final JwtProvider jwtProvider;
+    private final PinRepository pinRepository;
     private final RefreshTokenRedisRepository redisRepository;
+    private final UserRepository userRepository;
 
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) {
         return userService.signup(signupRequestDto, image);
     }
-    @PatchMapping("/mypage/{id}")
-    public ApiResponse<?> nicknameChange(@PathVariable Long id,
+    @GetMapping("/mypage/{userid}")
+    public ApiResponse<?> userDetailView(@PathVariable Long userid, HttpServletRequest req) {
+        return userService.getUserDetails(userid);
+    }
+    @PatchMapping("/mypage/{userid}")
+    public ApiResponse<?> nicknameChange(@PathVariable Long userid,
                                          @RequestBody MypageRequestDto mypageRequestDto,
                                          @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return userService.nicknameChange(id, mypageRequestDto, userDetailsImpl.getUser());
+        return userService.nicknameChange(userid, mypageRequestDto, userDetailsImpl.getUser());
     }
-
 
     @DeleteMapping("/withdraw")
     public ApiResponse<?> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails) {

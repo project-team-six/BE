@@ -5,9 +5,14 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import team6.sobun.domain.pin.entity.Pin;
+import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.user.dto.KakaoDto;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.global.utils.Timestamped;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -38,9 +43,10 @@ public class User extends Timestamped {
     @Column
     private String location;
 
-
-
     private double mannerTemperature = 36.5;
+
+    @OneToMany(mappedBy = "user")
+    private List<Pin> pins = new ArrayList<>();
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -99,6 +105,7 @@ public class User extends Timestamped {
     public UserRoleEnum getRole() {
         return this.role;
     }
+
 
     public User kakaoIdUpdate(KakaoDto kakaoDto){
         return this;

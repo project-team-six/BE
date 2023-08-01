@@ -120,6 +120,8 @@ public class WebSecurityConfig {
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers(GET,"/auth/mypage/pin").permitAll()
+                                .requestMatchers("/auth/mypage/{id}").permitAll()
                                 .requestMatchers("/auth/kakao").permitAll()
                                 .requestMatchers("/auth/kakao/logout").permitAll()
                                 .requestMatchers("/auth/kakao/login").permitAll()

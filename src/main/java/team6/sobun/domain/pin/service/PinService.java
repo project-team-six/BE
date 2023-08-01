@@ -32,12 +32,12 @@ public class PinService {
 
         if (!isPinedPost(post, user)) {
             createPin(post, user);
-            post.increaseLike();
-            log.info("'{}'님이 '{}'에 좋아요를 추가했습니다.", nickname, postTitle);
+            post.increasePin();
+            log.info("'{}'님이 '{}'에 관심을 추가했습니다.", nickname, postTitle);
         } else {
             removePin(post, user);
-            post.decreaseLike();
-            log.info("'{}'님이 '{}'의 좋아요를 취소했습니다.", nickname, postTitle);
+            post.decreasePin();
+            log.info("'{}'님이 '{}'의 관심을 취소했습니다.", nickname, postTitle);
         }
 
         return new PostResponseDto(post, isPinedPost(post, user));

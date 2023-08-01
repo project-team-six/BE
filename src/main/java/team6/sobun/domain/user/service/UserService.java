@@ -15,10 +15,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
+import team6.sobun.domain.pin.entity.Pin;
+import team6.sobun.domain.pin.repository.PinRepository;
+import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.service.S3Service;
-import team6.sobun.domain.user.dto.KakaoDto;
-import team6.sobun.domain.user.dto.MypageRequestDto;
-import team6.sobun.domain.user.dto.SignupRequestDto;
+import team6.sobun.domain.user.dto.*;
 import team6.sobun.domain.user.entity.GoogleUserInfo;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
@@ -32,6 +33,7 @@ import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -47,6 +49,7 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final RestTemplate restTemplate;
     private final S3Service s3Service;
+    private final PinRepository pinRepository;
 
 
     @Value("${kakao.login.callback.url}")
@@ -332,4 +335,45 @@ public class UserService {
         checkUser.update(mypageRequestDto);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_NICKNAME_SUCCESS);
     }
+
+    public UserResponseDto getUserInfoWithPinnedPosts(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            // 유저가 존재하지 않을 때 처리
+            return null;
+        }
+
+        List<Post> pinnedPosts = pinRepository.findByUser_Id(userId);
+        // 필요에 따라 pinnedPosts를 정렬하거나 다른 로직을 추가할 수 있습니다.
+
+        UserResponseDto userResponseDto = new UserResponseDto(user);
+        userResponseDto.setPinnedPosts(pinnedPosts);
+
+        return userResponseDto;
+    }
+    public ApiResponse<?> getUserDetails(Long userId) {
+        // 사용자를 userId로 조회합니다.
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            // 조회한 정보를 DTO로 변환하여 리턴합니다.
+            UserDetailResponseDto responseDto = new UserDetailResponseDto(
+                    user.getNickname(),
+                    user.getProfileImageUrl(),
+                    user.getMannerTemperature()
+            );
+            return ApiResponse.success(responseDto);
+        } else {
+            // 사용자를 찾지 못한 경우 에러 응답을 리턴합니다.
+            throw new IllegalArgumentException();
+        }
+    }
 }
+
+
+
+
+
+
+

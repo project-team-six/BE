@@ -24,6 +24,11 @@ repositories {
 
 dependencies {
 
+    implementation 'com.github.downgoon:marvin:1.5.5'
+    implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
+    implementation 'org.springframework:spring-test'
+
+
     //QueryDsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"

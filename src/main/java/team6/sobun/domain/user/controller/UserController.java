@@ -88,12 +88,19 @@ public class UserController {
         }
     }
 
-    @PatchMapping("/mypage/{userid}")
-    public ApiResponse<?> nicknameChange(@PathVariable Long userid,
-                                         @RequestBody MypageRequestDto mypageRequestDto,
-                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return userService.nicknameChange(userid, mypageRequestDto, userDetailsImpl.getUser());
+    @PutMapping("mypage/{userId}")
+    public ApiResponse<?> updateUserNickname(@PathVariable Long userId,
+                                           @RequestBody MypageRequestDto mypageRequestDto,
+                                           @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return userService.updateUserNickname(userId, mypageRequestDto, userDetailsImpl.getUser());
     }
+    @PutMapping("mypage/{userId}/image")
+    public ApiResponse<?> updateUserImage(@PathVariable Long userId,
+                                           @RequestPart(value = "file",required = false) MultipartFile image,
+                                           @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return userService.updateUserImage(userId, image, userDetailsImpl.getUser());
+    }
+
 
     @DeleteMapping("/withdraw")
     public ApiResponse<?> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails) {

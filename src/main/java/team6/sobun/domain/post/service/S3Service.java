@@ -150,4 +150,24 @@ public class S3Service {
         String baseUrl = "https://" + bucket + ".s3.amazonaws.com/";
         return baseUrl + objectKey;
     }
+
+    /**
+     * S3에 해당 파일이 존재하는지 확인합니다.
+     *
+     * @param imageUrl 확인할 이미지의 URL
+     * @return 이미지가 존재하면 true, 그렇지 않으면 false를 반환합니다.
+     */
+    public boolean fileExists(String imageUrl) {
+        if (StringUtils.hasText(imageUrl)) {
+            String fileName = extractObjectKeyFromUrl(imageUrl);
+            try {
+                String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+                return amazonS3.doesObjectExist(bucket, decodedFileName);
+            } catch (IllegalArgumentException e) {
+                throw new UploadException(ErrorCodeEnum.FILE_DECODE_FAIL, e);
+            }
+        }
+        return false;
+    }
+
 }

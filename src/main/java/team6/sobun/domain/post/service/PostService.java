@@ -84,6 +84,19 @@ public class PostService {
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
+    private void updatePostDetail(PostRequestDto postRequestDto, MultipartFile image, Post post) {
+        if (image != null && !image.isEmpty()) {
+            String existingImageUrl = post.getImage();
+            String imageUrl = s3Service.upload(image);
+            post.updateAll(postRequestDto, imageUrl);
+
+            // 새로운 이미지 업로드 후에 기존 이미지 삭제
+            if (StringUtils.hasText(existingImageUrl)) {
+                s3Service.delete(existingImageUrl);
+            }
+        }
+        post.update(postRequestDto);
+    }
 
     @Transactional
     public ApiResponse<?> deletePost(Long postId, User user) {
@@ -107,19 +120,7 @@ public class PostService {
 
 
 
-    private void updatePostDetail(PostRequestDto postRequestDto, MultipartFile image, Post post) {
-        if (image != null && !image.isEmpty()) {
-            String existingImageUrl = post.getImage();
-            String imageUrl = s3Service.upload(image);
-            post.updateAll(postRequestDto, imageUrl);
 
-            // 새로운 이미지 업로드 후에 기존 이미지 삭제
-            if (StringUtils.hasText(existingImageUrl)) {
-                s3Service.delete(existingImageUrl);
-            }
-        }
-        post.update(postRequestDto);
-    }
 
     private void deleteImage(Post post) {
         String imageUrl = post.getImage();

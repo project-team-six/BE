@@ -1,4 +1,3 @@
-
 package team6.sobun.domain.chat.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +43,13 @@ public class ChatService {
                     ChatMessage chatMessage = objectMapper.readValue(payload, ChatMessage.class);
                     ChatRoom chatRoom = findRoomById(chatMessage.getRoomId());
                     if (chatRoom != null) {
+                        // Redis 메시지 수신 처리 시작
+                        log.info("Redis 메시지 수신 - Room ID: {}", chatMessage.getRoomId());
+
                         handleActions(null, chatMessage, chatMessage.getSender());
+
+                        // Redis 메시지 수신 처리 완료
+                        log.info("Redis 메시지 수신 처리 완료 - Room ID: {}", chatMessage.getRoomId());
                     }
                 } catch (IOException e) {
                     log.error("Error handling Redis message", e);
@@ -69,6 +74,10 @@ public class ChatService {
                 .build();
         chatRooms.put(randomId, chatRoom);
         chatRoom.addParticipant(username); // 채팅방 생성 시, 사용자를 참가자로 추가합니다.
+
+        // 채팅방 생성 로그
+        log.info("채팅방 생성 - Room ID: {}, Room Name: {}, Participant: {}", randomId, name, username);
+
         return chatRoom;
     }
 
@@ -76,8 +85,12 @@ public class ChatService {
         ChatRoom chatRoom = findRoomById(chatMessage.getRoomId());
 
         if (chatMessage.getType().equals(ChatMessage.MessageType.ENTER)) {
-            // 이 부분은 Redis Pub/Sub으로 이동하였으므로 삭제합니다.
+            // 사용자가 채팅방에 입장했을 때 처리
+            log.info("채팅방 입장 - Room ID: {}, User: {}", chatMessage.getRoomId(), username);
         } else if (chatMessage.getType().equals(ChatMessage.MessageType.TALK)) {
+            // 사용자가 채팅 메시지를 보냈을 때 처리
+            log.info("메시지 전송 - Room ID: {}, User: {}, Message: {}", chatMessage.getRoomId(), username, chatMessage.getMessage());
+
             // 메시지를 채팅방에 전송합니다.
             sendMessageToChatRoom(chatMessage, chatRoom);
 
@@ -89,8 +102,11 @@ public class ChatService {
     public <T> void sendMessage(WebSocketSession session, T message) {
         try {
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+
+            // 메시지 전송 로그
+            log.info("메시지 전송 성공 - Message: {}", message);
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
+            log.error("Failed to send message", e);
         }
     }
 
@@ -108,5 +124,8 @@ public class ChatService {
                 .message(chatMessage.getMessage())
                 .createdAt(LocalDateTime.now())
                 .build());
+
+        // DB 저장 로그
+        log.info("채팅 메시지 DB 저장 - Room ID: {}, User: {}, Message: {}", chatMessage.getRoomId(), chatMessage.getSender(), chatMessage.getMessage());
     }
 }

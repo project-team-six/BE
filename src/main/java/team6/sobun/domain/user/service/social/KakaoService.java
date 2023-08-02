@@ -93,11 +93,12 @@ public class KakaoService {
         Long id = jsonNode.get("id").asLong();
         String email = jsonNode.get("kakao_account").get("email").asText();
         String location = "대구시";
+        String phonenumber = String.valueOf(id);
         String username = jsonNode.get("properties").get("nickname").asText();
         String nickname = "카카오유저"+ id;
         String profileImageUrl = jsonNode.get("properties").get("profile_image").asText(); // 프로필 이미지 URL 가져오기
         log.info("카카오 사용자 정보: " + id + ", " + username + ", " + email);
-        return new KakaoDto(id, email,location, username, nickname, profileImageUrl); // 프로필 이미지 URL도 KakaoDto에 추가해서 반환
+        return new KakaoDto(id, email,location,phonenumber, username, nickname, profileImageUrl); // 프로필 이미지 URL도 KakaoDto에 추가해서 반환
     }
     public String getToken(String code) {
         // Use the secret key from the environment

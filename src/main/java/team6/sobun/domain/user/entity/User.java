@@ -30,6 +30,9 @@ public class User extends Timestamped {
     @Column(unique = true)
     private String email;
 
+    @Column(unique = true, nullable = false)
+    private String phonenumber;
+
     @Column(nullable = false)
     private String username;
 
@@ -55,9 +58,10 @@ public class User extends Timestamped {
 
 
     @Builder
-    public User(String email, String location,String nickname,String password, String username,  String profileImageUrl,UserRoleEnum role) {
+    public User(String email, String location,String phonenumber,String nickname,String password, String username,  String profileImageUrl, UserRoleEnum role) {
         this.email = email;
         this.location = location;
+        this.phonenumber = phonenumber;
         this.nickname = nickname;
         this.username = username;
         this.password = password;
@@ -67,6 +71,7 @@ public class User extends Timestamped {
     public User(KakaoDto kakaoDto, String password, String profileImageUrl){
         this.email = kakaoDto.getEmail();
         this.location = kakaoDto.getLocation();
+        this.phonenumber = kakaoDto.getPhonenumber();
         this.nickname = kakaoDto.getNickname();
         this.username = kakaoDto.getUsername();
         this.password = password;

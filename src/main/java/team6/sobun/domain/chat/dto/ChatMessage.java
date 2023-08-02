@@ -6,12 +6,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChatMessage {
-    public enum MessageType{
-        ENTER, TALK
+    public enum MessageType {
+        ENTER, LEAVE, TALK
     }
 
     private MessageType type;
-    private String roomId;
+    private String roomId; // 채팅방 ID
     private String sender;
     private String message;
 }

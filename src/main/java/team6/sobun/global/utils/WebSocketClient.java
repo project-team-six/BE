@@ -18,7 +18,6 @@ public class WebSocketClient {
     private static final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
     private static StompSession stompSession;
 
-
     public static void main(String[] args) {
         // WebSocket 클라이언트 생성
         WebSocketStompClient stompClient = new WebSocketStompClient(new StandardWebSocketClient());
@@ -34,10 +33,10 @@ public class WebSocketClient {
             @Override
             public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
                 stompSession = session;
-                System.out.println("Connected to WebSocket server");
+                System.out.println("WebSocket 서버에 연결되었습니다.");
 
                 // 채팅방 입장 요청
-                enterChatRoom("room-1", "User1");
+                enterChatRoom("room-1", "사용자1");
 
                 // 메시지 수신 핸들러 등록
                 stompSession.subscribe("/topic/room-1", new StompFrameHandler() {
@@ -49,18 +48,19 @@ public class WebSocketClient {
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
                         String message = (String) payload;
-                        System.out.println("Received message: " + message);
+                        System.out.println("받은 메시지: " + message);
                     }
                 });
 
-                // 메시지 입력받아 전송
+                // 메시지 입력받아 전송 및 나가기
                 Scanner scanner = new Scanner(System.in);
                 while (true) {
                     String input = scanner.nextLine();
                     if ("exit".equalsIgnoreCase(input)) {
+                        leaveChatRoom("room-1", "사용자1");
                         break;
                     }
-                    sendMessage("room-1", "User1", input);
+                    sendMessage("room-1", "사용자1", input);
                 }
 
                 // 연결 종료
@@ -76,6 +76,15 @@ public class WebSocketClient {
         chatMessage.setSender(userName);
 
         stompSession.send("/app/chat.enter", chatMessage);
+    }
+
+    private static void leaveChatRoom(String roomId, String userName) {
+        team6.sobun.domain.chat.dto.ChatMessage chatMessage = new team6.sobun.domain.chat.dto.ChatMessage();
+        chatMessage.setType(team6.sobun.domain.chat.dto.ChatMessage.MessageType.LEAVE);
+        chatMessage.setRoomId(roomId);
+        chatMessage.setSender(userName);
+
+        stompSession.send("/app/chat.leave", chatMessage);
     }
 
     private static void sendMessage(String roomId, String userName, String message) {

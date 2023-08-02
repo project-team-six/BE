@@ -61,4 +61,5 @@ public class PostResponseDto {
         this.views = post.getViews();
         this.isPin = isPin;
     }
+
 }

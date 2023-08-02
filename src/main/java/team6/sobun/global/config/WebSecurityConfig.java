@@ -132,8 +132,9 @@ public class WebSecurityConfig {
                                 .requestMatchers("/auth/google/login").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers(GET,"/post/**").permitAll()
-                                .requestMatchers(GET,"/chat").permitAll()
-                                .requestMatchers(GET,"/ws/chat").permitAll()
+                                .requestMatchers("/chat").permitAll()
+                                .requestMatchers("/chat/{roomId}/send").permitAll()
+                                .requestMatchers("/ws/chat").permitAll()
                                 .anyRequest().authenticated()) // 그 외 모든 요청 인증처리
                 .addFilter(corsFilter())
                 .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)

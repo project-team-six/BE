@@ -28,6 +28,7 @@ public class PostResponseDto {
     private String image;
     private long pined;
     private Boolean isPin;
+    private Boolean isComplete;
     private int views;
     private int commentCount;
 
@@ -45,6 +46,23 @@ public class PostResponseDto {
         this.views = views;
     }
 
+
+    public PostResponseDto(Post post, Boolean isComplete, Boolean isPin) {
+        this.id = post.getId();
+        this.category = post.getCategory();
+        this.title = post.getTitle();
+        this.nickname = post.getUser().getNickname();
+        this.content = post.getContent();
+        this.commentList = post.getCommentList().stream()
+                .map(CommentResponseDto::new)
+                .collect(Collectors.toList());
+        this.createdAt = post.getCreatedAt();
+        this.image = post.getImage();
+        this.pined = post.getPined();
+        this.views = post.getViews();
+        this.isPin = isPin;
+        this.isComplete = isComplete;
+    }
 
     public PostResponseDto(Post post, Boolean isPin) {
         this.id = post.getId();

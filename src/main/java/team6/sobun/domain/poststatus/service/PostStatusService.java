@@ -1,14 +1,14 @@
-package team6.sobun.domain.pin.service;
+package team6.sobun.domain.poststatus.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import team6.sobun.domain.pin.entity.Pin;
+import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
-import team6.sobun.domain.pin.repository.PinRepository;
+import team6.sobun.domain.poststatus.entity.PostStatus;
 import team6.sobun.domain.poststatus.repository.PostStatusRepository;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.global.exception.InvalidConditionException;
@@ -19,26 +19,24 @@ import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PinService {
+public class PostStatusService {
 
     private final PostStatusRepository postStatusRepository;
     private final PinRepository pinRepository;
     private final PostRepository postRepository;
 
-    public PostResponseDto updatePin(Long postId, User user) {
+    public PostResponseDto updatePostStatus(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new InvalidConditionException(POST_NOT_EXIST));
 
         String nickname = user.getNickname();
         String postTitle = post.getTitle();   // 게시물 제목 가져오기
 
-        if (!isPinedPost(post, user)) {
-            createPin(post, user);
-            post.increasePin();
+        if (!isComplete(post, user)) {
+            createPostStatus(post, user);
             log.info("'{}'님이 '{}'에 관심을 추가했습니다.", nickname, postTitle);
         } else {
-            removePin(post, user);
-            post.decreasePin();
+            removePostStatus(post, user);
             log.info("'{}'님이 '{}'의 관심을 취소했습니다.", nickname, postTitle);
         }
 
@@ -48,21 +46,17 @@ public class PinService {
     private Boolean isComplete(Post post, User user) {
         return postStatusRepository.findByPostAndUser(post, user).isPresent();
     }
-
-
     private boolean isPinedPost(Post post, User user) {
         return pinRepository.findByPostAndUser(post, user).isPresent();
     }
 
-    private void createPin(Post post, User user) {
-        Pin pin = new Pin(post, user);
-        pinRepository.save(pin);
+    private void createPostStatus(Post post, User user) {
+        PostStatus postStatus = new PostStatus(post, user);
+        postStatusRepository.save(postStatus);
     }
 
-    private void removePin(Post post, User user) {
-        Pin like = pinRepository.findByPostAndUser(post, user).orElseThrow();
-        pinRepository.delete(like);
+    private void removePostStatus(Post post, User user) {
+        PostStatus postStatus = postStatusRepository.findByPostAndUser(post, user).orElseThrow();
+        postStatusRepository.delete(postStatus);
     }
-
-
 }

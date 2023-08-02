@@ -136,5 +136,4 @@ public class Post extends Timestamped {
             this.pined -= 1;
         }
     }
-
 }

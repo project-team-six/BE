@@ -59,7 +59,7 @@ public class PostService {
     public ApiResponse<?> getSinglePost(Long postId , HttpServletRequest req) {
         String token = jwtProvider.getTokenFromHeader(req);
         String subStringToken;
-        Boolean isLike=false;
+        Boolean isPin=false;
         if(token!=null) {
             subStringToken = jwtProvider.substringHeaderToken(token);
             Claims userInfo = jwtProvider.getUserInfoFromToken(subStringToken);
@@ -67,14 +67,14 @@ public class PostService {
             User user = userRepository.findByEmail(userInfo.getSubject()).orElseThrow(()->new IllegalArgumentException("?"));
 
             if(pinRepository.findByPostAndUser(post, user).isPresent()) {
-                isLike = true;
+                isPin = true;
             }
         }
         Post post = postRepository.findDetailPost(postId).orElseThrow(() ->
                 new InvalidConditionException(POST_NOT_EXIST));
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
-        return ok(new PostResponseDto(post, isLike));
+        return ok(new PostResponseDto(post, isPin));
     }
 
     @Transactional

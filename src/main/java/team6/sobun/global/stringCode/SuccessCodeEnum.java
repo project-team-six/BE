@@ -18,13 +18,10 @@ public enum SuccessCodeEnum {
     LIKE_SUCCESS("좋아요 성공"),
     LIKE_CANCEL_SUCCESS("좋아요 취소"),
     USER_NICKNAME_SUCCESS("닉네임 변경 성공"),
-<<<<<<< HEAD
-    PASSWORD_CHANGE_SUCCESS("비밀번호 변경 성공");
-=======
+    PASSWORD_CHANGE_SUCCESS("비밀번호 변경 성공"),
     USER_USERDATA_UPDATA_SUCCESS("유저 정보 업데이트 성공"),
-    USER_IMAGE_SUCCESS("프로필 이미지 변경 성공");
-
->>>>>>> 88ac2abf872bb5faf8bb740033d53672ae29bf78
+    USER_IMAGE_SUCCESS("프로필 이미지 변경 성공"),
+    FIND_EMAIL_SUCCESS("이메일 찾기 성공");
 
 
     private final String message;

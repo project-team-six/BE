@@ -46,8 +46,8 @@ public class UserService {
 
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) {
         String email = signupRequestDto.getEmail();
-        String location = signupRequestDto.getLocation();
         String phoneNumber = signupRequestDto.getPhoneNumber();
+        String location = "대구시";
         String username = signupRequestDto.getUsername();
         String nickname = signupRequestDto.getNickname();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());

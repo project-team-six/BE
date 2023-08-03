@@ -100,11 +100,9 @@ public class Post extends Timestamped {
         this.user = user;
 
     }
-
     public void markInProgress() {
         this.status = PostStatus.IN_PROGRESS;
     }
-
     public void markClosed() {
         this.status = PostStatus.COMPLETED;
     }

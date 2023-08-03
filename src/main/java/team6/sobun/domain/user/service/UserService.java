@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.entity.Post;
@@ -52,7 +53,8 @@ public class UserService {
 
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) {
         String email = signupRequestDto.getEmail();
-        String location = signupRequestDto.getLocation();
+        String phoneNumber = signupRequestDto.getPhoneNumber();
+        String location = "대구시";
         String username = signupRequestDto.getUsername();
         String nickname = signupRequestDto.getNickname();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
@@ -66,7 +68,7 @@ public class UserService {
             profileImageUrl = s3Service.upload(image);
         }
         // 프로필 이미지 URL을 사용하여 User 객체 생성
-        User user = new User(email, location, nickname, password, username, profileImageUrl, role);
+        User user = new User(email, location, phoneNumber, nickname, password, username, profileImageUrl, role);
         userRepository.save(user);
 
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
@@ -95,7 +97,7 @@ public class UserService {
     }
 
     @Transactional
-    public ApiResponse<?> nicknameChange(Long id, MypageRequestDto mypageRequestDto, User user) {
+    public ApiResponse<?> updateUserNickname(Long id, MypageRequestDto mypageRequestDto, User user) {
         log.info("닉네임 변경 들어옴");
         User checkUser = userRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 사용자 입니다."));
@@ -107,6 +109,54 @@ public class UserService {
         checkUser.update(mypageRequestDto);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_NICKNAME_SUCCESS);
     }
+    @Transactional
+    public ApiResponse<?> updateUserImage(Long userId, MultipartFile image, User user) {
+        log.info("'{}'님이 프로필 이미지를 변경했습니다.", user.getNickname());
+
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (!existingUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+
+        // 이미지가 없을 경우 기존 이미지를 삭제 처리
+        if (image == null || image.isEmpty()) {
+            String existingImageUrl = user.getProfileImageUrl();
+            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
+                s3Service.delete(existingImageUrl);
+                existingUser.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
+            }
+        } else {
+            updateUserImageDetail(image, existingUser);
+        }
+
+        userRepository.save(existingUser);
+
+        // 프로필 이미지 변경에 대한 성공 응답을 반환합니다.
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_IMAGE_SUCCESS);
+    }
+
+    private void updateUserImageDetail(MultipartFile image, User user) {
+        String existingImageUrl = user.getProfileImageUrl();
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = s3Service.upload(image);
+            user.setProfileImageUrl(imageUrl);
+
+            // 기존 이미지가 존재하고 S3에 해당 파일이 있는 경우에만 삭제 처리
+            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
+                s3Service.delete(existingImageUrl);
+            }
+        } else {
+            // 이미지가 없을 경우 기존 이미지를 삭제 처리
+            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
+                s3Service.delete(existingImageUrl);
+                user.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
+            }
+        }
+    }
+
+
 
     public UserDetailResponseDto getUserDetails(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);

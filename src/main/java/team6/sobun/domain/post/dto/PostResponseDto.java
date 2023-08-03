@@ -28,6 +28,7 @@ public class PostResponseDto {
     private String image;
     private long pined;
     private Boolean isPin;
+    private Boolean isComplete;
     private int views;
     private int commentCount;
 
@@ -46,7 +47,7 @@ public class PostResponseDto {
     }
 
 
-    public PostResponseDto(Post post, Boolean isPin) {
+    public PostResponseDto(Post post,Boolean isComplete, Boolean isPin) {
         this.id = post.getId();
         this.category = post.getCategory();
         this.title = post.getTitle();
@@ -60,5 +61,11 @@ public class PostResponseDto {
         this.pined = post.getPined();
         this.views = post.getViews();
         this.isPin = isPin;
+        this.isComplete = isComplete;
+
+    }
+
+    public PostResponseDto(Post post, boolean pinedPost) {
+
     }
 }

@@ -5,14 +5,9 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import team6.sobun.domain.pin.entity.Pin;
-import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.social.KakaoDto;
 import team6.sobun.global.utils.Timestamped;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -29,6 +24,9 @@ public class User extends Timestamped {
 
     @Column(unique = true)
     private String email;
+
+    @Column(unique = true, nullable = false)
+    private String phoneNumber;
 
     @Column(nullable = false)
     private String username;
@@ -55,9 +53,10 @@ public class User extends Timestamped {
 
 
     @Builder
-    public User(String email, String location,String nickname,String password, String username,  String profileImageUrl,UserRoleEnum role) {
+    public User(String email, String location,String phoneNumber,String nickname,String password, String username,  String profileImageUrl, UserRoleEnum role) {
         this.email = email;
         this.location = location;
+        this.phoneNumber = phoneNumber;
         this.nickname = nickname;
         this.username = username;
         this.password = password;
@@ -67,6 +66,7 @@ public class User extends Timestamped {
     public User(KakaoDto kakaoDto, String password, String profileImageUrl){
         this.email = kakaoDto.getEmail();
         this.location = kakaoDto.getLocation();
+        this.phoneNumber = kakaoDto.getPhoneNumber();
         this.nickname = kakaoDto.getNickname();
         this.username = kakaoDto.getUsername();
         this.password = password;

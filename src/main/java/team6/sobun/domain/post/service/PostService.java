@@ -17,6 +17,7 @@ import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
+import team6.sobun.domain.poststatus.repository.PostStatusRepository;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.exception.InvalidConditionException;
@@ -41,6 +42,7 @@ public class PostService {
     @Autowired
     private final JwtProvider jwtProvider;
     private final PinRepository pinRepository;
+    private final PostStatusRepository postStatusRepository;
     private final UserRepository userRepository;
     // 최신순 전체조회
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
@@ -59,7 +61,8 @@ public class PostService {
     public ApiResponse<?> getSinglePost(Long postId , HttpServletRequest req) {
         String token = jwtProvider.getTokenFromHeader(req);
         String subStringToken;
-        Boolean isLike=false;
+        Boolean isPined=false;
+        Boolean isComplete=false;
         if(token!=null) {
             subStringToken = jwtProvider.substringHeaderToken(token);
             Claims userInfo = jwtProvider.getUserInfoFromToken(subStringToken);
@@ -67,14 +70,17 @@ public class PostService {
             User user = userRepository.findByEmail(userInfo.getSubject()).orElseThrow(()->new IllegalArgumentException("?"));
 
             if(pinRepository.findByPostAndUser(post, user).isPresent()) {
-                isLike = true;
+                isPined = true;
+            }
+            if(postStatusRepository.findByPostAndUser(post, user).isPresent()){
+                isComplete = true;
             }
         }
         Post post = postRepository.findDetailPost(postId).orElseThrow(() ->
                 new InvalidConditionException(POST_NOT_EXIST));
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
-        return ok(new PostResponseDto(post, isLike));
+        return ok(new PostResponseDto(post, isComplete,isPined));
     }
 
     @Transactional
@@ -83,6 +89,19 @@ public class PostService {
         updatePostDetail(postRequestDto, image, post);
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
+    }
+    private void updatePostDetail(PostRequestDto postRequestDto, MultipartFile image, Post post) {
+        if (image != null && !image.isEmpty()) {
+            String existingImageUrl = post.getImage();
+            String imageUrl = s3Service.upload(image);
+            post.updateAll(postRequestDto, imageUrl);
+
+            // 새로운 이미지 업로드 후에 기존 이미지 삭제
+            if (StringUtils.hasText(existingImageUrl)) {
+                s3Service.delete(existingImageUrl);
+            }
+        }
+        post.update(postRequestDto);
     }
 
     @Transactional
@@ -107,19 +126,7 @@ public class PostService {
 
 
 
-    private void updatePostDetail(PostRequestDto postRequestDto, MultipartFile image, Post post) {
-        if (image != null && !image.isEmpty()) {
-            String existingImageUrl = post.getImage();
-            String imageUrl = s3Service.upload(image);
-            post.updateAll(postRequestDto, imageUrl);
 
-            // 새로운 이미지 업로드 후에 기존 이미지 삭제
-            if (StringUtils.hasText(existingImageUrl)) {
-                s3Service.delete(existingImageUrl);
-            }
-        }
-        post.update(postRequestDto);
-    }
 
     private void deleteImage(Post post) {
         String imageUrl = post.getImage();

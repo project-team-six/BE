@@ -1,5 +1,8 @@
 package team6.sobun.domain.user.repository;
+import jakarta.persistence.EntityManager;
+import org.hibernate.Hibernate;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.commentList WHERE p.user.id = :userId")
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.commentList c WHERE p.user.id = :userId")
     List<Post> findPostsByUserId(@Param("userId") Long userId);
 
     @Query("SELECT p.post FROM Pin p WHERE p.user.id = :userId")

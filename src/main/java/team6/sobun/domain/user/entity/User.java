@@ -74,18 +74,23 @@ public class User extends Timestamped {
         this.role = UserRoleEnum.USER;
         this.profileImageUrl = profileImageUrl;
     }
+
+
     public void update(MypageRequestDto mypageRequestDto) {
         this.nickname = mypageRequestDto.getNickname();
+        this.phoneNumber = mypageRequestDto.getPhoneNumber();
     }
 
-
-    public void updateMannerTemperature(double newTemperature) {
-        this.mannerTemperature = newTemperature;
-    }
-
-
-    public void setNickname(String nickname) {
+    public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 
     public void setProfileImageUrl(String profileImageUrl) {
@@ -97,12 +102,11 @@ public class User extends Timestamped {
         return this.role;
     }
 
-
     public User kakaoIdUpdate(KakaoDto kakaoDto){
         return this;
     }
 
-    public void passwordUpdate(String encodePassword) {
-        this.password = encodePassword;
+    public void updateMannerTemperature(double newTemperature) {
+        this.mannerTemperature = newTemperature;
     }
 }

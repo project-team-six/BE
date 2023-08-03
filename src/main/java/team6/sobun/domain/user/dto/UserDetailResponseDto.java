@@ -17,11 +17,13 @@ public class UserDetailResponseDto {
     private String nickname;
     private String profileImageUrl;
     private double mannerTemperature;
+    private  String phoneNumber;
     private List<PostResponseDto> userPosts;
     private List<PostResponseDto> pinedPosts; //2
 
-    public UserDetailResponseDto(String nickname, String profileImageUrl, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
+    public UserDetailResponseDto(String nickname, String profileImageUrl,String phoneNumber, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
         this.nickname = nickname;
+        this.phoneNumber = phoneNumber;
         this.profileImageUrl = profileImageUrl;
         this.mannerTemperature = mannerTemperature;
 
@@ -41,8 +43,3 @@ public class UserDetailResponseDto {
                 .collect(Collectors.toList());
     }
 }
-
-
-
-
-

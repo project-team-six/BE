@@ -101,4 +101,8 @@ public class User extends Timestamped {
     public User kakaoIdUpdate(KakaoDto kakaoDto){
         return this;
     }
+
+    public void passwordUpdate(String encodePassword) {
+        this.password = encodePassword;
+    }
 }

@@ -1,7 +1,11 @@
 package team6.sobun.domain.user.service;
 
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,10 +15,7 @@ import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.post.service.S3Service;
-import team6.sobun.domain.user.dto.MypageRequestDto;
-import team6.sobun.domain.user.dto.SignupRequestDto;
-import team6.sobun.domain.user.dto.UserResponseDto;
-import team6.sobun.domain.user.dto.UserDetailResponseDto;
+import team6.sobun.domain.user.dto.*;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
@@ -28,6 +29,7 @@ import team6.sobun.global.utils.ResponseUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -42,6 +44,11 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     private final PinRepository pinRepository;
+    // send email
+    private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String from;
 
 
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) {
@@ -193,8 +200,34 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public ApiResponse<?> findPassword(PasswordRequestDto requestDto) throws Exception{
+        User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
+                new IllegalArgumentException("존재하지 않는 이메일 입니다."));
 
+        if (!requestDto.getUsername().equals(user.getUsername())) {
+            throw new IllegalArgumentException("사용자 정보가 다릅니다.");
+        }
+        if (!requestDto.getPhoneNumber().equals(user.getPhoneNumber())) {
+            throw new IllegalArgumentException("사용자 정보가 다릅니다.");
+        }
 
+        String changePassword = UUID.randomUUID().toString();
+        changePassword = changePassword.substring(0,8);
+
+        MimeMessage m = mailSender.createMimeMessage();
+
+        MimeMessageHelper h = new MimeMessageHelper(m,"UTF-8");
+        h.setFrom("jgg7645@naver.com");
+        h.setTo(requestDto.getEmail());
+        h.setSubject("임시 비밀번호 입니다.");
+        h.setText("임시 비밀번호 : " + changePassword);
+        mailSender.send(m);
+
+        String encodePassword = passwordEncoder.encode(changePassword);
+        user.passwordUpdate(encodePassword);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
+    }
 }
 
 

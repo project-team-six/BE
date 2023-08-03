@@ -228,6 +228,18 @@ public class UserService {
         user.passwordUpdate(encodePassword);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
     }
+
+    public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
+        User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전화번호 입니다.")
+        );
+        if (!requestDto.getUsername().equals(user.getUsername())) {
+            throw new IllegalArgumentException("사용자 정보가 다릅니다.");
+        }
+        FindEmailResponseDto responseDto = new FindEmailResponseDto(user.getEmail());
+
+        return responseDto;
+    }
 }
 
 

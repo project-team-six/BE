@@ -1,6 +1,3 @@
-<<<<<<< HEAD:src/main/java/team6/sobun/domain/resize/ImageUtils.java
-//package team6.sobun.domain.resize;
-=======
 package team6.sobun.global.utils.resize;
 
 import org.apache.commons.io.FilenameUtils;
@@ -15,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 
 //File file = new File(_파일경로_, _파일명_);
->>>>>>> 88ac2abf872bb5faf8bb740033d53672ae29bf78:src/main/java/team6/sobun/global/utils/resize/ImageUtils.java
 //
 //import org.apache.commons.io.FilenameUtils;
 //import org.springframework.web.multipart.MultipartFile;

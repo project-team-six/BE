@@ -29,5 +29,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = "select * from user where email like %?1%", nativeQuery = true)
     List<User> mFindByEmail(String email);
+
+    Optional<User> findByPhoneNumber(String phoneNumber);
 }
 

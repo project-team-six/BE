@@ -12,7 +12,9 @@ public class PasswordRequestDto {
     @NotBlank(message = "이메일은 필수입니다.")
     private String email;
 
-    @NotBlank(message = "닉네임은 필수입니다.")
-    private String nickname;
+    @NotBlank(message = "이름 입력은 필수입니다.")
+    private String username;
 
+    @NotBlank(message = "전화번호 입력은 필수입니다.")
+    private String phoneNumber;
 }

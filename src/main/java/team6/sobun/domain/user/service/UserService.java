@@ -154,24 +154,28 @@ public class UserService {
     public ApiResponse<?> findPassword(PasswordRequestDto requestDto) throws Exception{
         User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 이메일 입니다."));
-        if (requestDto.getNickname().equals(user.getNickname())) {
-            String changePassword = UUID.randomUUID().toString();
-            changePassword = changePassword.substring(0,8);
 
-            MimeMessage m = mailSender.createMimeMessage();
-
-            MimeMessageHelper h = new MimeMessageHelper(m,"UTF-8");
-            h.setFrom("jgg7645@naver.com");
-            h.setTo(requestDto.getEmail());
-            h.setSubject("임시 비밀번호 입니다.");
-            h.setText("임시 비밀번호 : " + changePassword);
-            mailSender.send(m);
-
-            String encodePassword = passwordEncoder.encode(changePassword);
-            user.passwordUpdate(encodePassword);
-        } else {
+        if (!requestDto.getUsername().equals(user.getUsername())) {
             throw new IllegalArgumentException("사용자 정보가 다릅니다.");
         }
+        if (!requestDto.getPhoneNumber().equals(user.getPhoneNumber())) {
+            throw new IllegalArgumentException("사용자 정보가 다릅니다.");
+        }
+
+        String changePassword = UUID.randomUUID().toString();
+        changePassword = changePassword.substring(0,8);
+
+        MimeMessage m = mailSender.createMimeMessage();
+
+        MimeMessageHelper h = new MimeMessageHelper(m,"UTF-8");
+        h.setFrom("jgg7645@naver.com");
+        h.setTo(requestDto.getEmail());
+        h.setSubject("임시 비밀번호 입니다.");
+        h.setText("임시 비밀번호 : " + changePassword);
+        mailSender.send(m);
+
+        String encodePassword = passwordEncoder.encode(changePassword);
+        user.passwordUpdate(encodePassword);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
     }
 }

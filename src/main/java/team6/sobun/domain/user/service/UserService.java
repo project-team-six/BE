@@ -47,7 +47,7 @@ public class UserService {
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) {
         String email = signupRequestDto.getEmail();
         String location = signupRequestDto.getLocation();
-        String phonenumber = signupRequestDto.getPhonenumber();
+        String phoneNumber = signupRequestDto.getPhoneNumber();
         String username = signupRequestDto.getUsername();
         String nickname = signupRequestDto.getNickname();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
@@ -61,7 +61,7 @@ public class UserService {
             profileImageUrl = s3Service.upload(image);
         }
         // 프로필 이미지 URL을 사용하여 User 객체 생성
-        User user = new User(email, location, phonenumber, nickname, password, username, profileImageUrl, role);
+        User user = new User(email, location, phoneNumber, nickname, password, username, profileImageUrl, role);
         userRepository.save(user);
 
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);

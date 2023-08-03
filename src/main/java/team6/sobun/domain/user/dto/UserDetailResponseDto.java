@@ -18,7 +18,7 @@ public class UserDetailResponseDto {
     private String profileImageUrl;
     private double mannerTemperature;
     private List<PostResponseDto> userPosts;
-    private List<PostResponseDto> pinedPosts;
+    private List<PostResponseDto> pinedPosts; //2
 
     public UserDetailResponseDto(String nickname, String profileImageUrl, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
         this.nickname = nickname;

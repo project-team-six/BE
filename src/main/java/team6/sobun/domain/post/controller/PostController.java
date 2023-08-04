@@ -13,6 +13,8 @@ import team6.sobun.domain.user.dto.UserDetailResponseDto;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
@@ -33,17 +35,17 @@ public class PostController {
 
     @PostMapping
     public ApiResponse<?> createPost(@RequestPart(value = "data") PostRequestDto postRequestDto,
-                                     @RequestPart(value = "file", required = false) MultipartFile image,
+                                     @RequestPart(value = "file", required = false) List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.createPost(postRequestDto, image, userDetailsImpl.getUser());
+        return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
     }
 
     @PutMapping("/{postId}")
     public ApiResponse<?> modifyPost(@PathVariable Long postId,
                                      @RequestPart(value = "data") PostRequestDto postRequestDto,
-                                     @RequestPart(value = "file", required = false) MultipartFile image,
+                                     @RequestPart(value = "file", required = false) List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.updatePost(postId, postRequestDto, image, userDetailsImpl.getUser());
+        return postService.updatePost(postId, postRequestDto, images, userDetailsImpl.getUser());
     }
 
     @DeleteMapping ("/{postId}")

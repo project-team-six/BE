@@ -92,7 +92,7 @@ public class UserController {
     public ApiResponse<?> updateUserNickname(@PathVariable Long userId,
                                            @RequestBody MypageRequestDto mypageRequestDto,
                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return userService.updateUserNickname(userId, mypageRequestDto, userDetailsImpl.getUser());
+        return userService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser());
     }
     @PutMapping("mypage/{userId}/image")
     public ApiResponse<?> updateUserImage(@PathVariable Long userId,
@@ -113,6 +113,8 @@ public class UserController {
     @Transactional
     @GetMapping("/kakao/login")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
+    @PostMapping("/kakao/login")
+    public ApiResponse<?> kakaoCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
         // 카카오 로그인에 성공한 후, 사용자 정보 가져오기

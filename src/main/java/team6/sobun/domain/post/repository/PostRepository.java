@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
-    @Query("select p from Post p left join fetch p.commentList cl where p.id = :postId")
+    @Query("select p from Post p left join fetch p.commentList cl join p.imageUrlList il where p.id = :postId")
     Optional<Post> findDetailPost(@Param("postId") Long postId);
 
     @Query("SELECT p FROM Post p WHERE p.user.id = :userId")

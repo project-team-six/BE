@@ -1,16 +1,15 @@
+// package team6.sobun.global.utils.resize;
 
-package team6.sobun.global.utils.resize;
+// import org.apache.commons.io.FilenameUtils;
+// import org.springframework.web.multipart.MultipartFile;
 
-import org.apache.commons.io.FilenameUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.PixelGrabber;
-import java.io.File;
-import java.io.IOException;
+// import javax.imageio.ImageIO;
+// import javax.swing.*;
+// import java.awt.*;
+// import java.awt.image.BufferedImage;
+// import java.awt.image.PixelGrabber;
+// import java.io.File;
+// import java.io.IOException;
 
 //File file = new File(_파일경로_, _파일명_);
 //

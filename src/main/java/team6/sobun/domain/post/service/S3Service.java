@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -50,6 +52,24 @@ public class S3Service {
         } catch (IOException e) {
             throw new UploadException(ErrorCodeEnum.UPLOAD_FAIL, e);
         }
+    }
+
+    public List<String> uploads(List<MultipartFile> multipartFiles) {
+        List<String> imageUrlList = new ArrayList<>();
+
+        for (MultipartFile multipartFile : multipartFiles) {
+            try {
+                byte[] fileBytes = multipartFile.getBytes();
+                String fileName = generateFileName(multipartFile.getOriginalFilename());
+                String contentType = multipartFile.getContentType();
+                putS3(fileBytes, fileName, contentType);
+                String imageUrl = generateUnsignedUrl(fileName);
+                imageUrlList.add(imageUrl);
+            } catch (IOException e) {
+                throw new UploadException(ErrorCodeEnum.UPLOAD_FAIL, e);
+            }
+        }
+        return imageUrlList;
     }
 
 

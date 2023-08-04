@@ -110,7 +110,6 @@ public class KakaoService {
         map.add("client_id", kakaoLoginClientId);
         map.add("redirect_uri", kakaoCallbackUrl);
         map.add("code", code);
-        map.add("client_secret", kakaoApiSecretKey); // Add the secret key to the request
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(kakaoAuthUrl, request, String.class);
 

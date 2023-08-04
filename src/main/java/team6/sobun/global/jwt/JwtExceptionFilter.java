@@ -16,6 +16,7 @@ import team6.sobun.global.utils.ResponseUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+
 @Slf4j
 public class JwtExceptionFilter extends OncePerRequestFilter {
 
@@ -36,12 +37,13 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
         try {
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
+            log.error("JWT 토큰이 만료되었습니다: {}", e.getMessage());
             setErrorResponse(response, ErrorCodeEnum.TOKEN_EXPIRED);
         } catch (JwtException | IllegalArgumentException | NullPointerException | UnsupportedEncodingException e) {
+            log.error("유효하지 않은 JWT 토큰입니다: {}", e.getMessage());
             setErrorResponse(response, ErrorCodeEnum.TOKEN_INVALID);
         }
     }
@@ -61,8 +63,8 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         try {
             response.getWriter().write(objectMapper.writeValueAsString(ResponseUtils.customError(errorCodeEnum)));
         } catch (IOException e) {
+            log.error("에러 응답을 설정하는데 실패하였습니다: {}", e.getMessage());
             e.printStackTrace();
         }
     }
-
 }

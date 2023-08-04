@@ -39,3 +39,5 @@ out/
 ### .gitignore ###
 /src/main/resources/
 
+###
+dump.rdb/

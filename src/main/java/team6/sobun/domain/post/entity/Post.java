@@ -13,6 +13,7 @@ import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.global.utils.Timestamped;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,8 +45,10 @@ public class Post extends Timestamped {
     @Column(name = "nickname", nullable = false)
     private String nickname;
 
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
 
     @Temporal(TemporalType.DATE)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -66,7 +69,6 @@ public class Post extends Timestamped {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column
     private Date PurchaseDate;
-
 
     @Fetch(SUBSELECT)
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)

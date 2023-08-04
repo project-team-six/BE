@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class PostResponseDto {
 
     private Long id;
+    private Long userId;
     private Category category;
     private String title;
     private String nickname;
@@ -49,6 +50,7 @@ public class PostResponseDto {
 
     public PostResponseDto(Post post,Boolean isComplete, Boolean isPin) {
         this.id = post.getId();
+        this.userId = post.getUser().getId();
         this.category = post.getCategory();
         this.title = post.getTitle();
         this.nickname = post.getUser().getNickname();
@@ -66,6 +68,5 @@ public class PostResponseDto {
     }
 
     public PostResponseDto(Post post, boolean pinedPost) {
-
     }
 }

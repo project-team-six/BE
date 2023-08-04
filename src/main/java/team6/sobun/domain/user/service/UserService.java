@@ -37,6 +37,7 @@ import java.util.UUID;
 @Transactional
 public class UserService {
 
+    private final JavaMailSender mailSender;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -44,8 +45,7 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     private final PinRepository pinRepository;
-    // send email
-    private final JavaMailSender mailSender;
+
 
     @Value("${spring.mail.username}")
     private String from;
@@ -76,18 +76,6 @@ public class UserService {
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_SIGNUP_SUCCESS);
     }
 
-    public ApiResponse<?> withdraw(User user) {
-        userRepository.delete(user);
-        redisRepository.deleteById(user.getNickname());
-
-        return ApiResponse.okWithMessage(SuccessCodeEnum.USER_WITHRAW_SUCCESS);
-    }
-
-    public ApiResponse<?> logout(User user) {
-        redisRepository.deleteById(user.getNickname());
-
-        return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGOUT_SUCCESS);
-    }
 
     private void checkDuplicatedEmail(String email) {
         Optional<User> found = userRepository.findByEmail(email);

@@ -1,4 +1,4 @@
-package team6.sobun.domain.user.entity;
+package team6.sobun.global.jwt.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

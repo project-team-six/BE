@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import team6.sobun.domain.user.dto.LoginRequestDto;
-import team6.sobun.domain.user.entity.RefreshToken;
+import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
@@ -93,11 +93,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 사용자 정보 가져오기
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUserId();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
 
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
-        String token = jwtProvider.createToken(username, role);
-        String refreshToken = jwtProvider.createRefreshToken();
+        String token = jwtProvider.createToken(String.valueOf(userId),username, role);
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(userId),username, role);
         jwtProvider.addJwtHeader(token, response);
 
         // refresh 토큰은 redis에 저장

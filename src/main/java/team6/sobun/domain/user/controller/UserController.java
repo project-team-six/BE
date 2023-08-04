@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.dto.UserDetailResponseDto;
-import team6.sobun.domain.user.entity.RefreshToken;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.service.UserService;
 import team6.sobun.domain.user.service.social.FacebookService;
@@ -20,6 +19,7 @@ import team6.sobun.domain.user.service.social.GoogleService;
 import team6.sobun.domain.user.service.social.KakaoService;
 import team6.sobun.domain.user.service.social.NaverService;
 import team6.sobun.global.jwt.JwtProvider;
+import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
@@ -101,17 +101,6 @@ public class UserController {
         return userService.updateUserImage(userId, image, userDetailsImpl.getUser());
     }
 
-
-    @DeleteMapping("/withdraw")
-    public ApiResponse<?> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.withdraw(userDetails.getUser());
-    }
-
-    @DeleteMapping("/logout")
-    public ApiResponse<?> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.logout(userDetails.getUser());
-    }
-
     @GetMapping("/kakao")
     public void kakaoLogin(HttpServletResponse response) throws IOException {
         String kakaoLoginUrl = "https://kauth.kakao.com/oauth/authorize"
@@ -123,19 +112,19 @@ public class UserController {
 
     @Transactional
     @GetMapping("/kakao/login")
-    public ApiResponse<?> kakaoCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+    public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
         // 카카오 로그인에 성공한 후, 사용자 정보 가져오기
         User user = kakaoService.kakaoSignUpOrLinkUser(code);
         log.info("카카오 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(user.getEmail(), user.getRole());
-        String refreshToken = jwtProvider.createRefreshToken();
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getRole());
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(),user.getRole());
         jwtProvider.addJwtHeader(token, response);
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
-                .id(user.getEmail())
+                .id(String.valueOf(user.getId()))
                 .token(token)
                 .refreshToken(refreshToken)
                 .build();
@@ -165,8 +154,8 @@ public class UserController {
         // 네이버 로그인에 성공한 후, 사용자 정보 가져오기
         User user = naverService.naverSignUpOrLinkUser(code);
         log.info("네이버 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(user.getEmail(), user.getRole());
-        String refreshToken = jwtProvider.createRefreshToken();
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getRole());
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(),user.getRole());
         jwtProvider.addJwtHeader(token, response);
 
         // refresh 토큰은 redis에 저장
@@ -200,8 +189,8 @@ public class UserController {
         // 페이스북 로그인에 성공한 후, 사용자 정보 가져오기
         User user = facebookService.facebookSignUpOrLinkUser(code);
         log.info("페이스북 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(user.getEmail(), user.getRole());
-        String refreshToken = jwtProvider.createRefreshToken();
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getRole());
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(),user.getRole());
         jwtProvider.addJwtHeader(token, response);
 
         // refresh 토큰은 redis에 저장
@@ -236,8 +225,8 @@ public class UserController {
         // 구글 로그인에 성공한 후, 사용자 정보 가져오기
         User user = googleService.googleSignUpOrLinkUser(code);
         log.info("구글 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(user.getEmail(), user.getRole());
-        String refreshToken = jwtProvider.createRefreshToken();
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getRole());
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(),user.getRole());
         jwtProvider.addJwtHeader(token, response);
 
         // refresh 토큰은 redis에 저장

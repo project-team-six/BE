@@ -1,12 +1,7 @@
 package team6.sobun.global.stringCode;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CONFLICT;
-
-@Getter
 public enum ErrorCodeEnum {
 
     TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효한 토큰이 아닙니다."),
@@ -30,5 +25,13 @@ public enum ErrorCodeEnum {
     ErrorCodeEnum(HttpStatus status, String message) {
         this.status = status;
         this.message = message;
+    }
+
+    public HttpStatus getStatus() {
+        return status;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

@@ -42,6 +42,10 @@ public class UserDetailsImpl implements UserDetails {
         return user.getEmail();
     }
 
+    public Long getUserId() {
+        return  user.getId();
+    }
+
 
 
     @Override

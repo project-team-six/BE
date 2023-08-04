@@ -22,6 +22,11 @@ public class ChatController {
         return chatService.createRoom(name, userDetails.getUsername());
     }
 
+    @GetMapping("/rooms")
+    public List<ChatRoom> getAllRooms() {
+        return chatService.findAllRoom();
+    }
+
     @PostMapping("/{roomId}/send")
     public void sendMessage(@PathVariable String roomId, @RequestBody ChatMessage chatMessage, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 현재 사용자 이름을 채팅 메시지의 발신자(sender)로 설정합니다.

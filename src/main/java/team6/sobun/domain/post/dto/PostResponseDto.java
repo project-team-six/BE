@@ -25,7 +25,7 @@ public class PostResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private List<CommentResponseDto> commentList;
-    private String image;
+    private List<String> imageUrlList;
     private long pined;
     private Boolean isPin;
     private Boolean isComplete;
@@ -33,7 +33,7 @@ public class PostResponseDto {
     private int commentCount;
 
     @QueryProjection
-    public PostResponseDto(Long id, Category category, String title, String nickname, String content, LocalDateTime createdAt, String image, long pined, int views, int commentCount) {
+    public PostResponseDto(Long id, Category category, String title, String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList, long pined, int views, int commentCount) {
         this.id = id;
         this.category = category;
         this.title = title;
@@ -41,7 +41,7 @@ public class PostResponseDto {
         this.content = content;
         this.createdAt = createdAt;
         this.commentCount = commentCount;
-        this.image = image;
+        this.imageUrlList = imageUrlList;
         this.pined = pined;
         this.views = views;
     }
@@ -57,7 +57,9 @@ public class PostResponseDto {
                 .map(CommentResponseDto::new)
                 .collect(Collectors.toList());
         this.createdAt = post.getCreatedAt();
-        this.image = post.getImage();
+        this.imageUrlList = post.getImageUrlList().stream()
+                .map(String::new)
+                .collect(Collectors.toList());
         this.pined = post.getPined();
         this.views = post.getViews();
         this.isPin = isPin;

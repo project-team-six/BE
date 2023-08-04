@@ -26,6 +26,8 @@ import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
+import java.util.List;
+
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
 import static team6.sobun.global.stringCode.ErrorCodeEnum.USER_NOT_MATCH;
 import static team6.sobun.global.stringCode.SuccessCodeEnum.*;
@@ -50,9 +52,9 @@ public class PostService {
     }
 
     @Transactional
-    public ApiResponse<?> createPost(PostRequestDto postRequestDto, MultipartFile image, User user) {
-        String imageUrl = s3Service.upload(image);
-        postRepository.save(new Post(postRequestDto, imageUrl, user));
+    public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
+        List<String> imageUrlList = s3Service.uploads(images);
+        postRepository.save(new Post(postRequestDto, imageUrlList, user));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
         return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }
@@ -84,21 +86,21 @@ public class PostService {
     }
 
     @Transactional
-    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, MultipartFile image, User user) {
+    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         Post post = confirmPost(postId, user);
-        updatePostDetail(postRequestDto, image, post);
+        updatePostDetail(postRequestDto, images, post);
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
-    private void updatePostDetail(PostRequestDto postRequestDto, MultipartFile image, Post post) {
-        if (image != null && !image.isEmpty()) {
-            String existingImageUrl = post.getImage();
-            String imageUrl = s3Service.upload(image);
+    private void updatePostDetail(PostRequestDto postRequestDto, List<MultipartFile> images, Post post) {
+        if (images != null && !images.isEmpty()) {
+            List<String> existingImageUrl = post.getImageUrlList();
+            List<String> imageUrl = s3Service.uploads(images);
             post.updateAll(postRequestDto, imageUrl);
 
             // 새로운 이미지 업로드 후에 기존 이미지 삭제
-            if (StringUtils.hasText(existingImageUrl)) {
-                s3Service.delete(existingImageUrl);
+            if (StringUtils.hasText(String.valueOf(existingImageUrl))) {
+                s3Service.delete(String.valueOf(existingImageUrl));
             }
         }
         post.update(postRequestDto);
@@ -129,9 +131,9 @@ public class PostService {
 
 
     private void deleteImage(Post post) {
-        String imageUrl = post.getImage();
-        if (StringUtils.hasText(imageUrl)) {
-            s3Service.delete(imageUrl);
+        List<String> imageUrlList = post.getImageUrlList();
+        if (StringUtils.hasText(String.valueOf(imageUrlList))) {
+            s3Service.delete(String.valueOf(imageUrlList));
         }
     }
 

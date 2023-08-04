@@ -97,8 +97,8 @@ public class UserService {
     }
 
     @Transactional
-    public ApiResponse<?> updateUserNickname(Long id, MypageRequestDto mypageRequestDto, User user) {
-        log.info("닉네임 변경 들어옴");
+    public ApiResponse<?> updateUserProfile(Long id, MypageRequestDto mypageRequestDto, User user) {
+        log.info("닉네임, 비밀번호, 전화번호 변경 요청");
         User checkUser = userRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 사용자 입니다."));
 
@@ -106,9 +106,24 @@ public class UserService {
             throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
         }
 
+        if (mypageRequestDto.getNickname() != null) {
+            checkUser.updateNickname(mypageRequestDto.getNickname());
+        }
+
+        if (mypageRequestDto.getPassword() != null) {
+            String encodedPassword = passwordEncoder.encode(mypageRequestDto.getPassword());
+            checkUser.updatePassword(encodedPassword);
+        }
+
+        if (mypageRequestDto.getPhoneNumber() != null) {
+            checkUser.updatePhoneNumber(mypageRequestDto.getPhoneNumber());
+        }
+
         checkUser.update(mypageRequestDto);
-        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_NICKNAME_SUCCESS);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
     }
+
+
     @Transactional
     public ApiResponse<?> updateUserImage(Long userId, MultipartFile image, User user) {
         log.info("'{}'님이 프로필 이미지를 변경했습니다.", user.getNickname());
@@ -218,14 +233,14 @@ public class UserService {
         MimeMessage m = mailSender.createMimeMessage();
 
         MimeMessageHelper h = new MimeMessageHelper(m,"UTF-8");
-        h.setFrom("jgg7645@naver.com");
+        h.setFrom("kkamjjingi0111@gmail.com");
         h.setTo(requestDto.getEmail());
         h.setSubject("임시 비밀번호 입니다.");
         h.setText("임시 비밀번호 : " + changePassword);
         mailSender.send(m);
 
         String encodePassword = passwordEncoder.encode(changePassword);
-        user.passwordUpdate(encodePassword);
+        user.updatePassword(encodePassword);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
     }
 

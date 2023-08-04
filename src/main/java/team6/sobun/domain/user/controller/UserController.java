@@ -92,7 +92,7 @@ public class UserController {
     public ApiResponse<?> updateUserNickname(@PathVariable Long userId,
                                            @RequestBody MypageRequestDto mypageRequestDto,
                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return userService.updateUserNickname(userId, mypageRequestDto, userDetailsImpl.getUser());
+        return userService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser());
     }
     @PutMapping("mypage/{userId}/image")
     public ApiResponse<?> updateUserImage(@PathVariable Long userId,

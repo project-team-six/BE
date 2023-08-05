@@ -37,7 +37,12 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         QPost.post.imageUrlList,
                         QPost.post.pined,
                         QPost.post.views,
-                        QPost.post.commentList.size().intValue()
+                        QPost.post.commentList.size().intValue(),
+                        QPost.post.transactionStartDate,
+                        QPost.post.transactionEndDate,
+                        QPost.post.consumerPeriod,
+                        QPost.post.purchaseDate,
+                        QPost.post.location
                 ))
                 .from(QPost.post)
                 .where(

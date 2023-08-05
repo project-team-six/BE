@@ -160,7 +160,7 @@ public class UserService {
     }
 
 
-
+    @Transactional
     public UserDetailResponseDto getUserDetails(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
@@ -171,6 +171,7 @@ public class UserService {
             UserDetailResponseDto responseDto = new UserDetailResponseDto(
                     user.getNickname(),
                     user.getProfileImageUrl(),
+                    user.getPhoneNumber(),
                     user.getMannerTemperature(),
                     userPosts,
                     null
@@ -181,6 +182,7 @@ public class UserService {
             throw new IllegalArgumentException();
         }
     }
+    @Transactional
     public UserDetailResponseDto getCurrentUserDetails(Long requestingUserId) {
         Optional<User> optionalUser = userRepository.findById(requestingUserId);
         if (optionalUser.isPresent()) {
@@ -192,6 +194,7 @@ public class UserService {
             UserDetailResponseDto responseDto = new UserDetailResponseDto(
                     user.getNickname(),
                     user.getProfileImageUrl(),
+                    user.getPhoneNumber(),
                     user.getMannerTemperature(),
                     userPosts,
                     pinedPost

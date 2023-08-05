@@ -109,4 +109,7 @@ public class User extends Timestamped {
     public void updateMannerTemperature(double newTemperature) {
         this.mannerTemperature = newTemperature;
     }
+    public void setNickname(String name) {
+    }
+
 }

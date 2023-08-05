@@ -28,8 +28,8 @@ public class UserDetailResponseDto {
         this.mannerTemperature = mannerTemperature;
 
         this.userPosts = userPosts.stream()
-                .map(post -> new PostResponseDto(post.getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
-                        post.getContent(), post.getCreatedAt(), post.getImageUrlList(), post.getPined(), post.getViews(), post.getCommentList().size()))
+                .map(post -> new PostResponseDto(post.getId(),post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
+                        post.getContent(), post.getCreatedAt(),  post.getPined(), post.getViews(), post.getCommentList().size()))
                 .collect(Collectors.toList());
 
         if (pinedPosts == null) {
@@ -38,8 +38,8 @@ public class UserDetailResponseDto {
 
         // Post 엔티티 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.pinedPosts = pinedPosts.stream()
-                .map(post -> new PostResponseDto(post.getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
-                        post.getContent(), post.getCreatedAt(), post.getImageUrlList(), post.getPined(), post.getViews(), post.getCommentList().size()))
+                .map(post -> new PostResponseDto(post.getId(),post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
+                        post.getContent(), post.getCreatedAt(), post.getPined(), post.getViews(), post.getCommentList().size()))
                 .collect(Collectors.toList());
     }
 }

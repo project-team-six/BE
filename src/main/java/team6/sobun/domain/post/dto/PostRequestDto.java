@@ -16,4 +16,5 @@ public class PostRequestDto {
     private String transactionEndDate;
     private String consumerPeriod;
     private String purchaseDate;
+    private String price;
 }

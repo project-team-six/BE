@@ -224,7 +224,7 @@ public class UserService {
         MimeMessage m = mailSender.createMimeMessage();
 
         MimeMessageHelper h = new MimeMessageHelper(m,"UTF-8");
-        h.setFrom("kkamjjingi0111@gmail.com");
+        h.setFrom(from);
         h.setTo(requestDto.getEmail());
         h.setSubject("임시 비밀번호 입니다.");
         h.setText("임시 비밀번호 : " + changePassword);

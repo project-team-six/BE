@@ -42,7 +42,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         QPost.post.transactionEndDate,
                         QPost.post.consumerPeriod,
                         QPost.post.purchaseDate,
-                        QPost.post.location
+                        QPost.post.location,
+                        QPost.post.price
                 ))
                 .from(QPost.post)
                 .where(

@@ -29,7 +29,8 @@ public class UserDetailResponseDto {
         this.userPosts = userPosts.stream()
                 .map(post -> new PostResponseDto(post.getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), post.getImageUrlList(), post.getPined(), post.getViews(), post.getCommentList().size(),
-                        post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation()))
+                        post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
+                        post.getPrice()))
                 .collect(Collectors.toList());
 
         if (pinedPosts == null) {
@@ -40,7 +41,8 @@ public class UserDetailResponseDto {
         this.pinedPosts = pinedPosts.stream()
                 .map(post -> new PostResponseDto(post.getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), post.getImageUrlList(), post.getPined(), post.getViews(), post.getCommentList().size(),
-                        post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation()))
+                        post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
+                        post.getPrice()))
                 .collect(Collectors.toList());
     }
 }

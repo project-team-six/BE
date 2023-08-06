@@ -37,12 +37,13 @@ public class PostResponseDto {
     private int views;
     private int commentCount;
     private String location;
+    private String price;
 
     @QueryProjection
     public PostResponseDto(Long id, Category category, String title, String nickname, String content,
                            LocalDateTime createdAt, List<String> imageUrlList, long pined, int views,
                            int commentCount, String transactionStartDate, String transactionEndDate,
-                           String consumerPeriod, String purchaseDate, String location) {
+                           String consumerPeriod, String purchaseDate, String location, String price) {
         this.id = id;
         this.category = category;
         this.title = title;
@@ -58,6 +59,7 @@ public class PostResponseDto {
         this.consumerPeriod = consumerPeriod;
         this.purchaseDate = purchaseDate;
         this.location = location;
+        this.price = price;
     }
 
 
@@ -84,6 +86,7 @@ public class PostResponseDto {
         this.isPin = isPin;
         this.isComplete = isComplete;
         this.location = post.getLocation();
+        this.price = post.getPrice();
     }
 
     public PostResponseDto(Post post, boolean pinedPost) {

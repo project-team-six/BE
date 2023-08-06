@@ -51,6 +51,9 @@ public class Post extends Timestamped {
     @Column
     private String location;
 
+    @Column(nullable = false)
+    private String price;
+
     @ElementCollection
     @Column
     private List<String> imageUrlList = new ArrayList<>();
@@ -101,6 +104,7 @@ public class Post extends Timestamped {
         this.content = postRequestDto.getContent();
         this.imageUrlList = imageUrlList;
         this.location = user.getLocation();
+        this.price = postRequestDto.getPrice();
         this.views = 0;
         this.pined = 0;
         this.user = user;

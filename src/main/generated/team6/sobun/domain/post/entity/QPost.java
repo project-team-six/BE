@@ -45,6 +45,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final NumberPath<Long> pined = createNumber("pined", Long.class);
 
+    public final StringPath price = createString("price");
+
     public final StringPath purchaseDate = createString("purchaseDate");
 
     public final EnumPath<PostStatus> status = createEnum("status", PostStatus.class);

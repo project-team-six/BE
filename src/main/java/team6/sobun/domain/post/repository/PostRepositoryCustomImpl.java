@@ -29,18 +29,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     @Override
     public Page<PostResponseDto> serachPostByPage(PostSearchCondition condition, Pageable pageable) {
         List<PostResponseDto> result = query
-                .select(new QPostResponseDto(
-                        QPost.post.id,
-                        QPost.post.user.id,
-                        QPost.post.category,
-                        QPost.post.title,
-                        QPost.post.user.nickname,
-                        QPost.post.content,
-                        QPost.post.createdAt,
-                        QPost.post.location,
-                        QPost.post.price
-                ))
+                .select(new QPostResponseDto(QPost.post))
                 .from(QPost.post)
+                .leftJoin(QPost.post.imageUrlList)
                 .where(
                         usernameEq(condition.getNickname()),
                         titleEq(condition.getTitle()))
@@ -48,6 +39,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
+
 
         return new PageImpl<>(result, pageable, result.size());
     }

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.OnDelete;
 import org.springframework.format.annotation.DateTimeFormat;
 import team6.sobun.domain.comment.entity.Comment;
@@ -17,6 +19,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -37,8 +40,6 @@ public class Post extends Timestamped {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    private int views;
-
     @Column(nullable = false)
     private String title;
 
@@ -54,11 +55,14 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String price;
 
-    @ElementCollection
-    @Column
-    private List<String> imageUrlList = new ArrayList<>();
 
-//    @Temporal(TemporalType.DATE)
+    @ElementCollection
+    @BatchSize(size = 5)
+    @Column
+    private List<String> imageUrlList = new ArrayList<>(); // 이미지 URL 리스트
+
+
+    //    @Temporal(TemporalType.DATE)
 //    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(nullable = false)
     private String transactionStartDate;
@@ -78,12 +82,9 @@ public class Post extends Timestamped {
     @Column
     private String purchaseDate;
 
-    @Fetch(SUBSELECT)
+    @Fetch(FetchMode.SUBSELECT)
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
     private List<Comment> commentList = new ArrayList<>();
-
-
-    private long pined;
 
     @Enumerated(EnumType.STRING)
     private PostStatus status; // 게시물 상태 (진행중, 마감)
@@ -94,6 +95,10 @@ public class Post extends Timestamped {
     @OnDelete(action = CASCADE)
     private User user;
 
+    private int views;
+
+    private long pined;
+
     public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user) {
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
@@ -102,12 +107,9 @@ public class Post extends Timestamped {
         this.consumerPeriod = postRequestDto.getConsumerPeriod();
         this.purchaseDate = postRequestDto.getPurchaseDate();
         this.nickname = user.getNickname();
-        this.content = postRequestDto.getContent();
         this.imageUrlList = imageUrlList;
         this.location = user.getLocation();
         this.price = postRequestDto.getPrice();
-        this.views = 0;
-        this.pined = 0;
         this.user = user;
 
     }

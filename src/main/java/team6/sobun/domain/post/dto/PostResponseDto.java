@@ -1,5 +1,6 @@
 package team6.sobun.domain.post.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
@@ -10,6 +11,8 @@ import team6.sobun.domain.post.entity.Category;
 import team6.sobun.domain.post.entity.Post;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,26 +34,27 @@ public class PostResponseDto {
     private String transactionEndDate;
     private String consumerPeriod;
     private String purchaseDate;
-    private long pined;
-    private Boolean isPin;
     private Boolean isComplete;
+    private Boolean isPin;
+    private long pined;
     private int views;
     private String location;
     private String price;
 
     // 전체 조회 시에 사용되는 생성자
     @QueryProjection
-    public PostResponseDto(Long id, Long userId, Category category, String title, String nickname, String content, LocalDateTime createdAt, String location, String price) {
-
-        this.id = id;
-        this.userId = userId;
-        this.category = category;
-        this.title = title;
-        this.nickname = nickname;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.location = location;
-        this.price = price;
+    public PostResponseDto(Post post) {
+        this.id = post.getId();
+        this.userId = post.getUser().getId();
+        this.category = post.getCategory();
+        this.title = post.getTitle();
+        this.nickname = post.getUser().getNickname();
+        this.imageUrlList = post.getImageUrlList().stream().limit(1)
+                .map(String::new)
+                .collect(Collectors.toList());
+        this.createdAt = post.getCreatedAt();
+        this.location = post.getLocation();
+        this.price = post.getPrice();
     }
 
 
@@ -59,6 +63,8 @@ public class PostResponseDto {
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
+        this.pined = post.getPined();
+        this.views = post.getViews();
         this.title = post.getTitle();
         this.nickname = post.getUser().getNickname();
         this.content = post.getContent();
@@ -74,7 +80,7 @@ public class PostResponseDto {
         this.location = post.getLocation();
         this.price = post.getPrice();
         this.commentList = post.getCommentList().stream()
-                .map(CommentResponseDto::new)
+                .limit(3).map(CommentResponseDto::new)
                 .collect(Collectors.toList());
         this.isPin = isPin;
     }

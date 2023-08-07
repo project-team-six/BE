@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team6.sobun.domain.comment.dto.CommentRequestDto;
+import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.comment.entity.Comment;
 import team6.sobun.domain.comment.repository.CommentRepository;
 import team6.sobun.domain.post.entity.Post;
@@ -15,6 +16,10 @@ import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @Transactional
@@ -23,6 +28,20 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+
+
+    public Post findPostWithComments(Long postId) {
+        return postRepository.findPostWithComments(postId);
+    }
+
+    public List<CommentResponseDto> findCommentsResponseByPostId(Long postId) {
+        Post post = postRepository.findPostWithComments(postId);
+        List<Comment> comments = post.getCommentList();
+        return comments.stream()
+                .map(CommentResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
 
     public ApiResponse<?> createComment(Long postId, CommentRequestDto commentRequestDto, User user) {
         log.info("'{}' 사용자가 '{}' 게시물에 댓글을 작성하였습니다.", user.getNickname(), postId);

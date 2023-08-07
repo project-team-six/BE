@@ -13,8 +13,8 @@ public class QPostResponseDto extends ConstructorExpression<PostResponseDto> {
 
     private static final long serialVersionUID = 265924231L;
 
-    public QPostResponseDto(com.querydsl.core.types.Expression<Long> id, com.querydsl.core.types.Expression<Long> userId, com.querydsl.core.types.Expression<team6.sobun.domain.post.entity.Category> category, com.querydsl.core.types.Expression<String> title, com.querydsl.core.types.Expression<String> nickname, com.querydsl.core.types.Expression<String> content, com.querydsl.core.types.Expression<java.time.LocalDateTime> createdAt, com.querydsl.core.types.Expression<String> location, com.querydsl.core.types.Expression<String> price) {
-        super(PostResponseDto.class, new Class<?>[]{long.class, long.class, team6.sobun.domain.post.entity.Category.class, String.class, String.class, String.class, java.time.LocalDateTime.class, String.class, String.class}, id, userId, category, title, nickname, content, createdAt, location, price);
+    public QPostResponseDto(com.querydsl.core.types.Expression<? extends team6.sobun.domain.post.entity.Post> post) {
+        super(PostResponseDto.class, new Class<?>[]{team6.sobun.domain.post.entity.Post.class}, post);
     }
 
 }

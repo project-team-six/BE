@@ -28,6 +28,13 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Query(value = "SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.commentList WHERE p.title LIKE %:searchKeyword% OR p.content LIKE %:searchKeyword% ORDER BY p.createdAt DESC")
     Slice<Post> findByTitleOrContentContainingWithComments(@Param("searchKeyword") String searchKeyword, Pageable pageable);
 
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.commentList c ORDER BY c.createdAt DESC")
+    List<Post> findAllWithRecentComments();
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.commentList WHERE p.id = :postId")
+    Post findPostWithComments(@Param("postId") Long postId);
 }
+
+
 
 

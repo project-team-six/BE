@@ -17,7 +17,7 @@ public class UserDetailResponseDto {
     private String nickname;
     private String profileImageUrl;
     private double mannerTemperature;
-    private  String phoneNumber;
+    private String phoneNumber;
     private List<PostResponseDto> userPosts;
     private List<PostResponseDto> pinedPosts; //2
 
@@ -27,27 +27,24 @@ public class UserDetailResponseDto {
         this.phoneNumber = phoneNumber;
         this.mannerTemperature = mannerTemperature;
 
+        // 사용자의 게시물 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.userPosts = userPosts.stream()
-
                 .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
-                        post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(), post.getCommentList().size(),
+                        post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
                         post.getPrice()))
-
                 .collect(Collectors.toList());
 
         if (pinedPosts == null) {
             pinedPosts = new ArrayList<>();
         }
 
-        // Post 엔티티 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
+        // 핀한 게시물 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.pinedPosts = pinedPosts.stream()
-
                 .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
-                        post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(), post.getCommentList().size(),
+                        post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
                         post.getPrice()))
-
                 .collect(Collectors.toList());
     }
 }

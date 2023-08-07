@@ -82,6 +82,7 @@ public class Post extends Timestamped {
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
     private List<Comment> commentList = new ArrayList<>();
 
+
     private long pined;
 
     @Enumerated(EnumType.STRING)

@@ -36,7 +36,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         QPost.post.title,
                         QPost.post.user.nickname,
                         QPost.post.content,
-                        QPost.post.commentList,
                         QPost.post.createdAt,
                         QPost.post.location,
                         QPost.post.price

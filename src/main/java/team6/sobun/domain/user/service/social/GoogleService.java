@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.social.GoogleUserInfo;
+import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
@@ -111,11 +112,10 @@ public class GoogleService {
             String randomPwd = passwordEncoder.encode(String.valueOf(googleUserInfo.getSub()));
             String username = googleUserInfo.getName();
             String nickname = GOOGLE_USER_NICKNAME_PREFIX + googleUserInfo.getSub(); // Create a default nickname
-            String location = "대구시"; // Set the default location
+ // Set the default location
             user = User.builder()
                     .email(googleUserInfo.getEmail())
                     .nickname(nickname)
-                    .location(location)
                     .password(randomPwd)
                     .profileImageUrl(googleUserInfo.getPicture())
                     .role(UserRoleEnum.USER)

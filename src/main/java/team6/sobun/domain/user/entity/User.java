@@ -5,8 +5,10 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import team6.sobun.domain.user.dto.LocationRquestDto;
 import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.social.KakaoDto;
+import team6.sobun.domain.user.repository.LocationRepository;
 import team6.sobun.global.utils.Timestamped;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -40,22 +42,19 @@ public class User extends Timestamped {
     @Column
     private String profileImageUrl;
 
-    @Column(nullable = false)
-    private String location;
-
-
     private double mannerTemperature = 36.5;
-
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
+    @OneToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
 
     @Builder
-    public User(String email, String location,String phoneNumber,String nickname,String password, String username,  String profileImageUrl, UserRoleEnum role) {
+    public User(String email, String phoneNumber,String nickname,String password, String username,  String profileImageUrl, UserRoleEnum role) {
         this.email = email;
-        this.location = location;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
         this.username = username;
@@ -114,5 +113,8 @@ public class User extends Timestamped {
     public void setNickname(String name) {
     }
 
+    public void updateLocation(LocationRquestDto locationRquestDto, User user) {
+        this.location = new Location(locationRquestDto.getSido(), locationRquestDto.getSigungu(), locationRquestDto.getBname(), user);
+    }
 }
 

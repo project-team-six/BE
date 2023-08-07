@@ -1,0 +1,29 @@
+package team6.sobun.domain.user.service;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import team6.sobun.domain.user.dto.LocationRquestDto;
+import team6.sobun.domain.user.entity.Location;
+import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.repository.LocationRepository;
+import team6.sobun.domain.user.repository.UserRepository;
+import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.stringCode.SuccessCodeEnum;
+
+@Service
+@RequiredArgsConstructor
+public class LocationService {
+
+    private final UserRepository userRepository;
+    private final LocationRepository locationRepository;
+
+    @Transactional
+    public ApiResponse<?> locationUpdate(LocationRquestDto locationRquestDto, User user) {
+        User findUser = userRepository.findById(user.getId()).orElseThrow(()
+                -> new IllegalArgumentException("사용자 정보가 다릅니다."));
+        findUser.updateLocation(locationRquestDto, user);
+        locationRepository.save(findUser.getLocation());
+        return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
+    }
+}

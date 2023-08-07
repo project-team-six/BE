@@ -16,6 +16,7 @@ import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.*;
+import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
@@ -54,7 +55,6 @@ public class UserService {
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) {
         String email = signupRequestDto.getEmail();
         String phoneNumber = signupRequestDto.getPhoneNumber();
-        String location = "대구시";
         String username = signupRequestDto.getUsername();
         String nickname = signupRequestDto.getNickname();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
@@ -68,7 +68,7 @@ public class UserService {
             profileImageUrl = s3Service.upload(image);
         }
         // 프로필 이미지 URL을 사용하여 User 객체 생성
-        User user = new User(email, location, phoneNumber, nickname, password, username, profileImageUrl, role);
+        User user = new User(email, phoneNumber, nickname, password, username, profileImageUrl, role);
         userRepository.save(user);
 
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);

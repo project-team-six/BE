@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import team6.sobun.domain.comment.entity.Comment;
 import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.dto.PostRequestDto;
+import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.global.utils.Timestamped;
 
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.*;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 import static org.hibernate.annotations.FetchMode.SUBSELECT;
@@ -89,7 +91,7 @@ public class Post extends Timestamped {
     private PostStatus status; // 게시물 상태 (진행중, 마감)
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     @OnDelete(action = CASCADE)
     private User user;
@@ -104,7 +106,7 @@ public class Post extends Timestamped {
         this.nickname = user.getNickname();
         this.content = postRequestDto.getContent();
         this.imageUrlList = imageUrlList;
-        this.location = user.getLocation();
+        this.location = user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getBname());
         this.price = postRequestDto.getPrice();
         this.views = 0;
         this.pined = 0;

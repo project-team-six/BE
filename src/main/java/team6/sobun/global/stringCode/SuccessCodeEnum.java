@@ -22,7 +22,8 @@ public enum SuccessCodeEnum {
     USER_USERDATA_UPDATA_SUCCESS("유저 정보 업데이트 성공"),
     TOKEN_REFRESH_SUCCESS("토큰 리프레시 성공"),
     USER_IMAGE_SUCCESS("프로필 이미지 변경 성공"),
-    FIND_EMAIL_SUCCESS("이메일 찾기 성공");
+    FIND_EMAIL_SUCCESS("이메일 찾기 성공"),
+    LOCATION_CHANGE_SUCCESS("위치정보 변경 성공");
 
 
     private final String message;

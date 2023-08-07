@@ -170,7 +170,6 @@ public class UserService {
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
             UserDetailResponseDto responseDto = new UserDetailResponseDto(
                     user.getNickname(),
-                    user.getPhoneNumber(),
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
                     user.getMannerTemperature(),
@@ -194,7 +193,6 @@ public class UserService {
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
             UserDetailResponseDto responseDto = new UserDetailResponseDto(
                     user.getNickname(),
-                    user.getPhoneNumber(),
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
                     user.getMannerTemperature(),

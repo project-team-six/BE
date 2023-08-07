@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
+import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.dto.QPostResponseDto;
@@ -15,6 +16,7 @@ import team6.sobun.domain.post.entity.QPost;
 import team6.sobun.domain.user.entity.QUser;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.util.StringUtils.hasText;
 
@@ -34,14 +36,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         QPost.post.title,
                         QPost.post.user.nickname,
                         QPost.post.content,
+                        QPost.post.commentList,
                         QPost.post.createdAt,
-                        QPost.post.pined,
-                        QPost.post.views,
-                        QPost.post.commentList.size().intValue(),
-                        QPost.post.transactionStartDate,
-                        QPost.post.transactionEndDate,
-                        QPost.post.consumerPeriod,
-                        QPost.post.purchaseDate,
                         QPost.post.location,
                         QPost.post.price
                 ))

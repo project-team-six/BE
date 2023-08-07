@@ -113,10 +113,6 @@ public class User extends Timestamped {
 
     public void setNickname(String name) {
     }
-}
-
-    public void setNickname(String name) {
-    }
 
 }
 

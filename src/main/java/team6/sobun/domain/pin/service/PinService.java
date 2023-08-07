@@ -40,7 +40,7 @@ public class PinService {
             log.info("'{}'님이 '{}'의 관심을 취소했습니다.", nickname, postTitle);
         }
 
-        return new PostResponseDto(post, isPinedPost(post, user));
+        return new PostResponseDto();
     }
 
 

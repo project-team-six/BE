@@ -5,7 +5,6 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
-import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.entity.Category;
 import team6.sobun.domain.post.entity.Post;
 
@@ -36,6 +35,12 @@ public class PostResponseDto {
     private Boolean isComplete;
     private int views;
     private int commentCount;
+
+    private String imageUrl;
+
+    @QueryProjection
+    public PostResponseDto(Long id, Long userId, Category category, String title, String nickname,String content, LocalDateTime createdAt, long pined, int views, int commentCount) {
+
     private String location;
     private String price;
 
@@ -44,14 +49,15 @@ public class PostResponseDto {
                            LocalDateTime createdAt, List<String> imageUrlList, long pined, int views,
                            int commentCount, String transactionStartDate, String transactionEndDate,
                            String consumerPeriod, String purchaseDate, String location, String price) {
+
         this.id = id;
+        this.userId = userId;
         this.category = category;
         this.title = title;
         this.nickname = nickname;
         this.content = content;
         this.createdAt = createdAt;
         this.commentCount = commentCount;
-        this.imageUrlList = imageUrlList;
         this.pined = pined;
         this.views = views;
         this.transactionStartDate = transactionStartDate;

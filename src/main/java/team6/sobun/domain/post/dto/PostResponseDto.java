@@ -24,8 +24,8 @@ public class PostResponseDto {
     private String title;
     private String nickname;
     private String content;
+    private List<CommentResponseDto> commentList;
     private LocalDateTime createdAt;
-    private List<Comment> commentList;
     private List<String> imageUrlList;
     private String transactionStartDate;
     private String transactionEndDate;
@@ -35,12 +35,12 @@ public class PostResponseDto {
     private Boolean isPin;
     private Boolean isComplete;
     private int views;
-    private int size;
     private String location;
     private String price;
 
+    // 전체 조회 시에 사용되는 생성자
     @QueryProjection
-    public PostResponseDto(Long id, Long userId, Category category, String title, String nickname, String content, List<Comment> commentList, LocalDateTime createdAt, String location, String price) {
+    public PostResponseDto(Long id, Long userId, Category category, String title, String nickname, String content, LocalDateTime createdAt, String location, String price) {
 
         this.id = id;
         this.userId = userId;
@@ -48,20 +48,24 @@ public class PostResponseDto {
         this.title = title;
         this.nickname = nickname;
         this.content = content;
-        this.commentList = commentList;
         this.createdAt = createdAt;
         this.location = location;
         this.price = price;
     }
 
 
-    public PostResponseDto(Post post,Boolean isComplete, Boolean isPin) {
+    // 상세 조회 시에 사용하는 생성자
+    public PostResponseDto(Post post, Boolean isComplete, Boolean isPin) {
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
         this.title = post.getTitle();
         this.nickname = post.getUser().getNickname();
         this.content = post.getContent();
+        this.transactionStartDate = post.getTransactionStartDate();
+        this.transactionEndDate = post.getTransactionEndDate();
+        this.consumerPeriod = post.getConsumerPeriod();
+        this.purchaseDate = post.getPurchaseDate();
         this.createdAt = post.getCreatedAt();
         this.imageUrlList = post.getImageUrlList().stream()
                 .map(String::new)
@@ -69,9 +73,14 @@ public class PostResponseDto {
         this.isComplete = isComplete;
         this.location = post.getLocation();
         this.price = post.getPrice();
+        this.commentList = post.getCommentList().stream()
+                .map(CommentResponseDto::new)
+                .collect(Collectors.toList());
+        this.isPin = isPin;
     }
 
-    public PostResponseDto(Long id, Long userId, Category category, String title, String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList, long pined, int views, int size, String transactionStartDate, String transactionEndDate, String consumerPeriod, String purchaseDate, String location, String price) {
+    // 유저 조회 시에 사용하는 생성자
+    public PostResponseDto(Long id, Long userId, Category category, String title, String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList, long pined, int views, String transactionStartDate, String transactionEndDate, String consumerPeriod, String purchaseDate, String location, String price) {
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -82,7 +91,6 @@ public class PostResponseDto {
         this.imageUrlList = imageUrlList;
         this.pined = pined;
         this.views = views;
-        this.size = size;
         this.transactionStartDate = transactionStartDate;
         this.transactionEndDate = transactionEndDate;
         this.consumerPeriod = consumerPeriod;
@@ -91,4 +99,3 @@ public class PostResponseDto {
         this.price = price;
     }
 }
-

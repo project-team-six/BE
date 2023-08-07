@@ -103,12 +103,13 @@ public class JwtProvider {
      * @param role     사용자 역할
      * @return 생성된 JWT 토큰
      */
-    public String createToken(String userId, String username, UserRoleEnum role) {
+    public String createToken(String userId, String username, String nickname, UserRoleEnum role) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username)
                         .claim("userId", userId)
+                        .claim("nickname", nickname)
                         .claim(AUTHORIZATION_KEY, role)
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
                         .setIssuedAt(date)
@@ -116,12 +117,13 @@ public class JwtProvider {
                         .compact();
     }
 
-    public String createRefreshToken(String userId, String username, UserRoleEnum role) {
+    public String createRefreshToken(String userId, String username, String nickname, UserRoleEnum role) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username)
                         .claim("userId", userId)
+                        .claim("nickname", nickname)
                         .claim(AUTHORIZATION_KEY, role)
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // 만료시간
                         .setIssuedAt(date)

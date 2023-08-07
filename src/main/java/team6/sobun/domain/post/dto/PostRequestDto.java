@@ -12,8 +12,9 @@ public class PostRequestDto {
     private Category category;
     private String title;
     private String content;
-    private Date transactionStartDate;
-    private Date transactionEndDate;
-    private Date consumerPeriod;
-    private Date PurchaseDate;
+    private String transactionStartDate;
+    private String transactionEndDate;
+    private String consumerPeriod;
+    private String purchaseDate;
+    private String price;
 }

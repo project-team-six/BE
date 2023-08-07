@@ -46,6 +46,10 @@ public class UserDetailsImpl implements UserDetails {
         return  user.getId();
     }
 
+    public String getNickname() {
+        return user.getNickname();
+    }
+
 
 
     @Override

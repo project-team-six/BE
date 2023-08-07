@@ -160,7 +160,7 @@ public class UserService {
     }
 
 
-
+    @Transactional
     public UserDetailResponseDto getUserDetails(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
@@ -172,6 +172,7 @@ public class UserService {
                     user.getNickname(),
                     user.getPhoneNumber(),
                     user.getProfileImageUrl(),
+                    user.getPhoneNumber(),
                     user.getMannerTemperature(),
                     userPosts,
                     null
@@ -182,6 +183,7 @@ public class UserService {
             throw new IllegalArgumentException();
         }
     }
+    @Transactional
     public UserDetailResponseDto getCurrentUserDetails(Long requestingUserId) {
         Optional<User> optionalUser = userRepository.findById(requestingUserId);
         if (optionalUser.isPresent()) {
@@ -194,6 +196,7 @@ public class UserService {
                     user.getNickname(),
                     user.getPhoneNumber(),
                     user.getProfileImageUrl(),
+                    user.getPhoneNumber(),
                     user.getMannerTemperature(),
                     userPosts,
                     pinedPost
@@ -223,7 +226,7 @@ public class UserService {
         MimeMessage m = mailSender.createMimeMessage();
 
         MimeMessageHelper h = new MimeMessageHelper(m,"UTF-8");
-        h.setFrom("kkamjjingi0111@gmail.com");
+        h.setFrom(from);
         h.setTo(requestDto.getEmail());
         h.setSubject("임시 비밀번호 입니다.");
         h.setText("임시 비밀번호 : " + changePassword);

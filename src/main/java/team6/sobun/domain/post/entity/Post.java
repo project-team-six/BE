@@ -45,33 +45,38 @@ public class Post extends Timestamped {
     @Column(name = "nickname", nullable = false)
     private String nickname;
 
-
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @Column
+    private String location;
+
+    @Column(nullable = false)
+    private String price;
 
     @ElementCollection
     @Column
     private List<String> imageUrlList = new ArrayList<>();
 
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+//    @Temporal(TemporalType.DATE)
+//    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(nullable = false)
-    private Date transactionStartDate;
+    private String transactionStartDate;
 
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+//    @Temporal(TemporalType.DATE)
+//    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(nullable = false)
-    private Date transactionEndDate;
+    private String transactionEndDate;
 
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+//    @Temporal(TemporalType.DATE)
+//    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column
-    private Date consumerPeriod;
+    private String consumerPeriod;
 
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+//    @Temporal(TemporalType.DATE)
+//    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column
-    private Date PurchaseDate;
+    private String purchaseDate;
 
     @Fetch(SUBSELECT)
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
@@ -94,10 +99,12 @@ public class Post extends Timestamped {
         this.transactionStartDate = postRequestDto.getTransactionStartDate();
         this.transactionEndDate = postRequestDto.getTransactionEndDate();
         this.consumerPeriod = postRequestDto.getConsumerPeriod();
-        this.PurchaseDate = postRequestDto.getPurchaseDate();
+        this.purchaseDate = postRequestDto.getPurchaseDate();
         this.nickname = user.getNickname();
         this.content = postRequestDto.getContent();
         this.imageUrlList = imageUrlList;
+        this.location = user.getLocation();
+        this.price = postRequestDto.getPrice();
         this.views = 0;
         this.pined = 0;
         this.user = user;

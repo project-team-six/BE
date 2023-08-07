@@ -26,15 +26,30 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
     private List<CommentResponseDto> commentList;
     private List<String> imageUrlList;
+    private String transactionStartDate;
+    private String transactionEndDate;
+    private String consumerPeriod;
+    private String purchaseDate;
     private long pined;
     private Boolean isPin;
     private Boolean isComplete;
     private int views;
     private int commentCount;
+
     private String imageUrl;
 
     @QueryProjection
     public PostResponseDto(Long id, Long userId, Category category, String title, String nickname,String content, LocalDateTime createdAt, long pined, int views, int commentCount) {
+
+    private String location;
+    private String price;
+
+    @QueryProjection
+    public PostResponseDto(Long id, Category category, String title, String nickname, String content,
+                           LocalDateTime createdAt, List<String> imageUrlList, long pined, int views,
+                           int commentCount, String transactionStartDate, String transactionEndDate,
+                           String consumerPeriod, String purchaseDate, String location, String price) {
+
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -45,6 +60,12 @@ public class PostResponseDto {
         this.commentCount = commentCount;
         this.pined = pined;
         this.views = views;
+        this.transactionStartDate = transactionStartDate;
+        this.transactionEndDate = transactionEndDate;
+        this.consumerPeriod = consumerPeriod;
+        this.purchaseDate = purchaseDate;
+        this.location = location;
+        this.price = price;
     }
 
 
@@ -62,11 +83,16 @@ public class PostResponseDto {
         this.imageUrlList = post.getImageUrlList().stream()
                 .map(String::new)
                 .collect(Collectors.toList());
+        this.transactionStartDate = post.getTransactionStartDate();
+        this.transactionEndDate = post.getTransactionEndDate();
+        this.consumerPeriod = post.getConsumerPeriod();
+        this.purchaseDate = post.getPurchaseDate();
         this.pined = post.getPined();
         this.views = post.getViews();
         this.isPin = isPin;
         this.isComplete = isComplete;
-
+        this.location = post.getLocation();
+        this.price = post.getPrice();
     }
 
     public PostResponseDto(Post post, boolean pinedPost) {

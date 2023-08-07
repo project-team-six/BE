@@ -93,12 +93,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 사용자 정보 가져오기
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUserId();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
 
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
-        String token = jwtProvider.createToken(String.valueOf(userId),username, role);
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(userId),username, role);
+        String token = jwtProvider.createToken(String.valueOf(userId),username, nickname, role);
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(userId),username, nickname,role);
         jwtProvider.addJwtHeader(token, response);
 
         // refresh 토큰은 redis에 저장

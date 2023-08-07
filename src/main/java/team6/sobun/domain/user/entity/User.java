@@ -110,6 +110,13 @@ public class User extends Timestamped {
         this.mannerTemperature = newTemperature;
     }
 
+
     public void setNickname(String name) {
     }
 }
+
+    public void setNickname(String name) {
+    }
+
+}
+

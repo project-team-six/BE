@@ -82,7 +82,7 @@ public class PostService {
                 new InvalidConditionException(POST_NOT_EXIST));
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
-        return ok(new PostResponseDto(post, isComplete,isPined));
+        return ok (new PostResponseDto(post, isPined, isComplete));
     }
 
     @Transactional

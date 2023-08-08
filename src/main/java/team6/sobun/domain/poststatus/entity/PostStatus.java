@@ -23,6 +23,9 @@ public class PostStatus {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private team6.sobun.domain.post.entity.PostStatus status; // PostStatusEnum은 IN_PROGRESS와 COMPLETED를 가지는 enum 타입
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "post_id")
     @OnDelete(action = CASCADE)
@@ -36,5 +39,13 @@ public class PostStatus {
         this.post = post;
         this.user = user;
     }
+    public void markInProgress() {
+        this.status = team6.sobun.domain.post.entity.PostStatus.IN_PROGRESS;
+    }
+
+    public void markCompleted() {
+        this.status = team6.sobun.domain.post.entity.PostStatus.COMPLETED;
+    }
 }
+
 

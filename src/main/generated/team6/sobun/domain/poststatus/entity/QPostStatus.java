@@ -26,6 +26,8 @@ public class QPostStatus extends EntityPathBase<PostStatus> {
 
     public final team6.sobun.domain.post.entity.QPost post;
 
+    public final EnumPath<team6.sobun.domain.post.entity.PostStatus> status = createEnum("status", team6.sobun.domain.post.entity.PostStatus.class);
+
     public final team6.sobun.domain.user.entity.QUser user;
 
     public QPostStatus(String variable) {

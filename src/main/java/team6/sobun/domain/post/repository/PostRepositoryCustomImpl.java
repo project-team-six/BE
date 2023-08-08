@@ -11,8 +11,11 @@ import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.dto.QPostResponseDto;
+import team6.sobun.domain.post.entity.Category;
 import team6.sobun.domain.post.entity.Post;
+import team6.sobun.domain.post.entity.PostStatus;
 import team6.sobun.domain.post.entity.QPost;
+import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.QUser;
 
 import java.util.List;
@@ -34,7 +37,10 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .leftJoin(QPost.post.imageUrlList)
                 .where(
                         usernameEq(condition.getNickname()),
-                        titleEq(condition.getTitle()))
+                        titleEq(condition.getTitle()),
+                        categoryEq(condition.getCategory()),
+                        locationEq(condition.getLocation()),
+                        statusEq(condition.getStatus()))
                 .orderBy(QPost.post.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
@@ -45,25 +51,29 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     }
 
 
-    /**
-     * 사용자명에 대한 검색 조건을 생성하는 메소드입니다.
-     *
-     * @param usernameCond 사용자명 조건
-     * @return 사용자명 조건에 해당하는 BooleanExpression 객체
-     */
     private BooleanExpression usernameEq(String usernameCond) {
         return hasText(usernameCond) ? QPost.post.user.nickname.contains(usernameCond) : null;
     }
 
-    /**
-     * 제목에 대한 검색 조건을 생성하는 메소드입니다.
-     *
-     * @param titleCond 제목 조건
-     * @return 제목 조건에 해당하는 BooleanExpression 객체
-     */
     private BooleanExpression titleEq(String titleCond) {
         return hasText(titleCond) ? QPost.post.title.contains(titleCond) : null;
     }
+    private BooleanExpression locationEq(String locationCond) {
+        return hasText(locationCond) ? QPost.post.location.contains(locationCond) : null;
+    }
+
+    private BooleanExpression categoryEq(String categoryCond) {
+        return hasText(categoryCond) ? QPost.post.category.eq(Category.valueOf(categoryCond)) : null;
+    }
+
+    private BooleanExpression statusEq(String statusCond) {
+        return hasText(statusCond) ? QPost.post.status.eq(PostStatus.valueOf(statusCond)) : null;
+    }
+
+
+
+
+
 
     /**
      * 페이징된 게시물 목록을 반환하고, 다음 페이지 여부를 확인하는 메소드입니다.

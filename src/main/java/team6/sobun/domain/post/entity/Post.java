@@ -57,12 +57,10 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String price;
 
-
     @ElementCollection
     @BatchSize(size = 5)
     @Column
     private List<String> imageUrlList = new ArrayList<>(); // 이미지 URL 리스트
-
 
     //    @Temporal(TemporalType.DATE)
 //    @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -89,7 +87,7 @@ public class Post extends Timestamped {
     private List<Comment> commentList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private PostStatus status; // 게시물 상태 (진행중, 마감)
+    private PostStatus status = PostStatus.IN_PROGRESS;
 
     @JsonIgnore
     @ManyToOne(fetch = LAZY)
@@ -97,13 +95,14 @@ public class Post extends Timestamped {
     @OnDelete(action = CASCADE)
     private User user;
 
-    private int views;
+    private int views ;
 
-    private long pined;
+    private long pined ;
 
     public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user) {
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
+        this.content = postRequestDto.getContent();
         this.transactionStartDate = postRequestDto.getTransactionStartDate();
         this.transactionEndDate = postRequestDto.getTransactionEndDate();
         this.consumerPeriod = postRequestDto.getConsumerPeriod();

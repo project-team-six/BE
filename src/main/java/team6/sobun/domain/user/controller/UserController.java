@@ -5,8 +5,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +28,8 @@ import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.io.IOException;
+
+import static team6.sobun.global.responseDto.ApiResponse.success;
 
 @Slf4j
 @RestController
@@ -109,12 +109,12 @@ public class UserController {
             // 로그인한 사용자와 조회 대상 사용자가 같은 경우 (본인 페이지 조회)
             log.info("사용자 ID '{}'가 본인 페이지를 조회합니다.", userid);
             UserDetailResponseDto responseDto = userService.getCurrentUserDetails(requestingUserId);
-            return ApiResponse.success(responseDto);
+            return success(responseDto);
         } else {
             // 로그인한 사용자와 조회 대상 사용자가 다른 경우 (일반 사용자 페이지 조회)
             log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userid);
             UserDetailResponseDto responseDto = userService.getUserDetails(userid);
-            return ApiResponse.success(responseDto);
+            return success(responseDto);
         }
     }
 
@@ -141,7 +141,7 @@ public class UserController {
     }
 
     @Transactional
-    @PostMapping("/kakao/login")
+    @GetMapping("/kakao/login")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
 

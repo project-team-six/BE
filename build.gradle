@@ -28,6 +28,9 @@ dependencies {
     implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
     implementation 'org.springframework:spring-test'
 
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 
     //QueryDsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

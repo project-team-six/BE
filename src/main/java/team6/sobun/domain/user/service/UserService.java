@@ -13,7 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriUtils;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
@@ -49,6 +50,7 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     private final PinRepository pinRepository;
+    private final SpringTemplateEngine templateEngine;
 
 
     @Value("${spring.mail.username}")
@@ -230,7 +232,7 @@ public class UserService {
     }
 
     @Transactional
-    public ApiResponse<?> findPassword(PasswordRequestDto requestDto) throws Exception{
+    public ApiResponse<?> findPassword(PasswordRequestDto requestDto) throws Exception {
         User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 이메일 입니다."));
 
@@ -242,21 +244,31 @@ public class UserService {
         }
 
         String changePassword = UUID.randomUUID().toString();
-        changePassword = changePassword.substring(0,8);
+        changePassword = changePassword.substring(0, 8);
 
-        MimeMessage m = mailSender.createMimeMessage();
+        // Thymeleaf를 사용하여 HTML 템플릿 생성
+        String htmlContent = generateHtmlTemplate(changePassword);
 
-        MimeMessageHelper h = new MimeMessageHelper(m,"UTF-8");
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        MimeMessageHelper h = new MimeMessageHelper(mimeMessage, true, "UTF-8");
         h.setFrom(from);
         h.setTo(requestDto.getEmail());
         h.setSubject("임시 비밀번호 입니다.");
-        h.setText("임시 비밀번호 : " + changePassword);
-        mailSender.send(m);
+        h.setText(htmlContent, true);  // HTML 컨텐츠 설정
+        mailSender.send(mimeMessage);
 
         String encodePassword = passwordEncoder.encode(changePassword);
         user.updatePassword(encodePassword);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
     }
+
+    private String generateHtmlTemplate(String tempPassword) {
+        Context context = new Context();
+        context.setVariable("tempPassword", tempPassword);
+        return templateEngine.process("new_password_template", context);
+    }
+
 
     public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
         User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())

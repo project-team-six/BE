@@ -105,7 +105,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
                 .id(username)
-                .token(token)
                 .refreshToken(refreshToken)
                 .build();
         redisRepository.save(refresh);

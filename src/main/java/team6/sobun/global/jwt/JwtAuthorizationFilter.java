@@ -38,41 +38,26 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
-        // 클라이언트에서 헤더로 넘어온 토큰을 추출합니다.
-        String token = jwtProvider.getTokenFromHeader(req);
-        log.info("헤더에서 토큰 정보를 가져옵니다.");
+        String tokenValue = jwtProvider.getTokenFromHeader(req);
 
-        if (StringUtils.hasText(token)) {
-            // 액세스 토큰에서 유저 정보를 추출합니다.
-            log.info("엑세스 토큰에서 정보를 추출합니다.");
-            token = jwtProvider.substringHeaderToken(token);
-            log.info("토큰 정보를 가져옵니다.");
+        if (StringUtils.hasText(tokenValue)) {
+            tokenValue = jwtProvider.substringHeaderToken(tokenValue);
 
-            Claims info = null;
+            if (!jwtProvider.validateToken(tokenValue)) {
+                log.error("토큰 유효성 검사 실패: 유효하지 않은 토큰입니다.");
+            }
 
-            if (!jwtProvider.validateToken(token)) {
-                // 액세스 토큰이 유효하지 않은 경우
-                log.error("유효하지 않은 액세스 토큰입니다.");
+            Claims info = jwtProvider.getUserInfoFromToken(tokenValue);
 
-                String refreshToken = jwtProvider.getTokenFromHeader(req);
-                jwtProvider.handleExpiredAccessToken(req, res);
-
-            } else {
-                // 유효한 액세스 토큰일 경우, 해당 사용자로 인증 정보를 설정합니다.
-                try {
-                    info = jwtProvider.getUserInfoFromToken(token);
-                    setAuthentication(info.getSubject());
-                } catch (Exception e) {
-                    log.error("인증 정보 설정 중 예외 발생: {}", e.getMessage());
-                    return;
-                }
+            try {
+                setAuthentication(info.getSubject());
+            } catch (Exception e) {
+                log.error("사용자 인증 설정 중 에러 발생: " + e.getMessage());
+                return;
             }
         }
-
-        // 다음 필터로 요청을 전달합니다.
         chain.doFilter(req, res);
     }
-
 
 
     /**

@@ -1,6 +1,8 @@
 package team6.sobun.global.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,8 +33,8 @@ public class JwtProvider {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 14 * 24 * 60 * 60L;
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L; // 1시간
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 1주일
 
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
@@ -41,6 +43,8 @@ public class JwtProvider {
     private String secretKey;
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+    private ObjectMapper customObjectMapper = new ObjectMapper();
+
 
     @PostConstruct
     public void init() {
@@ -120,15 +124,15 @@ public class JwtProvider {
     public String createRefreshToken(String userId, String username, String nickname, UserRoleEnum role) {
         Date date = new Date();
         return BEARER_PREFIX +
-                Jwts.builder()
-                        .setSubject(username)
-                        .claim("userId", userId)
-                        .claim("nickname", nickname)
-                        .claim(AUTHORIZATION_KEY, role)
-                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // 만료시간
-                        .setIssuedAt(date)
-                        .signWith(key, signatureAlgorithm)
-                        .compact();
+                 Jwts.builder()
+                .setSubject(username)
+                .claim("userId", userId)
+                .claim("nickname", nickname)
+                .claim(AUTHORIZATION_KEY, role)
+                .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // 만료시간
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
+                .compact();
     }
 
     /**
@@ -177,51 +181,98 @@ public class JwtProvider {
      */
     public String createAccessTokenFromRefreshToken(String refreshToken) {
         try {
-            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken).getBody();
+            refreshToken = refreshToken.replace("Bearer ", ""); // Bearer 접두사 제거
+
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .deserializeJsonWith(new JacksonDeserializer<>(customObjectMapper))
+                    .build()
+                    .parseClaimsJws(refreshToken)
+                    .getBody();
+
             String id = claims.getSubject();
             UserRoleEnum role = UserRoleEnum.valueOf(claims.get(AUTHORIZATION_KEY, String.class));
             Date date = new Date();
-            return BEARER_PREFIX +
+
+            String newAccessToken = BEARER_PREFIX +
                     Jwts.builder()
                             .setSubject(id) // 사용자 식별
+                            .claim("userId", claims.get("userId", String.class)) // userId 추가
+                            .claim("nickname", claims.get("nickname", String.class))
                             .claim(AUTHORIZATION_KEY, role)
-                            .setExpiration(new Date(date.getTime() + 14 * 24 * 60 * 60)) // 만료 시간
+                            .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료 시간
                             .setIssuedAt(date)
                             .signWith(key, signatureAlgorithm)
                             .compact();
+
+            log.info("리프레시 토큰으로부터 새로운 액세스 토큰 생성");
+            return newAccessToken;
         } catch (Exception e) {
-            log.error("리프레시 토큰으로 부터 액세스 토큰을 생성 실패 했습니다.: {}", e.getMessage());
-            throw new RuntimeException("리프레시 토큰으로 부터 액세스 토큰을 생성 실패 했습니다.");
+            log.error("리프레시 토큰으로부터 액세스 토큰 생성 실패: {}", e.getMessage());
+            throw new RuntimeException("리프레시 토큰으로부터 액세스 토큰 생성 실패");
         }
     }
 
-    public void handleExpiredAccessToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String accessToken = getTokenFromHeader(request);
-        if (accessToken != null && accessToken.startsWith(BEARER_PREFIX)) {
-            String refreshToken = getRefreshTokenFromRedis(accessToken); // 레디스에서 리프레시 토큰 조회
-            if (refreshToken != null) {
-                // 유효한 리프레시 토큰인 경우, 새로운 액세스 토큰 발급
-                String newAccessToken = createAccessTokenFromRefreshToken(refreshToken);
-                addJwtHeader(newAccessToken, response);
-            } else {
-                log.error("유효하지 않은 리프레시 토큰입니다.");
-            }
-        } else {
-            log.error("리프레시 토큰이 존재하지 않습니다.");
-        }
-    }
-    private String getRefreshTokenFromRedis(String accessToken) {
+
+
+    public String getRefreshTokenFromRedis(String accessToken) {
         String refreshToken = null;
         try {
-            Claims claims = getUserInfoFromToken(accessToken.substring(BEARER_PREFIX.length()));
-            String email = claims.getSubject();
-            Optional<RefreshToken> refreshTokenOptional = refreshTokenRedisRepository.findById(email);
-            if (refreshTokenOptional.isPresent()) {
-                refreshToken = refreshTokenOptional.get().getRefreshToken();
+            Claims claims = null;
+            try {
+                claims = getUserInfoFromToken(accessToken.substring(BEARER_PREFIX.length()));
+            } catch (ExpiredJwtException e) {
+                log.info("액세스 토큰 만료로 인해 재로그인 권장");
+                return null;
+            }
+
+            if (claims != null) {
+                String refreshTokenKey = claims.getSubject(); // 리프레시 토큰 키 생성
+                log.info("레디스에서 키 값으로 값 조회를 시도 중: " + refreshTokenKey);
+                refreshToken = refreshTokenRedisRepository.findById(refreshTokenKey)
+                        .map(RefreshToken::getRefreshToken)
+                        .orElse(null);
+                if (refreshToken != null) {
+                    log.info("레디스에서 리프레시 토큰 조회 성공");
+                } else {
+                    log.error("레디스에서 리프레시 토큰을 찾을 수 없습니다.");
+                }
             }
         } catch (Exception e) {
-            log.error("레디스에서 리프레시 토큰 조회 중 예외 발생: {}", e.getMessage());
+            log.error("레디스에서 리프레시 토큰 조회 실패 : {}", e.getMessage());
         }
+        log.info("리프레시 토큰 조회 성공");
         return refreshToken;
+    }
+
+    public void expireAccessToken(String token, HttpServletResponse response) {
+        try {
+            // 디코딩된 토큰 추출
+            String decodedToken = URLDecoder.decode(token, "UTF-8");
+            // "Bearer " 제거
+            String cleanToken = decodedToken.replace("Bearer ", "");
+            Claims claims = getUserInfoFromToken(cleanToken);
+            if (claims != null) {
+                // 기존 토큰의 만료 시간을 현재 시간으로 설정하여 즉시 만료
+                Date expiration = new Date();
+
+                // 기존 토큰을 업데이트하여 만료시킴
+                String expireAccessToken =
+                        BEARER_PREFIX +
+                        Jwts.builder()
+                        .setClaims(claims)
+                        .setExpiration(expiration)
+                        .signWith(key, signatureAlgorithm)
+                        .compact();
+
+                // 새로 생성된 액세스 토큰으로 헤더 업데이트
+                addJwtHeader(expireAccessToken, response);
+
+                log.info("액세스 토큰을 강제로 만료시킴");
+            }
+        } catch (Exception e) {
+            log.error("액세스 토큰 만료 실패: {}", e.getMessage());
+            throw new RuntimeException("액세스 토큰 만료 실패");
+        }
     }
 }

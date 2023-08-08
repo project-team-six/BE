@@ -6,5 +6,5 @@ import team6.sobun.global.jwt.entity.RefreshToken;
 import java.util.Optional;
 
 public interface RefreshTokenRedisRepository extends CrudRepository<RefreshToken, String> {
-    Optional<RefreshToken> findByAccessToken(String token);
+    Optional<RefreshToken> findById(String email);
 }

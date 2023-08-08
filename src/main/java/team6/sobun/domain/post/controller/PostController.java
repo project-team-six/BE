@@ -26,8 +26,6 @@ public class PostController {
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return postService.searchPost(condition, pageable);
     }
-
-
     @GetMapping("/{postId}")
     public ApiResponse<?> readOnePost(@PathVariable Long postId, HttpServletRequest req) {
         return postService.getSinglePost(postId, req);

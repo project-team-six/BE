@@ -12,7 +12,7 @@ import team6.sobun.domain.user.entity.User;
 import team6.sobun.global.security.UserDetailsImpl;
 
 @Controller
-@RequestMapping("/post/{postId}/poststatus")
+@RequestMapping("/post/{postId}")
 @RequiredArgsConstructor
 public class PostStatusController {
 

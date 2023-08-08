@@ -1,18 +1,14 @@
 package team6.sobun.domain.post.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
-import team6.sobun.domain.comment.entity.Comment;
 import team6.sobun.domain.post.entity.Category;
 import team6.sobun.domain.post.entity.Post;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +36,7 @@ public class PostResponseDto {
     private int views;
     private String location;
     private String price;
+    private String status;
 
     // 전체 조회 시에 사용되는 생성자
     @QueryProjection
@@ -54,12 +51,17 @@ public class PostResponseDto {
                 .collect(Collectors.toList());
         this.createdAt = post.getCreatedAt();
         this.location = post.getLocation();
+        this.views = post.getViews();
+        this.pined = post.getPined();
         this.price = post.getPrice();
+        if (post.getStatus() != null) {
+            this.status = post.getStatus().name();
+        }
     }
 
 
     // 상세 조회 시에 사용하는 생성자
-    public PostResponseDto(Post post, Boolean isComplete, Boolean isPin) {
+    public PostResponseDto(Post post, Boolean isPin, Boolean isComplete) {
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
@@ -76,13 +78,16 @@ public class PostResponseDto {
         this.imageUrlList = post.getImageUrlList().stream()
                 .map(String::new)
                 .collect(Collectors.toList());
-        this.isComplete = isComplete;
         this.location = post.getLocation();
         this.price = post.getPrice();
         this.commentList = post.getCommentList().stream()
                 .limit(3).map(CommentResponseDto::new)
                 .collect(Collectors.toList());
         this.isPin = isPin;
+        this.isComplete = isComplete;
+        if (post.getStatus() != null) {
+            this.status = post.getStatus().name();
+        }
     }
 
     // 유저 조회 시에 사용하는 생성자

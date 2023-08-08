@@ -109,7 +109,7 @@ public class Post extends Timestamped {
         this.purchaseDate = postRequestDto.getPurchaseDate();
         this.nickname = user.getNickname();
         this.imageUrlList = imageUrlList;
-        this.location = user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getBname());
+        this.location = user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong());
         this.price = postRequestDto.getPrice();
         this.user = user;
 

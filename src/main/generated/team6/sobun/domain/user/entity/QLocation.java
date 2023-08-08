@@ -22,7 +22,7 @@ public class QLocation extends EntityPathBase<Location> {
 
     public static final QLocation location = new QLocation("location");
 
-    public final StringPath bname = createString("bname");
+    public final StringPath dong = createString("dong");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 

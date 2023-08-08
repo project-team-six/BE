@@ -114,7 +114,7 @@ public class User extends Timestamped {
     }
 
     public void updateLocation(LocationRquestDto locationRquestDto, User user) {
-        this.location = new Location(locationRquestDto.getSido(), locationRquestDto.getSigungu(), locationRquestDto.getBname(), user);
+        this.location = new Location(locationRquestDto.getSido(), locationRquestDto.getSigungu(), locationRquestDto.getDong(), user);
     }
 }
 

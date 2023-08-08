@@ -24,21 +24,21 @@ public class Location {
     private String sigungu;
 
     @Column(nullable = false)
-    private String bname;
+    private String dong;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Location(String sido, String sigungu, String bname, User user) {
+    public Location(String sido, String sigungu, String dong, User user) {
         this.sido = sido;
         this.sigungu = sigungu;
-        this.bname = bname;
+        this.dong = dong;
         this.user = user;
     }
 
-    public String myAddress(String sido, String sigungu, String bname) {
-        return sido+ " " + sigungu + " " + bname;
+    public String myAddress(String sido, String sigungu, String dong) {
+        return sido+ " " + sigungu + " " + dong;
     }
 
 }

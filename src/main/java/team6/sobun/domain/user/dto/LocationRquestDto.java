@@ -14,6 +14,6 @@ public class LocationRquestDto {
     private String sigungu;
 
     @NotBlank(message = "필수 입력사항 입니다.")
-    private String bname;
+    private String dong;
 
 }

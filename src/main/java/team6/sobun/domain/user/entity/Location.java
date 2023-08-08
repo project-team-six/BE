@@ -3,6 +3,7 @@ package team6.sobun.domain.user.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import team6.sobun.domain.user.dto.LocationRquestDto;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -41,4 +42,9 @@ public class Location {
         return sido+ " " + sigungu + " " + dong;
     }
 
+    public void update(LocationRquestDto locationRquestDto) {
+        this.sido = locationRquestDto.getSido();
+        this.sigungu = locationRquestDto.getSigungu();
+        this.dong = locationRquestDto.getDong();
+    }
 }

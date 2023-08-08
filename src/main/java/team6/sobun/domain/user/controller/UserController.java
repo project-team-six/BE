@@ -111,9 +111,6 @@ public class UserController {
     }
 
     @Transactional
-
-    @GetMapping("/kakao/login")
-
     @PostMapping("/kakao/login")
 
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {

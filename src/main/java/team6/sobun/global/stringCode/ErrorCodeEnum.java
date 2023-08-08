@@ -17,7 +17,8 @@ public enum ErrorCodeEnum {
     FILE_DECODE_FAIL(HttpStatus.BAD_REQUEST, "파일 이름 디코딩에 실패했습니다."),
     URL_INVALID(HttpStatus.BAD_REQUEST, "잘못된 URL 형식입니다."),
     EXTRACT_INVALID(HttpStatus.BAD_REQUEST, "확장자를 추출할 수 없습니다."),
-    UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "유효하지 않은 요청입니다.");
+    UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "유효하지 않은 요청입니다."),
+    TOKEN_REFRESH_FAIL(HttpStatus.BAD_REQUEST,"토큰 갱신에 실패했습니다.");
 
     private final HttpStatus status;
     private final String message;

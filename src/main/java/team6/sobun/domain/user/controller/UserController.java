@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,9 @@ import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
+import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
+import team6.sobun.global.utils.ResponseUtils;
 
 import java.io.IOException;
 
@@ -65,11 +69,37 @@ public class UserController {
     private final JwtProvider jwtProvider;
     private final RefreshTokenRedisRepository redisRepository;
 
+
+    @PostMapping("/refresh")
+    public ApiResponse<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 클라이언트로부터 받은 리프레시 토큰을 추출
+        String refreshToken = jwtProvider.getRefreshTokenFromRedis(jwtProvider.getTokenFromHeader(request));
+
+        if (refreshToken != null) {
+            // 액세스 토큰 갱신 및 새로운 액세스 토큰 생성
+            String newAccessToken = jwtProvider.createAccessTokenFromRefreshToken(refreshToken);
+
+            // 새로운 액세스 토큰을 헤더에 추가
+            jwtProvider.addJwtHeader(newAccessToken, response);
+
+            return ApiResponse.okWithMessage(SuccessCodeEnum.TOKEN_REFRESH_SUCCESS);
+        } else {
+            return ResponseUtils.customError(ErrorCodeEnum.TOKEN_INVALID);
+        }
+    }
+
+
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) {
         return userService.signup(signupRequestDto, image);
     }
+
+    @PostMapping("/logout")
+    public ApiResponse<?> logout(@RequestHeader("Authorization") String token,HttpServletResponse response) {
+        return userService.logout(token,response);
+    }
+
 
     @GetMapping("/mypage/{userid}")
     public ApiResponse<?> userDetailView(@PathVariable Long userid, HttpServletRequest req,
@@ -111,10 +141,7 @@ public class UserController {
     }
 
     @Transactional
-
     @GetMapping("/kakao/login")
-
-    @PostMapping("/kakao/login")
 
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
@@ -128,8 +155,7 @@ public class UserController {
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
-                .id(String.valueOf(user.getId()))
-                .token(token)
+                .id(user.getEmail())
                 .refreshToken(refreshToken)
                 .build();
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
@@ -165,7 +191,6 @@ public class UserController {
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
                 .id(user.getEmail())
-                .token(token)
                 .refreshToken(refreshToken)
                 .build();
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
@@ -200,7 +225,6 @@ public class UserController {
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
                 .id(user.getEmail())
-                .token(token)
                 .refreshToken(refreshToken)
                 .build();
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
@@ -236,7 +260,6 @@ public class UserController {
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
                 .id(user.getEmail())
-                .token(token)
                 .refreshToken(refreshToken)
                 .build();
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());

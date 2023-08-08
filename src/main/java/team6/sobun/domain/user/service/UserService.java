@@ -1,6 +1,8 @@
 package team6.sobun.domain.user.service;
 
+import io.jsonwebtoken.Claims;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,12 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.*;
-import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
@@ -28,6 +30,7 @@ import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,6 +77,26 @@ public class UserService {
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
 
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_SIGNUP_SUCCESS);
+    }
+
+    public ApiResponse<?> logout(String token,HttpServletResponse response) {
+        try {
+            // 디코딩된 토큰 추출
+            String decodedToken = URLDecoder.decode(token, "UTF-8");
+            // "Bearer " 제거
+            String cleanToken = decodedToken.replace("Bearer ", "");
+            Claims claims = jwtProvider.getUserInfoFromToken(cleanToken);
+            if (claims != null) {
+                String refreshTokenKey = claims.getSubject();
+                log.info("레디스에서 리프레시 토큰 삭제 시도: " + refreshTokenKey);
+                redisRepository.deleteById(refreshTokenKey);
+                log.info("레디스에서 리프레시 토큰 삭제 성공");
+                jwtProvider.expireAccessToken(token, response);
+            }return ApiResponse.success("로그아웃 성공");
+        } catch (Exception e) {
+            log.error("로그아웃 실패: {}", e.getMessage());
+            throw new RuntimeException("로그아웃 실패");
+        }
     }
 
 

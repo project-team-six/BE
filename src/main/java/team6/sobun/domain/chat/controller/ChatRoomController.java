@@ -66,12 +66,13 @@ public class ChatRoomController {
         String nickname = userDetails.getNickname();
         log.info("닉네임이 잘~들어오나?={}",nickname);
         UserRoleEnum role = userDetails.getUser().getRole();
+        String profileImageUrl = userDetails.getUser().getProfileImageUrl();
         return LoginInfo.builder()
                 .username(username)
                 .userId(userId)
                 .nickname(nickname)
                 .role(String.valueOf(role))
-                .token(jwtProvider.createToken(userId,username,nickname,role)).build();
+                .token(jwtProvider.createToken(userId, username, nickname, role, profileImageUrl)).build();
 
     }
 }

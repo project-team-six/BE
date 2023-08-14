@@ -144,7 +144,7 @@ public class JwtProvider {
      * @param role     사용자 역할
      * @return 생성된 JWT 토큰
      */
-    public String createToken(String userId, String username, String nickname, UserRoleEnum role) {
+    public String createToken(String userId, String username, String nickname, UserRoleEnum role, String profileImageUrl) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
@@ -152,20 +152,22 @@ public class JwtProvider {
                         .claim("userId", userId)
                         .claim("nickname", nickname)
                         .claim(AUTHORIZATION_KEY, role)
+                        .claim("profileImageUrl", profileImageUrl)
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
                         .setIssuedAt(date)
                         .signWith(key, signatureAlgorithm)
                         .compact();
     }
 
-    public String createRefreshToken(String userId, String username, String nickname, UserRoleEnum role) {
+    public String createRefreshToken(String userId, String username, String nickname, UserRoleEnum role, String profileImageUrl) {
         Date date = new Date();
         String refreshToken = Jwts.builder()
                 .setSubject(username)
                 .claim("userId", userId)
                 .claim("nickname", nickname)
                 .claim(AUTHORIZATION_KEY, role)
-                .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME))
+                .claim("profileImageUrl", profileImageUrl)
+                .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // 만료시간
                 .setIssuedAt(date)
                 .signWith(key, signatureAlgorithm)
                 .compact();
@@ -254,6 +256,7 @@ public class JwtProvider {
                             .claim("userId", claims.get("userId", String.class)) // userId 추가
                             .claim("nickname", claims.get("nickname", String.class))
                             .claim(AUTHORIZATION_KEY, role)
+                            .claim("profileImageUrl", claims.get("profileImageUrl", String.class))
                             .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료 시간
                             .setIssuedAt(date)
                             .signWith(key, signatureAlgorithm)

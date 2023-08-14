@@ -168,6 +168,7 @@ public class UserController {
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
         jwtProvider.addJwtHeaders(token, refreshToken, response);
 
+
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
                 .id(user.getEmail())
@@ -201,6 +202,7 @@ public class UserController {
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
         jwtProvider.addJwtHeaders(token,refreshToken, response);
+
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()

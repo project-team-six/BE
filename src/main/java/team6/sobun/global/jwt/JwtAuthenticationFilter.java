@@ -100,7 +100,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
         String token = jwtProvider.createToken(String.valueOf(userId),username, nickname, role);
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(userId),username, nickname,role);
-        jwtProvider.addJwtHeader(token, response);
+        jwtProvider.addJwtHeaders(token,refreshToken, response);
+        log.info("엑세스 토큰을 헤더에 저장합니다.={}",token);
+        log.info("리프레시 토큰을 헤더에 저장합니다.={}",refreshToken);
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()

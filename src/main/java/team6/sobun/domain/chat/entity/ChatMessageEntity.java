@@ -3,41 +3,37 @@ package team6.sobun.domain.chat.entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor; // 추가
+import lombok.NoArgsConstructor;
 
+
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Getter
 @Entity
-@NoArgsConstructor // 추가
-public class ChatMessageEntity {
+@Getter
+@NoArgsConstructor  // 기본 생성자 추가
+public class ChatMessageEntity implements Serializable {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", referencedColumnName = "roomId")
-    private ChatRoomEntity chatRoom;
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "type", nullable = false)
-    private String type;
+    @Column(nullable = false) // roomId는 null이 될 수 없음
+    private String roomId;
 
-    @Column(name = "sender", nullable = false)
+    @Column(nullable = false)
     private String sender;
 
-    @Column(name = "message", nullable = false)
+    @Column(nullable = false)
     private String message;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
 
     @Builder
-    public ChatMessageEntity(ChatRoomEntity chatRoom, String type, String sender, String message, LocalDateTime createdAt) {
-        this.chatRoom = chatRoom;
-        this.type = type;
+    public ChatMessageEntity(String roomId, String sender, String message) {
+        this.roomId = roomId;
         this.sender = sender;
         this.message = message;
-        this.createdAt = createdAt;
     }
 }

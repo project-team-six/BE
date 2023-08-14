@@ -5,32 +5,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
 @Getter
 @Setter
-@Entity
-@Table(name = "chat_room_entity", indexes = @Index(columnList = "roomId")) // 인덱스 추가
-public class ChatRoomEntity {
+public class ChatRoomEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private String roomId;
-    private String name;
-    private LocalDateTime createdAt;
-
-    @OneToMany(mappedBy = "chatRoom")
-    private List<ChatMessageEntity> messages;
-
-    @Builder
-    public ChatRoomEntity(String roomId, String name, LocalDateTime createdAt) {
-        this.roomId = roomId;
-        this.name = name;
-        this.createdAt = createdAt;
-    }
-
-    public ChatRoomEntity() {
-    }
+    @ElementCollection
+    private List<String> userIds;
 }

@@ -34,7 +34,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         List<PostResponseDto> result = query
                 .select(new QPostResponseDto(QPost.post))
                 .from(QPost.post)
-                .leftJoin(QPost.post.imageUrlList)
                 .where(
                         usernameEq(condition.getNickname()),
                         titleEq(condition.getTitle()),

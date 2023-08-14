@@ -70,25 +70,6 @@ public class UserController {
     private final RefreshTokenRedisRepository redisRepository;
 
 
-    @PostMapping("/refresh")
-    public ApiResponse<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // 클라이언트로부터 받은 리프레시 토큰을 추출
-        String refreshToken = jwtProvider.getRefreshTokenFromRedis(jwtProvider.getTokenFromHeader(request));
-
-        if (refreshToken != null) {
-            // 액세스 토큰 갱신 및 새로운 액세스 토큰 생성
-            String newAccessToken = jwtProvider.createAccessTokenFromRefreshToken(refreshToken);
-
-            // 새로운 액세스 토큰을 헤더에 추가
-            jwtProvider.addJwtHeader(newAccessToken, response);
-
-            return ApiResponse.okWithMessage(SuccessCodeEnum.TOKEN_REFRESH_SUCCESS);
-        } else {
-            return ResponseUtils.customError(ErrorCodeEnum.TOKEN_INVALID);
-        }
-    }
-
-
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) {
@@ -141,7 +122,7 @@ public class UserController {
     }
 
     @Transactional
-    @GetMapping("/kakao/login")
+    @PostMapping ("/kakao/login")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
@@ -150,7 +131,7 @@ public class UserController {
         log.info("카카오 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
-        jwtProvider.addJwtHeader(token, response);
+        jwtProvider.addJwtHeaders(token,refreshToken, response);
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
@@ -185,7 +166,7 @@ public class UserController {
         log.info("네이버 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
-        jwtProvider.addJwtHeader(token, response);
+        jwtProvider.addJwtHeaders(token, refreshToken, response);
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
@@ -219,7 +200,7 @@ public class UserController {
         log.info("페이스북 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
-        jwtProvider.addJwtHeader(token, response);
+        jwtProvider.addJwtHeaders(token,refreshToken, response);
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
@@ -254,7 +235,7 @@ public class UserController {
         log.info("구글 로그인 성공. 유저 ID: {}", user.getId());
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole());
-        jwtProvider.addJwtHeader(token, response);
+        jwtProvider.addJwtHeaders(token,refreshToken, response);
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()

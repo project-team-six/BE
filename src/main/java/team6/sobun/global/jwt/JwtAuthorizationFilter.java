@@ -27,28 +27,44 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final UserDetailsServiceImpl userDetailsService;
     private final RefreshTokenRedisRepository redisRepository;
 
-    /**
-     * 요청을 필터링하여 JWT 인증 및 인가를 처리합니다.
-     *
-     * @param req   HttpServletRequest 객체
-     * @param res   HttpServletResponse 객체
-     * @param chain FilterChain 객체
-     * @throws ServletException 서블릿 예외가 발생한 경우
-     * @throws IOException      입출력 예외가 발생한 경우
-     */
+
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
         String tokenValue = jwtProvider.getTokenFromHeader(req);
+        String refreshTokenValue = jwtProvider.getRefreshTokenFromHeader(req); // 헤더에서 리프레시 토큰을 가져옴
 
         if (StringUtils.hasText(tokenValue)) {
             tokenValue = jwtProvider.substringHeaderToken(tokenValue);
 
             if (!jwtProvider.validateToken(tokenValue)) {
-                log.error("토큰 유효성 검사 실패: 유효하지 않은 토큰입니다.");
+                // 액세스 토큰이 만료된 경우 새로운 액세스 토큰 발급
+                if (StringUtils.hasText(refreshTokenValue)) {
+                    jwtProvider.refreshAccessToken(refreshTokenValue, res);
+                    // 리프레시 토큰을 통한 새로운 액세스 토큰 발급
+                    String decryptedRefreshToken = jwtProvider.decryptRefreshToken(refreshTokenValue);
+                    if (StringUtils.hasText(decryptedRefreshToken) && jwtProvider.validateToken(decryptedRefreshToken)) {
+                        String redisStoredRefreshToken = jwtProvider.getRefreshTokenFromRedis(decryptedRefreshToken);
+                        log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
+                        if (redisStoredRefreshToken != null && redisStoredRefreshToken.equals(decryptedRefreshToken)) {
+                            log.info("복호화 토큰도 한번 보자= {}", decryptedRefreshToken);
+                        }
+                        // 리프레시 토큰을 통한 707 반환 요청
+                        Claims info = jwtProvider.getUserInfoFromToken(decryptedRefreshToken);
+                        // 리프레시 토큰이 유요한 경우 인증진행
+                        try {
+                            setAuthentication(info.getSubject());
+                            res.setStatus(707);
+                        } catch (Exception e) {
+                            log.error("사용자 인증 설정 (리프레시 토큰) 중 에러 발생: " + e.getMessage());
+                            return;
+                        }
+                    }
+                }
+                chain.doFilter(req, res);
+                return;
             }
-
             Claims info = jwtProvider.getUserInfoFromToken(tokenValue);
-
+            // 액세스 토큰이 유효한 경우 인증진행
             try {
                 setAuthentication(info.getSubject());
             } catch (Exception e) {
@@ -56,6 +72,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 return;
             }
         }
+
         chain.doFilter(req, res);
     }
 

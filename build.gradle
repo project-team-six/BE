@@ -24,12 +24,15 @@ repositories {
 
 dependencies {
 
-    implementation 'it.ozimov:embedded-redis:0.7.2'
+    // 템플릿
     implementation 'org.webjars.bower:bootstrap:4.3.1'
     implementation 'org.webjars.bower:vue:2.5.16'
     implementation 'org.webjars.bower:axios:0.17.1'
+
+    // 웹소켓
     implementation 'org.webjars:sockjs-client:1.1.2'
     implementation 'org.webjars:stomp-websocket:2.3.3-1'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     implementation 'com.github.downgoon:marvin:1.5.5'
     implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
@@ -80,6 +83,7 @@ dependencies {
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 
+    implementation 'it.ozimov:embedded-redis:0.7.2'
     implementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -89,7 +93,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     implementation 'mysql:mysql-connector-java:8.0.28'
 
     runtimeOnly 'com.h2database:h2'

@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Websocket Chat</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <!-- CSS -->
     <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/dist/css/bootstrap.min.css">
     <style>
@@ -13,74 +13,154 @@
     </style>
 </head>
 <body>
-<div class="container" id="app" v-cloak>
-    <div class="row">
-        <div class="col-md-6">
-            <h3>채팅방 리스트</h3>
-        </div>
-        <div class="col-md-6 text-right">
-            <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
+<div id="app" v-cloak>
+    <div v-if="!isLoggedIn">
+        <!-- 로그인 폼 -->
+        <form @submit.prevent="login">
+            <input type="text" v-model="loginData.email" placeholder="Email">
+            <input type="password" v-model="loginData.password" placeholder="Password">
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    <div v-else>
+        <!-- 채팅방 목록 표시 -->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>채팅방 리스트</h3>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
+                </div>
+            </div>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <label class="input-group-text">방제목</label>
+                </div>
+                <input type="text" class="form-control" v-model="room_name" v-on:keyup.enter="createRoom">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" @click="createRoom">채팅방 개설</button>
+                </div>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomId" v-on:click="enterRoom(item.roomId, item.name)">
+                    <h6>{{item.name}} <span class="badge badge-info badge-pill">{{item.userCount}}</span></h6>
+                </li>
+            </ul>
         </div>
     </div>
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <label class="input-group-text">방제목</label>
-        </div>
-        <input type="text" class="form-control" v-model="room_name" v-on:keyup.enter="createRoom">
-        <div class="input-group-append">
-            <button class="btn btn-primary" type="button" @click="createRoom">채팅방 개설</button>
-        </div>
-    </div>
-    <ul class="list-group">
-        <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomId" v-on:click="enterRoom(item.roomId, item.name)">
-            <h6>{{item.name}} <span class="badge badge-info badge-pill">{{item.userCount}}</span></h6>
-        </li>
-    </ul>
 </div>
 <!-- JavaScript -->
 <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
 <script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
+<script src="/webjars/sockjs-client/1.5.1/dist/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/2.3.4/dist/stomp.min.js"></script>
 <script>
     var vm = new Vue({
         el: '#app',
         data: {
-            room_name : '',
-            chatrooms: [
-            ]
+            isLoggedIn: false,
+            loginData: {
+                email: '',
+                password: ''
+            },
+            room_name: '',
+            chatrooms: [],
+            accessToken: null
         },
         created() {
+            // 로그인 상태 확인 및 초기 데이터 로드
+            this.checkLoginStatus();
             this.findAllRoom();
         },
         methods: {
-            findAllRoom: function() {
-                axios.get('/chat/rooms').then(response => {
-                    // prevent html, allow json array
-                    if(Object.prototype.toString.call(response.data) === "[object Array]")
-                        this.chatrooms = response.data;
-                });
-            },
-            createRoom: function() {
-                if("" === this.room_name) {
-                    alert("방 제목을 입력해 주십시요.");
-                    return;
-                } else {
-                    var params = new URLSearchParams();
-                    params.append("name",this.room_name);
-                    axios.post('/chat/room', params)
-                        .then(
-                            response => {
-                                alert(response.data.name+"방 개설에 성공하였습니다.")
-                                this.room_name = '';
-                                this.findAllRoom();
-                            }
-                        )
-                        .catch( response => { alert("채팅방 개설에 실패하였습니다."); } );
+            // 로그인 상태 확인
+            checkLoginStatus() {
+                const accessToken = this.getCookie('accessToken');
+                if (accessToken) {
+                    this.isLoggedIn = true;
+                    this.accessToken = accessToken; // 토큰 저장
                 }
             },
-            enterRoom: function(roomId, roomName) {
-                localStorage.setItem('wschat.roomId',roomId);
-                localStorage.setItem('wschat.roomName',roomName);
-                location.href="/chat/room/enter/"+roomId;
+
+            // 쿠키에서 특정 이름의 쿠키 값을 가져오는 함수
+            getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            },
+
+            // 로그인
+            login() {
+                axios.post('/auth/login', this.loginData)
+                    .then(response => {
+                        const successMessage = response.data.data; // 성공 메시지
+                        // 로그인 성공 시
+                        if (successMessage === "로그인 성공") {
+                            const jwtToken = response.headers.authorization;
+                            document.cookie = `accessToken=${jwtToken}; path=/;`; // JWT 토큰 저장
+
+                            this.isLoggedIn = true;
+                            this.accessToken = jwtToken; // 토큰 저장
+                            this.loginData.email = '';
+                            this.loginData.password = '';
+
+                        } else {
+                            alert('로그인에 실패하였습니다.');
+                        }
+                    })
+                    .catch(error => {
+                        alert('로그인 실패');
+                        console.error(error);
+                    });
+            },
+
+            findAllRoom() {
+                axios.get('/chat/rooms', {
+
+                })
+                    .then(response => {
+                        this.chatrooms = response.data; // 채팅방 리스트 저장
+                    })
+                    .catch(error => {
+                        console.error('채팅방 리스트를 불러오는 도중 에러 발생:', error);
+                    });
+            },
+
+            createRoom() {
+                if (this.room_name === '') {
+                    alert('방 제목을 입력해 주십시요.');
+                    return;
+                }
+                const params = new URLSearchParams();
+                params.append('name', this.room_name);
+
+                axios.post('/chat/room', params, {
+                    headers: {
+                        Authorization: `Bearer ${this.accessToken}`
+                    }
+                })
+                    .then(response => {
+                        alert(`${response.data.name} 방 개설에 성공하였습니다.`);
+                        this.room_name = '';
+                        this.findAllRoom();
+                    })
+                    .catch(error => {
+                        alert('채팅방 개설에 실패하였습니다.');
+                        console.error('채팅방 개설 중 에러 발생:', error);
+                    });
+            },
+            enterRoom(roomId, roomName) {
+                const accessToken = this.getCookie('accessToken');
+
+                if (!accessToken) {
+                    alert('로그인 후 이용 가능합니다.');
+                    return;
+                }
+
+                localStorage.setItem('wschat.roomId', roomId);
+                localStorage.setItem('wschat.roomName', roomName);
+                location.href = `/chat/room/enter/${roomId}`;
             }
         }
     });

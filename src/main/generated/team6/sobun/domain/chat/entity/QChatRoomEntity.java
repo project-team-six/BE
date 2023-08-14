@@ -20,15 +20,9 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public static final QChatRoomEntity chatRoomEntity = new QChatRoomEntity("chatRoomEntity");
 
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
-
-    public final NumberPath<Long> id = createNumber("id", Long.class);
-
-    public final ListPath<ChatMessageEntity, QChatMessageEntity> messages = this.<ChatMessageEntity, QChatMessageEntity>createList("messages", ChatMessageEntity.class, QChatMessageEntity.class, PathInits.DIRECT2);
-
-    public final StringPath name = createString("name");
-
     public final StringPath roomId = createString("roomId");
+
+    public final ListPath<String, StringPath> userIds = this.<String, StringPath>createList("userIds", String.class, StringPath.class, PathInits.DIRECT2);
 
     public QChatRoomEntity(String variable) {
         super(ChatRoomEntity.class, forVariable(variable));

@@ -118,8 +118,8 @@ public class JwtProvider {
                         .setSubject(username)
                         .claim("userId", userId)
                         .claim("nickname", nickname)
-                        .claim("profileImageUrl", profileImageUrl)
                         .claim(AUTHORIZATION_KEY, role)
+                        .claim("profileImageUrl", profileImageUrl)
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
                         .setIssuedAt(date)
                         .signWith(key, signatureAlgorithm)
@@ -206,6 +206,7 @@ public class JwtProvider {
                             .claim("userId", claims.get("userId", String.class)) // userId 추가
                             .claim("nickname", claims.get("nickname", String.class))
                             .claim(AUTHORIZATION_KEY, role)
+                            .claim("profileImageUrl", claims.get("profileImageUrl", String.class))
                             .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료 시간
                             .setIssuedAt(date)
                             .signWith(key, signatureAlgorithm)

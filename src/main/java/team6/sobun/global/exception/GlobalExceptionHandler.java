@@ -1,6 +1,9 @@
 package team6.sobun.global.exception;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.utils.ResponseUtils;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -91,7 +95,5 @@ public class GlobalExceptionHandler {
         }
         return error(String.valueOf(validMessage), BAD_REQUEST.value());
     }
-
-
 
 }

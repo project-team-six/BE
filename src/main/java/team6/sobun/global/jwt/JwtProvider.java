@@ -5,6 +5,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,15 +16,14 @@ import org.springframework.util.StringUtils;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
+import team6.sobun.global.utils.EncryptionUtils;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -33,10 +33,11 @@ public class JwtProvider {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L; // 1시간
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 20 * 60 * 1000L; // 20분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 1주일
 
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
+    private final EncryptionUtils encryptionUtils;
 
 
     @Value("${jwt.secret.key}")
@@ -45,12 +46,12 @@ public class JwtProvider {
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
     private ObjectMapper customObjectMapper = new ObjectMapper();
 
-
     @PostConstruct
     public void init() {
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
     }
+
 
     /**
      * 헤더에서 토큰을 추출합니다.
@@ -80,6 +81,24 @@ public class JwtProvider {
             log.info(e.getMessage());
         }
     }
+    /**
+     * 헤더에 JWT 토큰을 추가합니다.
+     *
+     * @param accessToken  액세스 토큰
+     * @param refreshToken 리프레시 토큰
+     * @param response     HttpServletResponse 객체
+     */
+    public void addJwtHeaders(String accessToken, String refreshToken, HttpServletResponse response) {
+        try {
+             accessToken = URLEncoder.encode(accessToken, "utf-8").replaceAll("\\+", "%20");
+             refreshToken = URLEncoder.encode(refreshToken, "utf-8").replaceAll("\\+", "%20");
+
+            response.setHeader(AUTHORIZATION_HEADER, accessToken);
+            response.setHeader("Refresh-Token", refreshToken);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage());
+        }
+    }
     public String getNickNameFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.get("nickname", String.class);
@@ -103,6 +122,20 @@ public class JwtProvider {
         }
         return null;
     }
+
+    public String getRefreshTokenFromHeader(HttpServletRequest req) {
+        String refreshToken = req.getHeader("Refresh-Token");
+        if (refreshToken != null) {
+            try {
+                return URLDecoder.decode(refreshToken, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.info(e.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * 토큰을 생성합니다.
@@ -128,8 +161,7 @@ public class JwtProvider {
 
     public String createRefreshToken(String userId, String username, String nickname, UserRoleEnum role, String profileImageUrl) {
         Date date = new Date();
-        return BEARER_PREFIX +
-                 Jwts.builder()
+        String refreshToken = Jwts.builder()
                 .setSubject(username)
                 .claim("userId", userId)
                 .claim("nickname", nickname)
@@ -139,7 +171,25 @@ public class JwtProvider {
                 .setIssuedAt(date)
                 .signWith(key, signatureAlgorithm)
                 .compact();
+
+        try {
+            return encryptionUtils.encrypt(refreshToken); // encryptionUtils 인스턴스를 통해 encrypt 메서드 호출
+        } catch (Exception e) {
+            log.error("리프레시 토큰 암호화 실패: {}", e.getMessage());
+            throw new RuntimeException("리프레시 토큰 암호화 실패");
+        }
     }
+    // JwtProvider 클래스에 추가 메소드
+    public String decryptRefreshToken(String encryptedRefreshToken) {
+        try {
+            return encryptionUtils.decrypt(encryptedRefreshToken);
+        } catch (Exception e) {
+            log.error("리프레시 토큰 복호화 실패: {}", e.getMessage());
+            throw new RuntimeException("리프레시 토큰 복호화 실패");
+        }
+    }
+
+
 
     /**
      * 토큰의 유효성을 검사합니다.
@@ -219,19 +269,39 @@ public class JwtProvider {
             throw new RuntimeException("리프레시 토큰으로부터 액세스 토큰 생성 실패");
         }
     }
+    /**
+     * 주어진 리프레시 토큰을 사용하여 새로운 액세스 토큰을 생성하고 인증 설정을 갱신합니다.
+     *
+     * @param refreshTokenValue 복호화된 리프레시 토큰
+     * @param response          HttpServletResponse 객체
+     */
+    public void refreshAccessToken(String refreshTokenValue, HttpServletResponse response) {
+        if (StringUtils.hasText(refreshTokenValue)) {
+            String decryptedRefreshToken = decryptRefreshToken(refreshTokenValue);
+            log.info("복호화 넘어왔나?={}", decryptedRefreshToken);
+            if (StringUtils.hasText(decryptedRefreshToken) && validateToken(decryptedRefreshToken)) {
+                String redisStoredRefreshToken = getRefreshTokenFromRedis(decryptedRefreshToken); // 이 부분 수정
+                log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
+                if (redisStoredRefreshToken != null && redisStoredRefreshToken.equals(decryptedRefreshToken)) {
+                    String newAccessToken = createAccessTokenFromRefreshToken(decryptedRefreshToken);
+                    addJwtHeader(newAccessToken, response);
+                    log.info("리프레시 토큰으로 새로운 액세스 토큰 발급");
+                } else {
+                    log.error("레디스에 저장된 리프레시 토큰과 일치하지 않습니다.");
+                }
+            } else {
+                log.error("리프레시 토큰이 유효하지 않습니다.");
+            }
+        } else {
+            log.error("리프레시 토큰이 없습니다.");
+        }
+    }
 
 
-
-    public String getRefreshTokenFromRedis(String accessToken) {
+    public String getRefreshTokenFromRedis(String decryptedRefreshToken) {
         String refreshToken = null;
         try {
-            Claims claims = null;
-            try {
-                claims = getUserInfoFromToken(accessToken.substring(BEARER_PREFIX.length()));
-            } catch (ExpiredJwtException e) {
-                log.info("액세스 토큰 만료로 인해 재로그인 권장");
-                return null;
-            }
+            Claims claims = getUserInfoFromToken(decryptedRefreshToken);
 
             if (claims != null) {
                 String refreshTokenKey = claims.getSubject(); // 리프레시 토큰 키 생성
@@ -241,6 +311,8 @@ public class JwtProvider {
                         .orElse(null);
                 if (refreshToken != null) {
                     log.info("레디스에서 리프레시 토큰 조회 성공");
+                    // 리프레시 토큰 복호화를 위한 부분 추가
+                    refreshToken = decryptRefreshToken(refreshToken);
                 } else {
                     log.error("레디스에서 리프레시 토큰을 찾을 수 없습니다.");
                 }
@@ -251,6 +323,7 @@ public class JwtProvider {
         log.info("리프레시 토큰 조회 성공");
         return refreshToken;
     }
+
 
     public void expireAccessToken(String token, HttpServletResponse response) {
         try {

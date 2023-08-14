@@ -72,7 +72,6 @@ public class WebSecurityConfig {
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
-
     /**
      * JwtAuthorizationFilter를 빈으로 생성합니다.
      * JWT 인가 필터를 구성합니다.
@@ -83,22 +82,6 @@ public class WebSecurityConfig {
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
         return new JwtAuthorizationFilter(jwtProvider, userDetailsService, redisRepository);
     }
-
-    @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable() // 기본값이 on인 csrf 취약점 보안을 해제한다. on으로 설정해도 되나 설정할경우 웹페이지에서 추가처리가 필요함.
-                .headers()
-                .frameOptions().sameOrigin() // SockJS는 기본적으로 HTML iframe 요소를 통한 전송을 허용하지 않도록 설정되는데 해당 내용을 해제한다.
-                .and()
-                .formLogin() // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
-                .and()
-                .authorizeRequests()
-                .requestMatchers("/chat/**").hasRole("USER") // chat으로 시작하는 리소스에 대한 접근 권한 설정
-                .anyRequest().permitAll(); // 나머지 리소스에 대한 접근 설정
-        return http.build();
-    }
-
 
     @Bean
     public CorsFilter corsFilter() {
@@ -128,14 +111,15 @@ public class WebSecurityConfig {
 
         // CSRF 설정, CORS 설정, 기존 세션 방식 -> JWT 방식
         http
-                .csrf((csrf) -> csrf.disable())
-                .cors(withDefaults())
+                .csrf((csrf) -> csrf.disable()) // CSRF 비활성화
+                .cors(withDefaults()) // 기본 CORS 설정 적용
                 .sessionManagement((sessionManagement) ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 관리 방식 설정
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers(GET,"/**").permitAll()
+                                .requestMatchers(GET,"/chat/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/auth/naver/login").permitAll()
                                 .requestMatchers("/auth/naver").permitAll()

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @Getter
 public class UserDetailResponseDto {
 
+    private Long userId;
     private String nickname;
     private String profileImageUrl;
     private double mannerTemperature;
@@ -21,7 +22,8 @@ public class UserDetailResponseDto {
     private List<PostResponseDto> userPosts;
     private List<PostResponseDto> pinedPosts; //2
 
-    public UserDetailResponseDto(String nickname, String profileImageUrl, String phoneNumber, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
+    public UserDetailResponseDto(Long userId, String nickname, String profileImageUrl, String phoneNumber, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
+        this.userId = userId;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
         this.phoneNumber = phoneNumber;
@@ -32,7 +34,7 @@ public class UserDetailResponseDto {
                 .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
-                        post.getPrice()))
+                        post.getPrice(), post.getStatus().name()))
                 .collect(Collectors.toList());
 
         if (pinedPosts == null) {
@@ -44,7 +46,7 @@ public class UserDetailResponseDto {
                 .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
-                        post.getPrice()))
+                        post.getPrice(), post.getStatus().name()))
                 .collect(Collectors.toList());
     }
 }

@@ -7,19 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
-import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.dto.QPostResponseDto;
 import team6.sobun.domain.post.entity.Category;
-import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.entity.PostStatus;
 import team6.sobun.domain.post.entity.QPost;
-import team6.sobun.domain.user.entity.Location;
-import team6.sobun.domain.user.entity.QUser;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.util.StringUtils.hasText;
 

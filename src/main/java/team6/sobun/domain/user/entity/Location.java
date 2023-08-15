@@ -38,7 +38,6 @@ public class Location {
         this.user = user;
     }
 
-
     public String myAddress(String sido, String sigungu, String dong) {
         return sido+ " " + sigungu + " " + dong;
     }

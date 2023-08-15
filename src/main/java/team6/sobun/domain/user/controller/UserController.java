@@ -167,8 +167,11 @@ public class UserController {
         // 구글 로그인에 성공한 후, 사용자 정보 가져오기
         User user = googleService.googleSignUpOrLinkUser(code);
         log.info("구글 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+
         jwtProvider.addJwtHeaders(token,refreshToken, response);
 
         // refresh 토큰은 redis에 저장
@@ -260,42 +263,6 @@ public class UserController {
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
 
-    @GetMapping("/google")
-    public void googleLogin(HttpServletResponse response) throws IOException {
-        String googleLoginUrl = "https://accounts.google.com/o/oauth2/v2/auth"
-                + "?client_id=" + YOUR_GOOGLE_LOGIN_CLIENT_ID
-                + "&redirect_uri=" + YOUR_GOOGLE_REDIRECT_URI
-                + "&response_type=code"
-                + "&scope=openid%20email%20profile";
-        response.sendRedirect(googleLoginUrl);
-    }
-
-    @Transactional
-    @GetMapping("/google/login")
-    public ApiResponse<?> googleCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
-        log.info("구글 로그인 콜백 요청 받음. 인증 코드: {}", code);
-
-        // 구글 로그인에 성공한 후, 사용자 정보 가져오기
-        User user = googleService.googleSignUpOrLinkUser(code);
-        log.info("구글 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
-        jwtProvider.addJwtHeaders(token,refreshToken, response);
-
-        // refresh 토큰은 redis에 저장
-        RefreshToken refresh = RefreshToken.builder()
-                .id(user.getEmail())
-                .refreshToken(refreshToken)
-                .build();
-        log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
-        redisRepository.save(refresh);
-
-        log.info("JWT 토큰을 쿠키에   추가하여 응답합니다.");
-
-        return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
-    }
 }
 
 

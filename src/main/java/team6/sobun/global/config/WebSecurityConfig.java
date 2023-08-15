@@ -119,7 +119,6 @@ public class WebSecurityConfig {
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers(GET,"/**").permitAll()
-                                .requestMatchers(GET,"/chat/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/auth/naver/login").permitAll()
                                 .requestMatchers("/auth/naver").permitAll()
@@ -137,7 +136,6 @@ public class WebSecurityConfig {
                                 .requestMatchers(GET,"/test").permitAll()
                                 .requestMatchers("/chat").permitAll()
                                 .requestMatchers("/chat/{roomId}/send").permitAll()
-                                .requestMatchers("/ws/chat").permitAll()
                                 .anyRequest().authenticated()) // 그 외 모든 요청 인증처리
                 .addFilter(corsFilter())
                 .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)

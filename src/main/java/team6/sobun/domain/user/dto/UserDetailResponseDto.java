@@ -31,7 +31,7 @@ public class UserDetailResponseDto {
 
         // 사용자의 게시물 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.userPosts = userPosts.stream()
-                .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
+                .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(),post.getStatus().name(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
                         post.getPrice(), post.getStatus().name()))
@@ -43,7 +43,7 @@ public class UserDetailResponseDto {
 
         // 핀한 게시물 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.pinedPosts = pinedPosts.stream()
-                .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(), post.getTitle(), post.getUser().getNickname(),
+                .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(),post.getStatus().name(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
                         post.getPrice(), post.getStatus().name()))

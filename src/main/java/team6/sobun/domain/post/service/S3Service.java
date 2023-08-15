@@ -95,21 +95,25 @@ public class S3Service {
      * @param imageUrl 삭제할 이미지의 URL
      * @throws IllegalArgumentException 이미지 삭제 실패 시 발생하는 예외
      */
-    public void delete(String imageUrl) {
-        if (StringUtils.hasText(imageUrl)) {
-            String fileName = extractObjectKeyFromUrl(imageUrl);
-            try {
-                String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-                if (!amazonS3.doesObjectExist(bucket, decodedFileName)) {
-                    throw new AmazonS3Exception(decodedFileName + " 은 존재하지 않습니다");
+    public void delete(List<String> imageUrlList) {
+        for (String imageUrl : imageUrlList) {
+            if (StringUtils.hasText(imageUrl)) {
+                String fileName = extractObjectKeyFromUrl(imageUrl);
+                try {
+                    String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+                    if (amazonS3.doesObjectExist(bucket, decodedFileName)) {
+                        amazonS3.deleteObject(bucket, decodedFileName);
+                        log.info("파일 삭제: " + decodedFileName);
+                    } else {
+                        log.warn("존재하지 않는 파일: " + decodedFileName);
+                    }
+                } catch (IllegalArgumentException e) {
+                    throw new UploadException(ErrorCodeEnum.FILE_DECODE_FAIL, e);
                 }
-                amazonS3.deleteObject(bucket, decodedFileName);
-                log.info("파일 삭제: " + decodedFileName);
-            } catch (IllegalArgumentException e) {
-                throw new UploadException(ErrorCodeEnum.FILE_DECODE_FAIL, e);
             }
         }
     }
+
 
     /**
      * 이미지 URL에서 S3 객체 키를 추출합니다.

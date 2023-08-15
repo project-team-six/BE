@@ -3,16 +3,21 @@ package team6.sobun.domain.chat.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import team6.sobun.domain.chat.dto.ChatRoom;
+import team6.sobun.domain.chat.entity.LoginInfo;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.security.UserDetailsImpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,18 +48,10 @@ public class ChatRoomController {
 
     @PostMapping("/room")
     @ResponseBody
-    public ChatRoom createRoom(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request) {
-        String token = jwtProvider.getTokenFromHeader(request);
-        String accessToken = jwtProvider.substringHeaderToken(token);
-        if (token != null && jwtProvider.validateToken(accessToken)) {
-            String userId = userDetails.getUser().getNickname();
-            ChatRoom chatRoom = chatRoomRepository.createChatRoom(userId);
-            return chatRoom;
-        } else {
-            throw new RuntimeException("액세스 실패 = 유저정보 없음");
-        }
+    public ChatRoom createRoom(@RequestParam String name) {
+        ChatRoom chatRoom = chatRoomRepository.createChatRoom(name);
+        return chatRoom;
     }
-
 
     @GetMapping("/room/enter/{roomId}")
     public String roomDetail(Model model, @PathVariable String roomId) {
@@ -62,10 +59,27 @@ public class ChatRoomController {
         log.info("채팅 방 입장 페이지로 이동: roomId={}", roomId);
         return "chat/roomdetail";
     }
+    @GetMapping("/room/enter2/{roomId}")
+    @ResponseBody
+    public Map<String, String> roomDetail(@PathVariable String roomId) {
+        Map<String, String> response = new HashMap<>();
+        response.put("roomId", roomId);
+        log.info("채팅 방 입장 페이지로 이동: roomId={}", roomId);
+        return response;
+    }
+
 
     @GetMapping("/room/{roomId}")
     @ResponseBody
     public ChatRoom roomInfo(@PathVariable String roomId) {
         return chatRoomRepository.findRoomById(roomId);
+    }
+    @GetMapping("/user")
+    @ResponseBody
+    public LoginInfo getUserInfo(@AuthenticationPrincipal Authentication auth) {
+        auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName();
+        log.info("이름이 뭐가 들어오지?={}",name);
+        return LoginInfo.builder().name(name).token(jwtProvider.generateToken(name)).build();
     }
 }

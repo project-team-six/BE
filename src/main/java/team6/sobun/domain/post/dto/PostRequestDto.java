@@ -2,10 +2,10 @@ package team6.sobun.domain.post.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import team6.sobun.domain.post.entity.Category;
 
 import java.util.Date;
-
 @Getter
 @NoArgsConstructor
 public class PostRequestDto {

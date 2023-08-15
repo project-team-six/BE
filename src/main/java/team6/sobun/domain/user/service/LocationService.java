@@ -39,3 +39,5 @@ public class LocationService {
         return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
     }
 }
+
+}

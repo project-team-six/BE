@@ -108,6 +108,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(userId),username, nickname, role, profileImageUrl, location);
         jwtProvider.addJwtHeader(token, response);
 
+
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
                 .id(username)

@@ -92,10 +92,12 @@ public class PostResponseDto {
     }
 
     // 유저 조회 시에 사용하는 생성자
-    public PostResponseDto(Long id, Long userId, Category category, String title, String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList, long pined, int views, String transactionStartDate, String transactionEndDate, String consumerPeriod, String purchaseDate, String location, String price, String status) {
+
+    public PostResponseDto(Long id, Long userId, Category category,String status, String title, String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList, long pined, int views, String transactionStartDate, String transactionEndDate, String consumerPeriod, String purchaseDate, String location, String price) {
         this.id = id;
         this.userId = userId;
         this.category = category;
+        this.status = status;
         this.title = title;
         this.nickname = nickname;
         this.content = content;
@@ -110,5 +112,6 @@ public class PostResponseDto {
         this.location = location;
         this.price = price;
         this.status = status;
+
     }
-}
+

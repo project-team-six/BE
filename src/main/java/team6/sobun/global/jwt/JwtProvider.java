@@ -101,7 +101,7 @@ public class JwtProvider {
     }
     public String getNickNameFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.get("nickname", String.class);
+        return claims.get("sub", String.class);
     }
 
     /**
@@ -149,6 +149,7 @@ public class JwtProvider {
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username)
+
                         .claim("userId", userId)
                         .claim("nickname", nickname)
                         .claim(AUTHORIZATION_KEY, role)
@@ -355,4 +356,24 @@ public class JwtProvider {
             throw new RuntimeException("액세스 토큰 만료 실패");
         }
     }
+
+    public String generateToken(String name) {
+        Date date = new Date();
+        return
+        Jwts.builder()
+                .setSubject(name)
+                .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
+                .compact();
+    }
+    public String extractUsername(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getSubject();
+    }
 }
+

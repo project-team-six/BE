@@ -126,10 +126,31 @@ public class Post extends Timestamped {
     }
 
     public void updateAll(PostRequestDto postRequestDto, List<String> imageUrlList) {
+        this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
-        this.imageUrlList = imageUrlList;
+        this.transactionStartDate = postRequestDto.getTransactionStartDate();
+        this.transactionEndDate = postRequestDto.getTransactionEndDate();
+        this.consumerPeriod = postRequestDto.getConsumerPeriod();
+        this.purchaseDate = postRequestDto.getPurchaseDate();
+        this.price = postRequestDto.getPrice();
+        this.imageUrlList.clear();
+        this.imageUrlList.addAll(imageUrlList);
     }
+    public void updateAllWithoutImages(PostRequestDto postRequestDto, List<String> existingImageUrlList) {
+        this.category = postRequestDto.getCategory();
+        this.title = postRequestDto.getTitle();
+        this.content = postRequestDto.getContent();
+        this.transactionStartDate = postRequestDto.getTransactionStartDate();
+        this.transactionEndDate = postRequestDto.getTransactionEndDate();
+        this.consumerPeriod = postRequestDto.getConsumerPeriod();
+        this.purchaseDate = postRequestDto.getPurchaseDate();
+        this.price = postRequestDto.getPrice();
+        this.imageUrlList.clear();
+        this.imageUrlList.addAll(existingImageUrlList); // 이미지 URL 리스트는 유지됨
+    }
+
+
     public void increaseViews() {
         this.views++;
     }

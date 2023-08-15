@@ -38,6 +38,12 @@ public class Location {
         this.user = user;
     }
 
+    public Location(String sido, String sigungu, String dong) {
+        this.sido = sido;
+        this.sigungu = sigungu;
+        this.dong = dong;
+    }
+
     public String myAddress(String sido, String sigungu, String dong) {
         return sido+ " " + sigungu + " " + dong;
     }

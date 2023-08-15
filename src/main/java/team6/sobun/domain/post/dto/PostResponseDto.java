@@ -26,6 +26,7 @@ public class PostResponseDto {
     private String content;
     private List<CommentResponseDto> commentList;
     private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
     private List<String> imageUrlList;
     private String transactionStartDate;
     private String transactionEndDate;
@@ -38,6 +39,7 @@ public class PostResponseDto {
     private String location;
     private String price;
     private String status;
+    private double mannerTemperature;
 
     // 전체 조회 시에 사용되는 생성자
     @QueryProjection
@@ -51,6 +53,7 @@ public class PostResponseDto {
                 .map(String::new)
                 .collect(Collectors.toList());
         this.createdAt = post.getCreatedAt();
+        this.modifiedAt = post.getModifiedAt();
         this.location = post.getLocation();
         this.views = post.getViews();
         this.pined = post.getPined();
@@ -58,6 +61,7 @@ public class PostResponseDto {
         if (post.getStatus() != null) {
             this.status = post.getStatus().name();
         }
+        this.mannerTemperature = post.getMannerTemperature();
     }
 
 
@@ -76,6 +80,7 @@ public class PostResponseDto {
         this.consumerPeriod = post.getConsumerPeriod();
         this.purchaseDate = post.getPurchaseDate();
         this.createdAt = post.getCreatedAt();
+        this.modifiedAt = post.getModifiedAt();
         this.imageUrlList = post.getImageUrlList().stream()
                 .map(String::new)
                 .collect(Collectors.toList());
@@ -89,6 +94,7 @@ public class PostResponseDto {
         if (post.getStatus() != null) {
             this.status = post.getStatus().name();
         }
+        this.mannerTemperature = post.getMannerTemperature();
     }
 
     // 유저 조회 시에 사용하는 생성자

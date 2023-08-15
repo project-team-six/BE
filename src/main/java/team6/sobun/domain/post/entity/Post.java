@@ -89,6 +89,9 @@ public class Post extends Timestamped {
     @Enumerated(EnumType.STRING)
     private PostStatus status = PostStatus.IN_PROGRESS;
 
+    @Column
+    private double mannerTemperature;
+
     @JsonIgnore
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
@@ -112,6 +115,7 @@ public class Post extends Timestamped {
         this.location = user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong());
         this.price = postRequestDto.getPrice();
         this.user = user;
+        this.mannerTemperature = user.getMannerTemperature();
 
     }
     public void markInProgress() {

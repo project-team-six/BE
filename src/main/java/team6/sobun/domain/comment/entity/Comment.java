@@ -34,10 +34,14 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
 
     public Comment(CommentRequestDto commentRequestDto, User user) {
         this.content = commentRequestDto.getContent();
         this.user = user;
+        this.profileImageUrl = user.getProfileImageUrl();
     }
 
     public void update(CommentRequestDto commentRequestDto) {

@@ -35,6 +35,9 @@ public class QUser extends EntityPathBase<User> {
 
     public final NumberPath<Double> mannerTemperature = createNumber("mannerTemperature", Double.class);
 
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
+
     public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");

@@ -14,11 +14,15 @@ public class CommentResponseDto {
     private String content;
     private String nickname;
     private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private String profileImageUrl;
 
     public CommentResponseDto(Comment comment) {
         this.id = comment.getId();
         this.content = comment.getContent();
         this.nickname = comment.getUser().getNickname();
         this.createdAt = comment.getCreatedAt();
+        this.modifiedAt = comment.getModifiedAt();
+        this.profileImageUrl = comment.getProfileImageUrl();
     }
 }

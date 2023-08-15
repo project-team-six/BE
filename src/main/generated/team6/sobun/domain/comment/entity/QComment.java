@@ -31,7 +31,12 @@ public class QComment extends EntityPathBase<Comment> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
+
     public final team6.sobun.domain.post.entity.QPost post;
+
+    public final StringPath profileImageUrl = createString("profileImageUrl");
 
     public final team6.sobun.domain.user.entity.QUser user;
 

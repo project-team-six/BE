@@ -129,8 +129,12 @@ public class UserController {
         // 카카오 로그인에 성공한 후, 사용자 정보 가져오기
         User user = kakaoService.kakaoSignUpOrLinkUser(code);
         log.info("카카오 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
+
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+
         jwtProvider.addJwtHeaders(token,refreshToken, response);
 
         // refresh 토큰은 redis에 저장
@@ -198,9 +202,12 @@ public class UserController {
         // 네이버 로그인에 성공한 후, 사용자 정보 가져오기
         User user = naverService.naverSignUpOrLinkUser(code);
         log.info("네이버 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
-        jwtProvider.addJwtHeaders(token, refreshToken, response);
+
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+
 
 
         // refresh 토큰은 redis에 저장
@@ -233,9 +240,11 @@ public class UserController {
         // 페이스북 로그인에 성공한 후, 사용자 정보 가져오기
         User user = facebookService.facebookSignUpOrLinkUser(code);
         log.info("페이스북 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),user.getProfileImageUrl());
-        jwtProvider.addJwtHeaders(token,refreshToken, response);
+
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(),
+                user.getRole(), user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
 
 
         // refresh 토큰은 redis에 저장
@@ -269,8 +278,10 @@ public class UserController {
         // 구글 로그인에 성공한 후, 사용자 정보 가져오기
         User user = googleService.googleSignUpOrLinkUser(code);
         log.info("구글 로그인 성공. 유저 ID: {}", user.getId());
-        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(), user.getProfileImageUrl());
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(), user.getProfileImageUrl());
+        String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
+                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
         jwtProvider.addJwtHeaders(token,refreshToken, response);
 
         // refresh 토큰은 redis에 저장

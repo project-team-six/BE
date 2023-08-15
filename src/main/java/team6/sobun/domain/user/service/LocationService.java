@@ -28,7 +28,7 @@ public class LocationService {
     private final JwtProvider jwtProvider;
 
     @Transactional
-    public ApiResponse<?> locationUpdate(HttpServletResponse response,LocationRquestDto locationRquestDto, User user) {
+    public ApiResponse<?> locationUpdate(LocationRquestDto locationRquestDto, User user,HttpServletResponse response) {
         User findUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자 정보가 다릅니다."));
 
@@ -37,29 +37,25 @@ public class LocationService {
             checkLocation.update(locationRquestDto);
             checkLocation = em.merge(checkLocation);
             locationRepository.save(checkLocation);
-            String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
-                    user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
-            String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
-                    user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
-            jwtProvider.addJwtHeaders(token,refreshToken, response);
-
-            // refresh 토큰은 redis에 저장
-            RefreshToken refresh = RefreshToken.builder()
-                    .id(user.getEmail())
-                    .refreshToken(refreshToken)
-                    .build();
-            log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
-            redisRepository.save(refresh);
+            User updateUser = checkLocation.getUser();
+            addToken(updateUser,response);
             return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
         }
 
         findUser.updateLocation(locationRquestDto, user);
         userRepository.save(findUser);
         locationRepository.save(findUser.getLocation());
+        User updateUser = checkLocation.getUser();
+        addToken(updateUser,response);
+        return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
+    }
+
+    private ApiResponse<?> addToken(User user, HttpServletResponse response) {
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
                 user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
                 user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+
         jwtProvider.addJwtHeaders(token,refreshToken, response);
 
         // refresh 토큰은 redis에 저장
@@ -69,7 +65,7 @@ public class LocationService {
                 .build();
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
         redisRepository.save(refresh);
-        return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
+        return ApiResponse.success("토큰 발급 성공 !");
     }
 }
 

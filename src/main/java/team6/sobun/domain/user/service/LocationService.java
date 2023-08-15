@@ -32,18 +32,12 @@ public class LocationService {
             locationRepository.save(checkLocation);
             return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
         }
+
         findUser.updateLocation(locationRquestDto, user);
+        userRepository.save(findUser);
         locationRepository.save(findUser.getLocation());
         return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
     }
 }
 
-
-
-
-
-
-
-
-
-
+}

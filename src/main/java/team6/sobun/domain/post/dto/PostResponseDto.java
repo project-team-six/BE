@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.post.entity.Category;
 import team6.sobun.domain.post.entity.Post;
+import team6.sobun.domain.post.entity.PostStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -91,6 +92,7 @@ public class PostResponseDto {
     }
 
     // 유저 조회 시에 사용하는 생성자
+
     public PostResponseDto(Long id, Long userId, Category category,String status, String title, String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList, long pined, int views, String transactionStartDate, String transactionEndDate, String consumerPeriod, String purchaseDate, String location, String price) {
         this.id = id;
         this.userId = userId;
@@ -109,7 +111,7 @@ public class PostResponseDto {
         this.purchaseDate = purchaseDate;
         this.location = location;
         this.price = price;
+        this.status = status;
 
-        }
     }
 

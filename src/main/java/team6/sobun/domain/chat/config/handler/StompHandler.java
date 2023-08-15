@@ -1,5 +1,8 @@
 package team6.sobun.domain.chat.config.handler;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,7 @@ import team6.sobun.global.jwt.JwtProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.security.SignatureException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,9 +45,8 @@ public class StompHandler implements ChannelInterceptor {
         if (StompCommand.CONNECT == accessor.getCommand()) {
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             log.info("CONNECT {}", jwtToken);
-
             if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-                String token = jwtToken.substring(7); // Remove "Bearer " prefix
+                String token = jwtProvider.substringHeaderToken(jwtToken);  // Remove "Bearer " prefix
                 try {
                     jwtProvider.validateToken(token);
                     String username = jwtProvider.extractUsername(token); // 토큰에서 사용자 이름 추출
@@ -56,16 +59,23 @@ public class StompHandler implements ChannelInterceptor {
                     } else {
                         log.error("인증되지 않은 사용자입니다: {}", username);
                         // 인증되지 않은 사용자 처리 로직
+                        return null; // 인증되지 않은 사용자의 경우 연결을 막습니다.
                     }
-                } catch (Exception e) {
+                } catch (ExpiredJwtException e) {
+                    log.error("Expired JWT token, 만료된 JWT token 입니다.");
+                    // 만료된 토큰 처리 로직
+                    return null; // 만료된 토큰의 경우 연결을 막습니다.
+                } catch (MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
                     log.error("토큰 검증에 실패하였습니다: {}", e.getMessage());
                     // 토큰 검증 실패 처리 로직
+                    return null; // 토큰 검증 실패 시 연결을 막습니다.
                 }
             }
+
         } else if (StompCommand.SUBSCRIBE == accessor.getCommand()) {
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-                String token = jwtToken.substring(7); //
+                String token = jwtProvider.substringHeaderToken(jwtToken); //
                 try {
                     String username = jwtProvider.extractUsername(token); // 토큰에서 사용자 이름 추출
 

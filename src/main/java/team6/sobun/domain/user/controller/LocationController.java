@@ -1,5 +1,6 @@
 package team6.sobun.domain.user.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,9 @@ public class LocationController {
 
     @PutMapping("/auth/location")
     public ApiResponse<?> locationUpdate(@RequestBody LocationRquestDto locationRquestDto,
+                                        HttpServletResponse response,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        return locationService.locationUpdate(locationRquestDto, userDetails.getUser());
+        return locationService.locationUpdate(response,locationRquestDto, userDetails.getUser());
     }
 }

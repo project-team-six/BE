@@ -32,6 +32,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .where(
                         usernameEq(condition.getNickname()),
                         titleEq(condition.getTitle()),
+                        contentEq(condition.getTitle()),
                         categoryEq(condition.getCategory()),
                         locationEq(condition.getLocation()),
                         statusEq(condition.getStatus()))
@@ -51,6 +52,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
     private BooleanExpression titleEq(String titleCond) {
         return hasText(titleCond) ? QPost.post.title.contains(titleCond) : null;
+    }
+    private BooleanExpression contentEq(String contentCond) {
+        return hasText(contentCond) ? QPost.post.content.contains(contentCond) : null;
     }
     private BooleanExpression locationEq(String locationCond) {
         return hasText(locationCond) ? QPost.post.location.contains(locationCond) : null;

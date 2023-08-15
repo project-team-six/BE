@@ -25,6 +25,7 @@ public class SignupRequestDto {
 
     private  String profileImageUrl;
 
+
     private boolean admin = false;
     private String adminToken = "";
 }

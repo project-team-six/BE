@@ -97,11 +97,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUserId();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
         String profileImageUrl = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getProfileImageUrl();
+        String location = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().myAddress(
+                ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().getSido(),
+                ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().getSigungu(),
+                ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().getDong());
 
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
 
-        String token = jwtProvider.createToken(String.valueOf(userId),username, nickname, role,profileImageUrl);
-        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(userId),username, nickname, role, profileImageUrl);
+        String token = jwtProvider.createToken(String.valueOf(userId),username, nickname, role,profileImageUrl, location);
+        String refreshToken = jwtProvider.createRefreshToken(String.valueOf(userId),username, nickname, role, profileImageUrl, location);
         jwtProvider.addJwtHeader(token, response);
 
         // refresh 토큰은 redis에 저장

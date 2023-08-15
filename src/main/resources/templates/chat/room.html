@@ -53,8 +53,6 @@
 <!-- JavaScript -->
 <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
 <script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
-<script src="/webjars/sockjs-client/1.5.1/dist/sockjs.min.js"></script>
-<script src="/webjars/stomp-websocket/2.3.4/dist/stomp.min.js"></script>
 <script>
     var vm = new Vue({
         el: '#app',
@@ -98,10 +96,14 @@
                         // 로그인 성공 시
                         if (successMessage === "로그인 성공") {
                             const jwtToken = response.headers.authorization;
-                            document.cookie = `accessToken=${jwtToken}; path=/;`; // JWT 토큰 저장
+                            const decodedToken = decodeURIComponent(jwtToken); // URL 디코딩
+                            const tokenWithoutBearer = decodedToken.replace("Bearer ", ""); // "Bearer " 제거
+                            document.cookie = `accessToken=${tokenWithoutBearer}; path=/;`;
+
+                            axios.defaults.headers.common['Authorization'] = `${decodedToken}`;
 
                             this.isLoggedIn = true;
-                            this.accessToken = jwtToken; // 토큰 저장
+                            this.accessToken = decodedToken;
                             this.loginData.email = '';
                             this.loginData.password = '';
 
@@ -115,7 +117,7 @@
                     });
             },
 
-            findAllRoom() {
+            findAllRoom:function() {
                 axios.get('/chat/rooms', {
 
                 })
@@ -127,37 +129,50 @@
                     });
             },
 
-            createRoom() {
+            createRoom: function() {
                 if (this.room_name === '') {
                     alert('방 제목을 입력해 주십시요.');
                     return;
                 }
-                const params = new URLSearchParams();
-                params.append('name', this.room_name);
 
-                axios.post('/chat/room', params, {
+                const decodedToken = this.decodeToken(this.accessToken); // 토큰 디코딩
+                const tokenWithoutBearer = this.accessToken.replace("Bearer ", ""); // "Bearer " 제거
+
+                axios.post('/chat/room', null, {
+                    params: { name: this.room_name }, // 요청 매개변수
                     headers: {
-                        Authorization: `Bearer ${this.accessToken}`
+                        Authorization: `Bearer ${tokenWithoutBearer}`
                     }
                 })
                     .then(response => {
+                        console.log(decodedToken);
                         alert(`${response.data.name} 방 개설에 성공하였습니다.`);
                         this.room_name = '';
                         this.findAllRoom();
                     })
                     .catch(error => {
+                        console.log(decodedToken);
                         alert('채팅방 개설에 실패하였습니다.');
                         console.error('채팅방 개설 중 에러 발생:', error);
                     });
             },
-            enterRoom(roomId, roomName) {
+            decodeToken(token) {
+                const tokenParts = token.split('.');
+                if (tokenParts.length !== 3) {
+                    throw new Error('Invalid token format');
+                }
+                return JSON.parse(atob(tokenParts[1]));
+            },
+
+
+
+            enterRoom: function (roomId, roomName) {
                 const accessToken = this.getCookie('accessToken');
 
                 if (!accessToken) {
                     alert('로그인 후 이용 가능합니다.');
                     return;
                 }
-
                 localStorage.setItem('wschat.roomId', roomId);
                 localStorage.setItem('wschat.roomName', roomName);
                 location.href = `/chat/room/enter/${roomId}`;

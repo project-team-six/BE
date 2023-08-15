@@ -30,8 +30,8 @@ dependencies {
     implementation 'org.webjars.bower:axios:0.17.1'
 
     // 웹소켓
-    implementation 'org.webjars:sockjs-client:1.1.2'
-    implementation 'org.webjars:stomp-websocket:2.3.3-1'
+    implementation 'org.webjars:sockjs-client:1.5.1'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     implementation 'com.github.downgoon:marvin:1.5.5'

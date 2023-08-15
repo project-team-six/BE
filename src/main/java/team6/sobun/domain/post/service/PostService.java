@@ -94,17 +94,24 @@ public class PostService {
     }
     private void updatePostDetail(PostRequestDto postRequestDto, List<MultipartFile> images, Post post) {
         if (images != null && !images.isEmpty()) {
-            List<String> existingImageUrl = post.getImageUrlList();
-            List<String> imageUrl = s3Service.uploads(images);
-            post.updateAll(postRequestDto, imageUrl);
+            List<String> existingImageUrl = post.getImageUrlList(); // 기존 이미지 URL 리스트
+            List<String> imageUrlList = s3Service.uploads(images); // 새로운 이미지 URL 리스트
 
             // 새로운 이미지 업로드 후에 기존 이미지 삭제
-            if (StringUtils.hasText(String.valueOf(existingImageUrl))) {
-                s3Service.delete(String.valueOf(existingImageUrl));
+            if (!existingImageUrl.isEmpty()) {
+                s3Service.delete(existingImageUrl);
             }
+
+            post.updateAll(postRequestDto, imageUrlList);
+        } else {
+            List<String> existingImageUrl = post.getImageUrlList(); // 기존 이미지 URL 리스트
+            post.updateAllWithoutImages(postRequestDto, existingImageUrl); // 이미지 없이 업데이트
         }
-        post.update(postRequestDto);
     }
+
+
+
+
 
     @Transactional
     public ApiResponse<?> deletePost(Long postId, User user) {
@@ -133,7 +140,7 @@ public class PostService {
     private void deleteImage(Post post) {
         List<String> imageUrlList = post.getImageUrlList();
         if (StringUtils.hasText(String.valueOf(imageUrlList))) {
-            s3Service.delete(String.valueOf(imageUrlList));
+            s3Service.delete(imageUrlList);
         }
     }
 

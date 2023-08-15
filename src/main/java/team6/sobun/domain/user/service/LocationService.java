@@ -22,12 +22,13 @@ public class LocationService {
 
     @Transactional
     public ApiResponse<?> locationUpdate(LocationRquestDto locationRquestDto, User user) {
-        User findUser = userRepository.findById(user.getId()).orElseThrow(()
-                -> new IllegalArgumentException("사용자 정보가 다릅니다."));
+        User findUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보가 다릅니다."));
 
-        Location checkLocation = em.find(Location.class, user.getId());
+        Location checkLocation = findUser.getLocation();
         if (checkLocation != null) {
             checkLocation.update(locationRquestDto);
+            checkLocation = em.merge(checkLocation);
             locationRepository.save(checkLocation);
             return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
         }
@@ -36,3 +37,13 @@ public class LocationService {
         return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
     }
 }
+
+
+
+
+
+
+
+
+
+

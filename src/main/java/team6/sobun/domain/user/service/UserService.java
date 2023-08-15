@@ -32,6 +32,7 @@ import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -152,7 +153,7 @@ public class UserService {
         if (image == null || image.isEmpty()) {
             String existingImageUrl = user.getProfileImageUrl();
             if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
-                s3Service.delete(existingImageUrl);
+                s3Service.delete(Collections.singletonList(existingImageUrl));
                 existingUser.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
             }
         } else {
@@ -173,12 +174,12 @@ public class UserService {
 
             // 기존 이미지가 존재하고 S3에 해당 파일이 있는 경우에만 삭제 처리
             if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
-                s3Service.delete(existingImageUrl);
+                s3Service.delete(Collections.singletonList(existingImageUrl));
             }
         } else {
             // 이미지가 없을 경우 기존 이미지를 삭제 처리
             if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
-                s3Service.delete(existingImageUrl);
+                s3Service.delete(Collections.singletonList(existingImageUrl));
                 user.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
             }
         }

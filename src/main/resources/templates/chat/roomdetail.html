@@ -36,15 +36,15 @@
     </div>
     <ul class="list-group">
         <li class="list-group-item" v-for="message in messages">
-            {{message.sender}} - {{message.message}}
+            {{message.sender}} - {{message.message}}</a>
         </li>
     </ul>
 </div>
 <!-- JavaScript -->
 <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
 <script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
-<script src="/webjars/sockjs-client/1.1.2/sockjs.min.js"></script>
-<script src="/webjars/stomp-websocket/2.3.3-1/stomp.min.js"></script>
+<script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
 <script>
     // websocket & stomp initialize
     var sock = new SockJS("/ws-stomp");
@@ -60,65 +60,48 @@
             token: '',
             userCount: 0
         },
-
         created() {
-            this.roomId = localStorage.getItem('wschat.roomId');
-            this.roomName = localStorage.getItem('wschat.roomName');
+            this.token = this.getCookie('accessToken');
             var _this = this;
-            // 액세스 토큰을 쿠키에서 가져오기
-            var accessToken = _this.getCookie('accessToken');
-            if (accessToken) {
-                _this.token = accessToken;
-                ws.connect({"token": _this.token}, function (frame) {
-                    ws.subscribe("/sub/chat/room/" + _this.roomId, function (message) {
+            axios.get('/chat/user', {
+                headers: {
+                    'Authorization': 'Bearer ' + this.token
+                }
+            }).then(response => {
+                _this.token = response.data.token;
+
+                // localStorage 값 가져오기
+                _this.roomId = localStorage.getItem('wschat.roomId');
+                _this.roomName = localStorage.getItem('wschat.roomName');
+
+                // WebSocket 연결
+                ws.connect({"Authorization": 'Bearer ' + _this.token}, function(frame) {
+                    ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {
                         var recv = JSON.parse(message.body);
                         _this.recvMessage(recv);
                     });
-                    // 대화 내용 가져오는 요청을 추가합니다.
-                    axios.get('/chat/messages/' + _this.roomId)
-                        .then(response => {
-                            _this.messages = response.data;
-                        })
-                        .catch(error => {
-                            console.error('Failed to fetch chat messages:', error);
-                        });
-
-                }, function (error) {
+                }, function(error) {
                     alert("서버 연결에 실패 하였습니다. 다시 접속해 주십시요.");
-                    location.href = "/chat/room";
+                    location.href="/chat/room";
                 });
-            }
+            });
         },
 
         methods: {
 
-            sendMessage: function (type) {
-                ws.send("/pub/chat/message", {"token": this.token}, JSON.stringify({
-                    type: type,
-                    roomId: this.roomId,
-                    message: this.message
-                }));
+            getCookie: function(name) {
+                var value = "; " + document.cookie;
+                var parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(";").shift();
+            },
+            sendMessage: function(type) {
+                ws.send("/pub/chat/message", {"Authorization": this.token}, JSON.stringify({type:type, roomId:this.roomId, message:this.message}));
                 this.message = '';
             },
-            recvMessage: function (recv) {
+            recvMessage: function(recv) {
                 this.userCount = recv.userCount;
-                this.messages.unshift({"type": recv.type, "sender": recv.sender, "message": recv.message})
-            },
-            // 이름에 해당하는 쿠키 값을 가져오는 함수
-            getCookie(accessToken) {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${accessToken}=`);
-                if (parts.length === 2) return parts.pop().split(';').shift();
-            },
-            decodeAccessToken(token) {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
+                this.messages.unshift({"type":recv.type,"sender":recv.sender,"message":recv.message})
             }
-
         }
     });
 </script>

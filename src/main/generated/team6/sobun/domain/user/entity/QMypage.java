@@ -11,16 +11,16 @@ import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
- * QUser is a Querydsl query type for User
+ * QMypage is a Querydsl query type for Mypage
  */
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
-public class QUser extends EntityPathBase<User> {
+public class QMypage extends EntityPathBase<Mypage> {
 
-    private static final long serialVersionUID = -140612263L;
+    private static final long serialVersionUID = 2087391305L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
-    public static final QUser user = new QUser("user");
+    public static final QMypage mypage = new QMypage("mypage");
 
     public final team6.sobun.global.utils.QTimestamped _super = new team6.sobun.global.utils.QTimestamped(this);
 
@@ -38,40 +38,44 @@ public class QUser extends EntityPathBase<User> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
-    public final QMypage mypage;
-
     public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");
 
     public final StringPath phoneNumber = createString("phoneNumber");
 
+    public final ListPath<team6.sobun.domain.post.entity.Post, team6.sobun.domain.post.entity.QPost> pinedPosts = this.<team6.sobun.domain.post.entity.Post, team6.sobun.domain.post.entity.QPost>createList("pinedPosts", team6.sobun.domain.post.entity.Post.class, team6.sobun.domain.post.entity.QPost.class, PathInits.DIRECT2);
+
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
     public final EnumPath<UserRoleEnum> role = createEnum("role", UserRoleEnum.class);
 
+    public final QUser user;
+
     public final StringPath username = createString("username");
 
-    public QUser(String variable) {
-        this(User.class, forVariable(variable), INITS);
+    public final ListPath<team6.sobun.domain.post.entity.Post, team6.sobun.domain.post.entity.QPost> userPosts = this.<team6.sobun.domain.post.entity.Post, team6.sobun.domain.post.entity.QPost>createList("userPosts", team6.sobun.domain.post.entity.Post.class, team6.sobun.domain.post.entity.QPost.class, PathInits.DIRECT2);
+
+    public QMypage(String variable) {
+        this(Mypage.class, forVariable(variable), INITS);
     }
 
-    public QUser(Path<? extends User> path) {
+    public QMypage(Path<? extends Mypage> path) {
         this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
-    public QUser(PathMetadata metadata) {
+    public QMypage(PathMetadata metadata) {
         this(metadata, PathInits.getFor(metadata, INITS));
     }
 
-    public QUser(PathMetadata metadata, PathInits inits) {
-        this(User.class, metadata, inits);
+    public QMypage(PathMetadata metadata, PathInits inits) {
+        this(Mypage.class, metadata, inits);
     }
 
-    public QUser(Class<? extends User> type, PathMetadata metadata, PathInits inits) {
+    public QMypage(Class<? extends Mypage> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.location = inits.isInitialized("location") ? new QLocation(forProperty("location"), inits.get("location")) : null;
-        this.mypage = inits.isInitialized("mypage") ? new QMypage(forProperty("mypage"), inits.get("mypage")) : null;
+        this.user = inits.isInitialized("user") ? new QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }

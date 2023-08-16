@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface PostRepositoryCustom {
 
-    Page<PostResponseDto> serachPostByPage(PostSearchCondition condition, Pageable pageable);
+    Page<PostResponseDto> searchPostByPage(PostSearchCondition condition, Pageable pageable);
 
 
 }

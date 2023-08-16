@@ -5,10 +5,17 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.parameters.P;
+import team6.sobun.domain.post.dto.PostResponseDto;
+import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.user.dto.location.LocationRquestDto;
 import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
+import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
 import team6.sobun.domain.user.dto.social.KakaoDto;
 import team6.sobun.global.utils.Timestamped;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -51,8 +58,12 @@ public class User extends Timestamped {
     @JoinColumn(name = "location_id")
     private Location location;
 
+    @OneToOne(mappedBy = "user")
+    private Mypage mypage;
+
+
     @Builder
-    public User(String email, String phoneNumber,String nickname,String password, String username,  String profileImageUrl, UserRoleEnum role) {
+    public User(String email, String phoneNumber, String nickname, String password, String username, String profileImageUrl, UserRoleEnum role) {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;

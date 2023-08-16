@@ -62,20 +62,11 @@
         },
         created() {
             this.token = this.getCookie('accessToken');
+            this.roomId = localStorage.getItem('wschat.roomId');
+            this.roomName = localStorage.getItem('wschat.roomName');
             var _this = this;
-            axios.get('/chat/user', {
-                headers: {
-                    'Authorization': 'Bearer ' + this.token
-                }
-            }).then(response => {
-                _this.token = response.data.token;
-
-                // localStorage 값 가져오기
-                _this.roomId = localStorage.getItem('wschat.roomId');
-                _this.roomName = localStorage.getItem('wschat.roomName');
-
-                // WebSocket 연결
-                ws.connect({"Authorization": 'Bearer ' + _this.token}, function(frame) {
+            axios.get('/chat/user').then(response => {
+                ws.connect({'Authorization':'Bearer ' + _this.token}, function(frame) {
                     ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {
                         var recv = JSON.parse(message.body);
                         _this.recvMessage(recv);

@@ -1,0 +1,240 @@
+package team6.sobun.domain.user.service.util;
+
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+import team6.sobun.domain.post.entity.Post;
+import team6.sobun.domain.post.service.S3Service;
+import team6.sobun.domain.user.dto.find.FindEmailRequestDto;
+import team6.sobun.domain.user.dto.find.FindEmailResponseDto;
+import team6.sobun.domain.user.dto.find.PasswordRequestDto;
+import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
+import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
+import team6.sobun.domain.user.dto.mypage.MypageSearchCondition;
+import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.repository.UserRepository;
+import team6.sobun.domain.user.repository.mypage.MypageRepository;
+import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.stringCode.SuccessCodeEnum;
+import team6.sobun.global.utils.ResponseUtils;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class MyPageService {
+
+    @Value("${spring.mail.username}")
+    private String from;
+
+    private final UserRepository userRepository;
+    private final MypageRepository mypageRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final SpringTemplateEngine templateEngine;
+    private final JavaMailSender mailSender;
+    private final S3Service s3Service;
+
+    @Transactional(readOnly = true)
+    public Page<MypageResponseDto> getCurrentUserDetails(Long requestingUserId, Pageable pageable) {
+        Optional<User> optionalUser = userRepository.findById(requestingUserId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            Page<Post> userPosts = userRepository.findPostsByUserId(requestingUserId, pageable);
+            List<Post> pinnedPosts = userRepository.findPinnedPostsByUserId(requestingUserId);
+
+            // 조회한 정보를 DTO로 변환하여 리턴합니다.
+            return new PageImpl<>(
+                    Collections.singletonList(new MypageResponseDto(
+                            user.getId(),
+                            user.getNickname(),
+                            user.getProfileImageUrl(),
+                            user.getPhoneNumber(),
+                            user.getMannerTemperature(),
+                            userPosts.getContent(), // 페이지의 컨텐츠만 사용
+                            pinnedPosts
+                    )),
+                    pageable,
+                    userPosts.getTotalElements() // 전체 요소 개수 설정
+            );
+        } else {
+            // 사용자를 찾지 못한 경우 에러 응답을 리턴합니다.
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MypageResponseDto> getUserDetails(Long userId, Pageable pageable) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            Page<Post> userPosts = userRepository.findPostsByUserId(userId, pageable);
+
+            // 조회한 정보를 DTO로 변환하여 리턴합니다.
+            return new PageImpl<>(
+                    Collections.singletonList(new MypageResponseDto(
+                            user.getId(),
+                            user.getNickname(),
+                            user.getProfileImageUrl(),
+                            user.getPhoneNumber(),
+                            user.getMannerTemperature(),
+                            userPosts.getContent(), // 페이지의 컨텐츠만 사용
+                            null
+                    )),
+                    pageable,
+                    userPosts.getTotalElements() // 전체 요소 개수 설정
+            );
+        } else {
+            // 사용자를 찾지 못한 경우 에러 응답을 리턴합니다.
+            throw new IllegalArgumentException();
+        }
+    }
+
+
+
+    @Transactional
+    public ApiResponse<?> updateUserProfile(Long id, MypageRequestDto mypageRequestDto, User user) {
+        log.info("닉네임, 비밀번호, 전화번호 변경 요청");
+        User checkUser = userRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("존재하지 않는 사용자 입니다."));
+
+        if (!checkUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+
+        if (mypageRequestDto.getNickname() != null) {
+            checkUser.updateNickname(mypageRequestDto.getNickname());
+        }
+
+        if (mypageRequestDto.getPassword() != null) {
+            String encodedPassword = passwordEncoder.encode(mypageRequestDto.getPassword());
+            checkUser.updatePassword(encodedPassword);
+        }
+
+        if (mypageRequestDto.getPhoneNumber() != null) {
+            checkUser.updatePhoneNumber(mypageRequestDto.getPhoneNumber());
+        }
+
+        checkUser.update(mypageRequestDto);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
+    }
+
+
+    @Transactional
+    public ApiResponse<?> updateUserImage(Long userId, MultipartFile image, User user) {
+        log.info("'{}'님이 프로필 이미지를 변경했습니다.", user.getNickname());
+
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (!existingUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+
+        // 이미지가 없을 경우 기존 이미지를 삭제 처리
+        if (image == null || image.isEmpty()) {
+            String existingImageUrl = user.getProfileImageUrl();
+            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
+                s3Service.delete(Collections.singletonList(existingImageUrl));
+                existingUser.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
+            }
+        } else {
+            updateUserImageDetail(image, existingUser);
+        }
+
+        userRepository.save(existingUser);
+
+        // 프로필 이미지 변경에 대한 성공 응답을 반환합니다.
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_IMAGE_SUCCESS);
+    }
+
+    private void updateUserImageDetail(MultipartFile image, User user) {
+        String existingImageUrl = user.getProfileImageUrl();
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = s3Service.upload(image);
+            user.setProfileImageUrl(imageUrl);
+
+            // 기존 이미지가 존재하고 S3에 해당 파일이 있는 경우에만 삭제 처리
+            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
+                s3Service.delete(Collections.singletonList(existingImageUrl));
+            }
+        } else {
+            // 이미지가 없을 경우 기존 이미지를 삭제 처리
+            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
+                s3Service.delete(Collections.singletonList(existingImageUrl));
+                user.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
+            }
+        }
+    }
+    @Transactional(readOnly = true)
+    public Page<MypageResponseDto> searchMypageByPage(MypageSearchCondition condition, Pageable pageable) {
+        return mypageRepository.searchMypageByPage(condition,pageable);
+    }
+
+
+    @Transactional
+    public ApiResponse<?> findPassword(PasswordRequestDto requestDto) throws Exception {
+        User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
+                new IllegalArgumentException("존재하지 않는 이메일 입니다."));
+
+        if (!requestDto.getUsername().equals(user.getUsername())) {
+            throw new IllegalArgumentException("사용자 정보가 다릅니다.");
+        }
+        if (!requestDto.getPhoneNumber().equals(user.getPhoneNumber())) {
+            throw new IllegalArgumentException("사용자 정보가 다릅니다.");
+        }
+
+        String changePassword = UUID.randomUUID().toString();
+        changePassword = changePassword.substring(0, 8);
+
+        // Thymeleaf를 사용하여 HTML 템플릿 생성
+        String htmlContent = generateHtmlTemplate(changePassword);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        MimeMessageHelper h = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        h.setFrom(from);
+        h.setTo(requestDto.getEmail());
+        h.setSubject("임시 비밀번호 입니다.");
+        h.setText(htmlContent, true);  // HTML 컨텐츠 설정
+        mailSender.send(mimeMessage);
+
+        String encodePassword = passwordEncoder.encode(changePassword);
+        user.updatePassword(encodePassword);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
+    }
+
+    public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
+        User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전화번호 입니다.")
+                );
+        if (!requestDto.getUsername().equals(user.getUsername())) {
+            throw new IllegalArgumentException("사용자 정보가 다릅니다.");
+        }
+        FindEmailResponseDto responseDto = new FindEmailResponseDto(user.getEmail());
+
+        return responseDto;
+    }
+    private String generateHtmlTemplate(String tempPassword) {
+        Context context = new Context();
+        context.setVariable("tempPassword", tempPassword);
+        return templateEngine.process("new_password_template", context);
+    }
+}

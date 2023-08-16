@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.dto.PostResponseDto;
@@ -23,10 +22,8 @@ import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
-import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
@@ -49,7 +46,7 @@ public class PostService {
     private final UserRepository userRepository;
     // 최신순 전체조회
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
-        return ok(postRepository.serachPostByPage(condition, pageable));
+        return ok(postRepository.searchPostByPage(condition, pageable));
     }
 
     @Transactional

@@ -24,7 +24,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private final JPAQueryFactory query;
 
     @Override
-    public Page<PostResponseDto> serachPostByPage(PostSearchCondition condition, Pageable pageable) {
+    public Page<PostResponseDto> searchPostByPage(PostSearchCondition condition, Pageable pageable) {
         List<PostResponseDto> result = query
                 .select(new QPostResponseDto(QPost.post))
                 .from(QPost.post)

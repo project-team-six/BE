@@ -11,6 +11,8 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
@@ -77,11 +79,15 @@ public class StompHandler implements ChannelInterceptor {
             if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
                 String token = jwtProvider.substringHeaderToken(jwtToken); //
                 try {
-                    String nickname = jwtProvider.getNickNameFromToken(token); // 토큰에서 사용자 이름 추출
+                    // header정보에서 구독 destination정보를 얻고, roomId를 추출한다.
                     String roomId = chatService.getRoomId(Optional.ofNullable((String) message.getHeaders().get("simpDestination")).orElse("InvalidRoomId"));
+                    // 채팅방에 들어온 클라이언트 sessionId를 roomId와 맵핑해 놓는다.(나중에 특정 세션이 어떤 채팅방에 들어가 있는지 알기 위함)
                     String sessionId = (String) message.getHeaders().get("simpSessionId");
                     redisChatRepository.setUserEnterInfo(sessionId, roomId);
+                    // 채팅방의 인원수를 +1한다.
                     redisChatRepository.plusUserCount(roomId);
+                    // 클라이언트 입장 메시지를 채팅방에 발송한다.(redis publish)
+                    String nickname = jwtProvider.getNickNameFromToken(token); // 토큰에서 사용자 이름 추출
                     chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.ENTER).roomId(roomId).sender(nickname).build());
                     List<ChatMessage> chatMessages = redisChatRepository.getChatMessages(roomId);
                     chatMessages.forEach(chatService::sendChatMessage);
@@ -97,10 +103,11 @@ public class StompHandler implements ChannelInterceptor {
                 String token = jwtProvider.substringHeaderToken(jwtToken);
                 try {
                     String nickname = jwtProvider.getNickNameFromToken(token); // 토큰에서 사용자 이름 추출
-
                     String sessionId = (String) message.getHeaders().get("simpSessionId");
                     String roomId = redisChatRepository.getUserEnterRoomId(sessionId);
+                    // 채팅방의 인원수를 -1한다.
                     redisChatRepository.minusUserCount(roomId);
+                    // 클라이언트 퇴장 메시지를 채팅방에 발송한다.(redis publish)
                     chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.QUIT).roomId(roomId).sender(nickname).build());
                     redisChatRepository.removeUserEnterInfo(sessionId);
                     log.info("사용자가 채팅방을 나갔습니다 ! = {}", nickname);
@@ -111,31 +118,42 @@ public class StompHandler implements ChannelInterceptor {
                 }
             }
 
-    } else if (StompCommand.SEND == accessor.getCommand()) {
+        } else if (StompCommand.SEND == accessor.getCommand()) {
             try {
-                String roomId = chatService.getRoomId(Optional.ofNullable((String) message.getHeaders().get("simpDestination")).orElse("InvalidRoomId"));
-                log.info("들어오나? roomId = {}", roomId);
-                String sender = Optional.ofNullable((Principal) message.getHeaders().get("simpUser")).map(Principal::getName).orElse("UnknownUser");
-                log.info("들어오나?  sender = {}", sender);
-                byte[] payloadBytes = (byte[]) message.getPayload();
-                String messageContent = new String(payloadBytes, StandardCharsets.UTF_8);
-                log.info("들어오나? message = {}", messageContent);
+                // header에서 roomId 추출
+                String roomId = accessor.getFirstNativeHeader("roomId");
+                log.info("roomId는 뭐야? roomId = {}", roomId);
 
-                // Message 저장
-                ChatMessage chatMessage = ChatMessage.builder()
-                        .type(ChatMessage.MessageType.TALK)
-                        .roomId(roomId)
-                        .sender(sender)
-                        .message(messageContent)
-                        .userCount(redisChatRepository.getUserCount(roomId))
-                        .build();
+                // 인증된 사용자의 이름 가져오기
+                Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+                if (userAuthentication != null) {
+                    String sender = userAuthentication.getName();
+                    log.info("누가 보냈어? 보낸사람 = {}", sender);
 
-                redisChatRepository.storeChatMessage(chatMessage);
-                log.info("레디스에 채팅 메세지 저장되었니? : {} in room: {}", messageContent, roomId);
+                    byte[] payloadBytes = (byte[]) message.getPayload();
+                    String messageContent = new String(payloadBytes, StandardCharsets.UTF_8);
+                    log.info("내용은 뭐야? 메시지 내용 = {}", messageContent);
 
+                    // 메시지 저장
+                    ChatMessage chatMessage = ChatMessage.builder()
+                            .type(ChatMessage.MessageType.TALK)
+                            .roomId(roomId)
+                            .sender(sender)
+                            .message(messageContent)
+                            .userCount(redisChatRepository.getUserCount(roomId))
+                            .build();
+
+                    redisChatRepository.storeChatMessage(chatMessage);
+                    log.info("레디스에 채팅 메시지 저장됨: {} in room: {}", messageContent, roomId);
+
+                } else {
+                    log.error("인증되지 않은 사용자입니다.");
+                }
             } catch (Exception e) {
-                log.error("SEND 일때 에러 이녀석 잡았다!! : {}", e.getMessage(), e);
+                log.error("전송 중 에러 발생!! : {}", e.getMessage(), e);
             }
-        }   return message;
+        }
+
+        return message;
     }
 }

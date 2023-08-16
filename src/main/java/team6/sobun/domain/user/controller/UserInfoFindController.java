@@ -9,21 +9,22 @@ import team6.sobun.domain.user.dto.find.FindEmailRequestDto;
 import team6.sobun.domain.user.dto.find.FindEmailResponseDto;
 import team6.sobun.domain.user.dto.find.PasswordRequestDto;
 import team6.sobun.domain.user.service.UserService;
+import team6.sobun.domain.user.service.util.MyPageService;
 import team6.sobun.global.responseDto.ApiResponse;
 
 @RestController
 @RequiredArgsConstructor
 public class UserInfoFindController {
 
-    private final UserService userService;
+    private final MyPageService myPageService;
     @PostMapping("/auth/findpassword")
     public ApiResponse<?> findPassword(@Valid @RequestBody PasswordRequestDto requestDto) throws Exception {
-        return userService.findPassword(requestDto);
+        return myPageService.findPassword(requestDto);
     }
 
     @PostMapping("/auth/findemail")
     public ApiResponse<?> findEmail(@Valid @RequestBody FindEmailRequestDto requestDto) {
-        FindEmailResponseDto response = userService.findEmail(requestDto);
+        FindEmailResponseDto response = myPageService.findEmail(requestDto);
         return ApiResponse.success(response);
     }
 }

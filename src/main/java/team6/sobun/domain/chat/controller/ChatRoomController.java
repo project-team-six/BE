@@ -74,10 +74,11 @@ public class ChatRoomController {
     public ChatRoom roomInfo(@PathVariable String roomId) {
         return chatRoomRepository.findRoomById(roomId);
     }
+
     @GetMapping("/user")
     @ResponseBody
-    public LoginInfo getUserInfo(@AuthenticationPrincipal Authentication auth) {
-        auth = SecurityContextHolder.getContext().getAuthentication();
+    public LoginInfo getUserInfo() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
         log.info("이름이 뭐가 들어오지?={}",name);
         return LoginInfo.builder().name(name).token(jwtProvider.generateToken(name)).build();

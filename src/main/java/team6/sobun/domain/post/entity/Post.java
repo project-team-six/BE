@@ -104,6 +104,7 @@ public class Post extends Timestamped {
 
     private String profileImageUrl;
 
+
     public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user) {
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();

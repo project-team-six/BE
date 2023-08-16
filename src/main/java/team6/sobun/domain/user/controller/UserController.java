@@ -4,6 +4,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +21,7 @@ import team6.sobun.domain.user.service.social.FacebookService;
 import team6.sobun.domain.user.service.social.GoogleService;
 import team6.sobun.domain.user.service.social.KakaoService;
 import team6.sobun.domain.user.service.social.NaverService;
+import team6.sobun.domain.user.service.util.MyPageService;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
@@ -32,6 +37,7 @@ import static team6.sobun.global.responseDto.ApiResponse.success;
 public class UserController {
 
     private final UserService userService;
+    private final MyPageService myPageService;
     private final KakaoService kakaoService;
     private final GoogleService googleService;
     private final NaverService naverService;
@@ -42,27 +48,28 @@ public class UserController {
                                  @RequestPart(value = "file", required = false) MultipartFile image) {
         return userService.signup(signupRequestDto, image);
     }
-
     @PostMapping("/logout")
     public ApiResponse<?> logout(@RequestHeader("Authorization") String token,HttpServletResponse response) {
         return userService.logout(token,response);
     }
-
-
-    @GetMapping("/mypage/{userid}")
-    public ApiResponse<?> userDetailView(@PathVariable Long userid, HttpServletRequest req,
-                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @GetMapping("/mypage/{userId}")
+    public ApiResponse<?> userDetailView(@PathVariable Long userId, HttpServletRequest req,
+                                         @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                         @RequestParam(defaultValue = "0") int page,
+                                         @RequestParam(defaultValue = "10") int size) {
         Long requestingUserId = userDetails != null ? userDetails.getUser().getId() : null;
-        if (requestingUserId != null && requestingUserId.equals(userid)) {
+        if (requestingUserId != null && requestingUserId.equals(userId)) {
             // 로그인한 사용자와 조회 대상 사용자가 같은 경우 (본인 페이지 조회)
-            log.info("사용자 ID '{}'가 본인 페이지를 조회합니다.", userid);
-            MypageResponseDto responseDto = userService.getCurrentUserDetails(requestingUserId);
-            return success(responseDto);
+            log.info("사용자 ID '{}'가 본인 페이지를 조회합니다.", userId);
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Page<MypageResponseDto> responseDtoPage = myPageService.getCurrentUserDetails(userId, pageable);
+            return success(responseDtoPage);
         } else {
             // 로그인한 사용자와 조회 대상 사용자가 다른 경우 (일반 사용자 페이지 조회)
-            log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userid);
-            MypageResponseDto responseDto = userService.getUserDetails(userid);
-            return success(responseDto);
+            log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userId);
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Page<MypageResponseDto> responseDtoPage = myPageService.getUserDetails(userId, pageable);
+            return success(responseDtoPage);
         }
     }
 
@@ -70,13 +77,13 @@ public class UserController {
     public ApiResponse<?> updateUserNickname(@PathVariable Long userId,
                                            @RequestBody MypageRequestDto mypageRequestDto,
                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return userService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser());
+        return myPageService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser());
     }
     @PutMapping("mypage/{userId}/image")
     public ApiResponse<?> updateUserImage(@PathVariable Long userId,
                                            @RequestPart(value = "file",required = false) MultipartFile image,
                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return userService.updateUserImage(userId, image, userDetailsImpl.getUser());
+        return myPageService.updateUserImage(userId, image, userDetailsImpl.getUser());
     }
 
     @Transactional

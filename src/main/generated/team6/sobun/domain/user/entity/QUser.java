@@ -38,8 +38,6 @@ public class QUser extends EntityPathBase<User> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
-    public final QMypage mypage;
-
     public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");
@@ -71,7 +69,6 @@ public class QUser extends EntityPathBase<User> {
     public QUser(Class<? extends User> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.location = inits.isInitialized("location") ? new QLocation(forProperty("location"), inits.get("location")) : null;
-        this.mypage = inits.isInitialized("mypage") ? new QMypage(forProperty("mypage"), inits.get("mypage")) : null;
     }
 
 }

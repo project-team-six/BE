@@ -23,10 +23,9 @@ import team6.sobun.domain.user.dto.find.FindEmailResponseDto;
 import team6.sobun.domain.user.dto.find.PasswordRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
-import team6.sobun.domain.user.dto.mypage.MypageSearchCondition;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.repository.mypage.MypageRepository;
+import team6.sobun.domain.user.repository.MypageRepository;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
@@ -182,10 +181,6 @@ public class MyPageService {
                 user.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
             }
         }
-    }
-    @Transactional(readOnly = true)
-    public Page<MypageResponseDto> searchMypageByPage(MypageSearchCondition condition, Pageable pageable) {
-        return mypageRepository.searchMypageByPage(condition,pageable);
     }
 
 

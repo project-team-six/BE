@@ -15,7 +15,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.social.NaverUserInfo;
 import team6.sobun.domain.user.entity.User;
@@ -26,8 +25,6 @@ import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service

@@ -32,13 +32,14 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .where(
                         usernameEq(condition.getNickname()),
                         titleEq(condition.getTitle()),
-                        contentEq(condition.getTitle()),
+                        contentEq(condition.getContent()),
+                        titleOrContentEq(condition.getTitleOrContent()),
                         categoryEq(condition.getCategory()),
                         locationEq(condition.getLocation()),
                         statusEq(condition.getStatus()))
                 .orderBy(QPost.post.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
 
@@ -48,6 +49,11 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
     private BooleanExpression usernameEq(String usernameCond) {
         return hasText(usernameCond) ? QPost.post.user.nickname.contains(usernameCond) : null;
+    }
+    private BooleanExpression titleOrContentEq(String titleOrContent) {
+        return hasText(titleOrContent) ?
+                QPost.post.title.contains(titleOrContent)
+                        .or(QPost.post.content.contains(titleOrContent)) : null;
     }
 
     private BooleanExpression titleEq(String titleCond) {

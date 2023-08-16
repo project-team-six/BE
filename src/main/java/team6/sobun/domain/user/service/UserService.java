@@ -285,6 +285,8 @@ public class UserService {
 
         return responseDto;
     }
+
+    // 소셜 로그인시 토큰생성 로직
     public ApiResponse<?> addToken(User user, HttpServletResponse response) {
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
                 user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));

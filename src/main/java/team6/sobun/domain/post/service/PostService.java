@@ -26,6 +26,7 @@ import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
@@ -92,25 +93,19 @@ public class PostService {
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
+
     private void updatePostDetail(PostRequestDto postRequestDto, List<MultipartFile> images, Post post) {
         if (images != null && !images.isEmpty()) {
-            List<String> existingImageUrl = post.getImageUrlList(); // 기존 이미지 URL 리스트
-            List<String> imageUrlList = s3Service.uploads(images); // 새로운 이미지 URL 리스트
+            List<String> ImageUrlList = s3Service.uploads(images); // 새로운 이미지 URL 리스트
+            List<String> existingImageUrlList = post.getImageUrlList(); // 기존 이미지 URL 리스트
+            post.updateAll(postRequestDto, ImageUrlList); // 새로운 이미지 및 이미지를 제외한 다른 정보 업데이트
 
-            // 새로운 이미지 업로드 후에 기존 이미지 삭제
-            if (!existingImageUrl.isEmpty()) {
-                s3Service.delete(existingImageUrl);
+            if (StringUtils.hasText(String.valueOf(existingImageUrlList))) {
+                s3Service.delete(existingImageUrlList);
             }
-
-            post.updateAll(postRequestDto, imageUrlList);
-        } else {
-            List<String> existingImageUrl = post.getImageUrlList(); // 기존 이미지 URL 리스트
-            post.updateAllWithoutImages(postRequestDto, existingImageUrl); // 이미지 없이 업데이트
         }
+        post.update(postRequestDto);
     }
-
-
-
 
 
     @Transactional

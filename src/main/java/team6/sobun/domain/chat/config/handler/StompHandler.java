@@ -46,18 +46,18 @@ public class StompHandler implements ChannelInterceptor {
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             log.info("CONNECT {}", jwtToken);
             if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-                String token = jwtProvider.substringHeaderToken(jwtToken);  // Remove "Bearer " prefix
+                String token = jwtProvider.substringHeaderToken(jwtToken); // bearer 제거
                 try {
-                    jwtProvider.validateToken(token);
-                    String username = jwtProvider.extractUsername(token); // 토큰에서 사용자 이름 추출
+                    jwtProvider.validateToken(token); // 유효성 검증
+                    String nickname = jwtProvider.getNickNameFromToken(token); // 토큰에서 사용자 이름 추출
 
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(nickname);
                     if (userDetails != null) {
                         // 인증된 사용자이므로 필요한 작업을 수행합니다.
-                        log.info("인증된 사용자입니다: {}", username);
+                        log.info("인증된 사용자입니다: {}", nickname);
                         // 여기서 userDetails를 활용하여 추가 작업을 수행할 수 있습니다.
                     } else {
-                        log.error("인증되지 않은 사용자입니다: {}", username);
+                        log.error("인증되지 않은 사용자입니다: {}", nickname);
                         // 인증되지 않은 사용자 처리 로직
                         return null; // 인증되지 않은 사용자의 경우 연결을 막습니다.
                     }
@@ -77,16 +77,15 @@ public class StompHandler implements ChannelInterceptor {
             if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
                 String token = jwtProvider.substringHeaderToken(jwtToken); //
                 try {
-                    String username = jwtProvider.extractUsername(token); // 토큰에서 사용자 이름 추출
-
+                    String nickname = jwtProvider.getNickNameFromToken(token); // 토큰에서 사용자 이름 추출
                     String roomId = chatService.getRoomId(Optional.ofNullable((String) message.getHeaders().get("simpDestination")).orElse("InvalidRoomId"));
                     String sessionId = (String) message.getHeaders().get("simpSessionId");
                     redisChatRepository.setUserEnterInfo(sessionId, roomId);
                     redisChatRepository.plusUserCount(roomId);
-                    chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.ENTER).roomId(roomId).sender(username).build());
+                    chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.ENTER).roomId(roomId).sender(nickname).build());
                     List<ChatMessage> chatMessages = redisChatRepository.getChatMessages(roomId);
                     chatMessages.forEach(chatService::sendChatMessage);
-                    log.info("SUBSCRIBED {}, {}", username, roomId);
+                    log.info("SUBSCRIBED {}, {}", nickname, roomId);
                 } catch (Exception e) {
                     log.error("토큰 검증에 실패하였습니다: {}", e.getMessage());
                     // 토큰 검증 실패 처리 로직
@@ -95,16 +94,16 @@ public class StompHandler implements ChannelInterceptor {
         } else if (StompCommand.DISCONNECT == accessor.getCommand()) {
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-                String token = jwtToken.substring(7); // Remove "Bearer " prefix
+                String token = jwtProvider.substringHeaderToken(jwtToken);
                 try {
-                    String username = jwtProvider.extractUsername(token); // 토큰에서 사용자 이름 추출
+                    String nickname = jwtProvider.getNickNameFromToken(token); // 토큰에서 사용자 이름 추출
 
                     String sessionId = (String) message.getHeaders().get("simpSessionId");
                     String roomId = redisChatRepository.getUserEnterRoomId(sessionId);
                     redisChatRepository.minusUserCount(roomId);
-                    chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.QUIT).roomId(roomId).sender(username).build());
+                    chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.QUIT).roomId(roomId).sender(nickname).build());
                     redisChatRepository.removeUserEnterInfo(sessionId);
-                    log.info("사용자가 채팅방을 나갔습니다 ! = {}", username);
+                    log.info("사용자가 채팅방을 나갔습니다 ! = {}", nickname);
                     log.info("DISCONNECTED {}, {}", sessionId, roomId);
                 } catch (Exception e) {
                     log.error("토큰 검증에 실패하였습니다: {}", e.getMessage());
@@ -114,7 +113,7 @@ public class StompHandler implements ChannelInterceptor {
 
     } else if (StompCommand.SEND == accessor.getCommand()) {
             try {
-                String roomId = chatService.getRoomId(Objects.requireNonNull(accessor.getDestination()));
+                String roomId = chatService.getRoomId(Optional.ofNullable((String) message.getHeaders().get("simpDestination")).orElse("InvalidRoomId"));
                 log.info("들어오나? roomId = {}", roomId);
                 String sender = Optional.ofNullable((Principal) message.getHeaders().get("simpUser")).map(Principal::getName).orElse("UnknownUser");
                 log.info("들어오나?  sender = {}", sender);

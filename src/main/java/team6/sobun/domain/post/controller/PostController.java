@@ -40,7 +40,7 @@ public class PostController {
 
     @PutMapping("/{postId}")
     public ApiResponse<?> modifyPost(@PathVariable Long postId,
-                                     @RequestPart(value = "data") PostRequestDto postRequestDto,
+                                     @RequestPart(value = "data", required = false) PostRequestDto postRequestDto,
                                      @RequestPart(value = "file", required = false) List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.updatePost(postId, postRequestDto, images, userDetailsImpl.getUser());

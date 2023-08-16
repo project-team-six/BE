@@ -124,10 +124,6 @@ public class Post extends Timestamped {
     public void markClosed() {
         this.status = PostStatus.COMPLETED;
     }
-    public void update(PostRequestDto postRequestDto) {
-        this.title = postRequestDto.getTitle();
-        this.content = postRequestDto.getContent();
-    }
 
     public void updateAll(PostRequestDto postRequestDto, List<String> imageUrlList) {
         this.category = postRequestDto.getCategory();
@@ -141,7 +137,7 @@ public class Post extends Timestamped {
         this.imageUrlList.clear();
         this.imageUrlList.addAll(imageUrlList);
     }
-    public void updateAllWithoutImages(PostRequestDto postRequestDto, List<String> existingImageUrlList) {
+    public void update(PostRequestDto postRequestDto) {
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
@@ -150,8 +146,6 @@ public class Post extends Timestamped {
         this.consumerPeriod = postRequestDto.getConsumerPeriod();
         this.purchaseDate = postRequestDto.getPurchaseDate();
         this.price = postRequestDto.getPrice();
-        this.imageUrlList.clear();
-        this.imageUrlList.addAll(existingImageUrlList); // 이미지 URL 리스트는 유지됨
     }
 
 

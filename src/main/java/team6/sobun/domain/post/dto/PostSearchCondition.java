@@ -10,6 +10,7 @@ public class PostSearchCondition {
     private String nickname;
     private String title;
     private String content;
+    private String titleOrContent;
     private String category;
     private String location;
     private String status;

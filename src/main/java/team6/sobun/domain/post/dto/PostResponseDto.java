@@ -52,6 +52,7 @@ public class PostResponseDto {
         this.imageUrlList = post.getImageUrlList().stream().limit(1)
                 .map(String::new)
                 .collect(Collectors.toList());
+        this.content = post.getContent();
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
         this.location = post.getLocation();

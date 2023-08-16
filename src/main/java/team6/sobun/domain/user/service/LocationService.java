@@ -45,8 +45,7 @@ public class LocationService {
         findUser.updateLocation(locationRquestDto, user);
         userRepository.save(findUser);
         locationRepository.save(findUser.getLocation());
-        User updateUser = checkLocation.getUser();
-        addToken(updateUser,response);
+        addToken(findUser,response);
         return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
     }
 

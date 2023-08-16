@@ -89,25 +89,23 @@ public class PostService {
     @Transactional
     public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         Post post = confirmPost(postId, user);
-        updatePostDetail(postRequestDto, images, post);
+        post.update(postRequestDto);
+        updatePostDetail(images, post);
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
 
-    private void updatePostDetail(PostRequestDto postRequestDto, List<MultipartFile> images, Post post) {
+    private void updatePostDetail(List<MultipartFile> images, Post post) {
         if (images != null && !images.isEmpty()) {
-            List<String> ImageUrlList = s3Service.uploads(images); // 새로운 이미지 URL 리스트
-            List<String> existingImageUrlList = post.getImageUrlList(); // 기존 이미지 URL 리스트
-            post.updateAll(postRequestDto, ImageUrlList); // 새로운 이미지 및 이미지를 제외한 다른 정보 업데이트
+            List<String> existingImageUrlList = post.getImageUrlList();
+            List<String> ImageUrlList = s3Service.uploads(images);
+            post.setImage(ImageUrlList);
 
             if (StringUtils.hasText(String.valueOf(existingImageUrlList))) {
                 s3Service.delete(existingImageUrlList);
             }
         }
-        post.update(postRequestDto);
     }
-
-
     @Transactional
     public ApiResponse<?> deletePost(Long postId, User user) {
         Post post = confirmPost(postId, user);
@@ -116,21 +114,6 @@ public class PostService {
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
     }
-    public ApiResponse<?> markPostInProgress(Long postId) {
-        Post post = findPost(postId);
-        post.markInProgress();
-        return ApiResponse.okWithMessage(SuccessCodeEnum.valueOf("해당 게시물은 진행중 입니다."));
-    }
-
-    public ApiResponse<?> markPostClosed(Long postId) {
-        Post post = findPost(postId);
-        post.markClosed();
-        return ApiResponse.okWithMessage(SuccessCodeEnum.valueOf("해당 게시물은 완료 입니다."));
-    }
-
-
-
-
 
     private void deleteImage(Post post) {
         List<String> imageUrlList = post.getImageUrlList();

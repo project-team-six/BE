@@ -118,7 +118,6 @@ public class PostResponseDto {
         this.purchaseDate = purchaseDate;
         this.location = location;
         this.price = price;
-        this.status = status;
 
     }
 }

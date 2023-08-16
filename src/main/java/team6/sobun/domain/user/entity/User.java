@@ -58,8 +58,6 @@ public class User extends Timestamped {
     @JoinColumn(name = "location_id")
     private Location location;
 
-    @OneToOne(mappedBy = "user")
-    private Mypage mypage;
 
 
     @Builder

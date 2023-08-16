@@ -171,4 +171,7 @@ public class Post extends Timestamped {
         }
     }
 
+    public void setImage(List<String> imageUrlList) {
+        this.imageUrlList = imageUrlList;
+    }
 }

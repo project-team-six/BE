@@ -1,5 +1,6 @@
-package team6.sobun.domain.user.dto;
+package team6.sobun.domain.user.dto.mypage;
 
+import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.post.dto.PostResponseDto;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @Getter
-public class UserDetailResponseDto {
+public class MypageResponseDto {
 
     private Long userId;
     private String nickname;
@@ -20,9 +21,11 @@ public class UserDetailResponseDto {
     private double mannerTemperature;
     private String phoneNumber;
     private List<PostResponseDto> userPosts;
-    private List<PostResponseDto> pinedPosts; //2
+    private List<PostResponseDto> pinedPosts;
 
-    public UserDetailResponseDto(Long userId, String nickname, String profileImageUrl, String phoneNumber, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
+
+    @QueryProjection
+    public MypageResponseDto(Long userId, String nickname, String profileImageUrl, String phoneNumber, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
         this.userId = userId;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;

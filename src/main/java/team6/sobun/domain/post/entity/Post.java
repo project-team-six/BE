@@ -128,18 +128,6 @@ public class Post extends Timestamped {
         this.status = PostStatus.COMPLETED;
     }
 
-    public void updateAll(PostRequestDto postRequestDto, List<String> imageUrlList) {
-        this.category = postRequestDto.getCategory();
-        this.title = postRequestDto.getTitle();
-        this.content = postRequestDto.getContent();
-        this.transactionStartDate = postRequestDto.getTransactionStartDate();
-        this.transactionEndDate = postRequestDto.getTransactionEndDate();
-        this.consumerPeriod = postRequestDto.getConsumerPeriod();
-        this.purchaseDate = postRequestDto.getPurchaseDate();
-        this.price = postRequestDto.getPrice();
-        this.imageUrlList.clear();
-        this.imageUrlList.addAll(imageUrlList);
-    }
     public void update(PostRequestDto postRequestDto) {
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();

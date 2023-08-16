@@ -20,6 +20,11 @@ import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.*;
+import team6.sobun.domain.user.dto.find.FindEmailRequestDto;
+import team6.sobun.domain.user.dto.find.FindEmailResponseDto;
+import team6.sobun.domain.user.dto.find.PasswordRequestDto;
+import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
+import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
@@ -45,13 +50,11 @@ import java.util.UUID;
 public class UserService {
 
     private final JavaMailSender mailSender;
-    private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRedisRepository redisRepository;
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
-    private final PinRepository pinRepository;
     private final SpringTemplateEngine templateEngine;
 
 
@@ -188,14 +191,14 @@ public class UserService {
 
 
     @Transactional
-    public UserDetailResponseDto getUserDetails(Long userId) {
+    public MypageResponseDto getUserDetails(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             List<Post> userPosts = userRepository.findPostsByUserId(userId);
 
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
-            UserDetailResponseDto responseDto = new UserDetailResponseDto(
+            MypageResponseDto responseDto = new MypageResponseDto(
                     user.getId(),
                     user.getNickname(),
                     user.getProfileImageUrl(),
@@ -211,7 +214,7 @@ public class UserService {
         }
     }
     @Transactional
-    public UserDetailResponseDto getCurrentUserDetails(Long requestingUserId) {
+    public MypageResponseDto getCurrentUserDetails(Long requestingUserId) {
         Optional<User> optionalUser = userRepository.findById(requestingUserId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
@@ -219,7 +222,7 @@ public class UserService {
             List<Post> pinedPost = userRepository.findPinnedPostsByUserId(requestingUserId);
 
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
-            UserDetailResponseDto responseDto = new UserDetailResponseDto(
+            MypageResponseDto responseDto = new MypageResponseDto(
                     user.getId(),
                     user.getNickname(),
                     user.getProfileImageUrl(),
@@ -267,13 +270,6 @@ public class UserService {
         return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
     }
 
-    private String generateHtmlTemplate(String tempPassword) {
-        Context context = new Context();
-        context.setVariable("tempPassword", tempPassword);
-        return templateEngine.process("new_password_template", context);
-    }
-
-
     public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
         User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전화번호 입니다.")
@@ -303,6 +299,12 @@ public class UserService {
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
         redisRepository.save(refresh);
         return ApiResponse.success("토큰 발급 성공 !");
+    }
+
+    private String generateHtmlTemplate(String tempPassword) {
+        Context context = new Context();
+        context.setVariable("tempPassword", tempPassword);
+        return templateEngine.process("new_password_template", context);
     }
 }
 

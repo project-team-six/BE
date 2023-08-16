@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.SliceImpl;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.dto.QPostResponseDto;
@@ -41,9 +40,21 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+        long totalCount = query
+                .select(QPost.post.count())
+                .from(QPost.post)
+                .where(
+                        usernameEq(condition.getNickname()),
+                        titleEq(condition.getTitle()),
+                        contentEq(condition.getContent()),
+                        titleOrContentEq(condition.getTitleOrContent()),
+                        categoryEq(condition.getCategory()),
+                        locationEq(condition.getLocation()),
+                        statusEq(condition.getStatus()))
+                .fetchCount();
 
 
-        return new PageImpl<>(result, pageable, result.size());
+        return new PageImpl<>(result, pageable, totalCount);
     }
 
 
@@ -73,25 +84,4 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private BooleanExpression statusEq(String statusCond) {
         return hasText(statusCond) ? QPost.post.status.eq(PostStatus.valueOf(statusCond)) : null;
     }
-
-
-
-
-
-
-    /**
-     * 페이징된 게시물 목록을 반환하고, 다음 페이지 여부를 확인하는 메소드입니다.
-     *
-     * @param pageable 페이징 정보
-     * @param content  조회된 게시물 목록
-     * @return 페이징된 게시물 목록
-     */
-    private static SliceImpl<PostResponseDto> checkEndPage(Pageable pageable, List<PostResponseDto> content) {
-        boolean hasNext = false;
-        if (content.size() > pageable.getPageSize()) {
-            hasNext = true;
-            content.remove(pageable.getPageSize());
-        }
-        return new SliceImpl<>(content, pageable, hasNext);
-    } // 무한 스크롤 사용시
 }

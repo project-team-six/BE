@@ -4,28 +4,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import team6.sobun.domain.user.dto.MypageRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
-import team6.sobun.domain.user.dto.UserDetailResponseDto;
+import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
+import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.service.UserService;
 import team6.sobun.domain.user.service.social.FacebookService;
 import team6.sobun.domain.user.service.social.GoogleService;
 import team6.sobun.domain.user.service.social.KakaoService;
 import team6.sobun.domain.user.service.social.NaverService;
-import team6.sobun.global.jwt.JwtProvider;
-import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
-import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
-import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
-import team6.sobun.global.utils.ResponseUtils;
 
 import java.io.IOException;
 
@@ -62,12 +56,12 @@ public class UserController {
         if (requestingUserId != null && requestingUserId.equals(userid)) {
             // 로그인한 사용자와 조회 대상 사용자가 같은 경우 (본인 페이지 조회)
             log.info("사용자 ID '{}'가 본인 페이지를 조회합니다.", userid);
-            UserDetailResponseDto responseDto = userService.getCurrentUserDetails(requestingUserId);
+            MypageResponseDto responseDto = userService.getCurrentUserDetails(requestingUserId);
             return success(responseDto);
         } else {
             // 로그인한 사용자와 조회 대상 사용자가 다른 경우 (일반 사용자 페이지 조회)
             log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userid);
-            UserDetailResponseDto responseDto = userService.getUserDetails(userid);
+            MypageResponseDto responseDto = userService.getUserDetails(userid);
             return success(responseDto);
         }
     }

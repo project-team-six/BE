@@ -15,14 +15,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.social.NaverUserInfo;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.service.IdenticonService;
-import team6.sobun.global.jwt.JwtProvider;
-import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 
 import java.net.URI;
 
@@ -33,12 +29,8 @@ import java.net.URI;
 public class NaverService {
 
     private final UserRepository userRepository;
-    private final IdenticonService identiconService;
     private final PasswordEncoder passwordEncoder;
-    private final RefreshTokenRedisRepository redisRepository;
-    private final JwtProvider jwtProvider;
     private final RestTemplate restTemplate;
-    private final S3Service s3Service;
 
     @Value("${naver.login.client.id}")
     private String YOUR_NAVER_LOGIN_CLIENT_ID;

@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import team6.sobun.domain.user.dto.FindEmailRequestDto;
-import team6.sobun.domain.user.dto.FindEmailResponseDto;
-import team6.sobun.domain.user.dto.PasswordRequestDto;
+import team6.sobun.domain.user.dto.find.FindEmailRequestDto;
+import team6.sobun.domain.user.dto.find.FindEmailResponseDto;
+import team6.sobun.domain.user.dto.find.PasswordRequestDto;
 import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.responseDto.ApiResponse;
 

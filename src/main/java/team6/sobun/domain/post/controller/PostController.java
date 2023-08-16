@@ -9,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.service.PostService;
-import team6.sobun.domain.user.dto.UserDetailResponseDto;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 

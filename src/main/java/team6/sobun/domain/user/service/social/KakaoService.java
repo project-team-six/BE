@@ -15,15 +15,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import team6.sobun.domain.pin.repository.PinRepository;
-import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.social.KakaoDto;
-import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.service.IdenticonService;
-import team6.sobun.global.jwt.JwtProvider;
-import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 
 import java.net.URI;
 
@@ -33,13 +27,8 @@ import java.net.URI;
 @Transactional
 public class KakaoService {
     private final UserRepository userRepository;
-    private final IdenticonService identiconService;
     private final PasswordEncoder passwordEncoder;
-    private final RefreshTokenRedisRepository redisRepository;
-    private final JwtProvider jwtProvider;
     private final RestTemplate restTemplate;
-    private final S3Service s3Service;
-    private final PinRepository pinRepository;
 
     @Value("${kakao.login.callback.url}")
     private String kakaoCallbackUrl;
@@ -47,8 +36,6 @@ public class KakaoService {
     @Value("${kakao.login.client.id}")
     private String kakaoLoginClientId;
 
-    @Value("${kakao.api.secret-key}")
-    private String kakaoApiSecretKey;
 
     @Transactional
     public User kakaoSignUpOrLinkUser(String code) throws JsonProcessingException {

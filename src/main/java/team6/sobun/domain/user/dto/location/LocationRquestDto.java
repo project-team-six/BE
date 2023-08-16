@@ -1,4 +1,4 @@
-package team6.sobun.domain.user.dto;
+package team6.sobun.domain.user.dto.location;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

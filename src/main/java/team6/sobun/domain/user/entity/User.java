@@ -5,10 +5,9 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import team6.sobun.domain.user.dto.LocationRquestDto;
-import team6.sobun.domain.user.dto.MypageRequestDto;
+import team6.sobun.domain.user.dto.location.LocationRquestDto;
+import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.social.KakaoDto;
-import team6.sobun.domain.user.repository.LocationRepository;
 import team6.sobun.global.utils.Timestamped;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -69,7 +68,6 @@ public class User extends Timestamped {
         this.nickname = kakaoDto.getNickname();
         this.username = kakaoDto.getUsername();
         this.password = password;
-        //카카오 유저는 기본 USER
         this.role = UserRoleEnum.USER;
         this.profileImageUrl = profileImageUrl;
     }

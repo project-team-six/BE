@@ -3,7 +3,7 @@ package team6.sobun.domain.user.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import team6.sobun.domain.user.dto.LocationRquestDto;
+import team6.sobun.domain.user.dto.location.LocationRquestDto;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;

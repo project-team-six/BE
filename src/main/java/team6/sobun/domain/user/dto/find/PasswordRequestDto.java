@@ -1,4 +1,4 @@
-package team6.sobun.domain.user.dto;
+package team6.sobun.domain.user.dto.find;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

@@ -19,17 +19,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByPhoneNumber(String phoneNumber);
+
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.commentList c WHERE p.user.id = :userId")
     List<Post> findPostsByUserId(@Param("userId") Long userId);
 
     @Query("SELECT p.post FROM Pin p WHERE p.user.id = :userId")
     List<Post> findPinnedPostsByUserId(@Param("userId") Long userId);
-    @Query(value = "select UserName from user", nativeQuery = true)
-    User findUserName();
 
-    @Query(value = "select * from user where email like %?1%", nativeQuery = true)
-    List<User> mFindByEmail(String email);
-
-    Optional<User> findByPhoneNumber(String phoneNumber);
 }
 

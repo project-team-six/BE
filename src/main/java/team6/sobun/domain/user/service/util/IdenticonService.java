@@ -1,9 +1,8 @@
-package team6.sobun.domain.user.service;
+package team6.sobun.domain.user.service.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
-
 import team6.sobun.domain.post.service.S3Service;
 
 import javax.imageio.ImageIO;

@@ -1,11 +1,8 @@
-package team6.sobun.domain.user.service;
+package team6.sobun.domain.user.service.util;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
-
-import java.util.List;
 
 @Service
 @Transactional

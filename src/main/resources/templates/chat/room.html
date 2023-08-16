@@ -78,6 +78,7 @@
                 if (accessToken) {
                     this.isLoggedIn = true;
                     this.accessToken = accessToken; // 토큰 저장
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
                 }
             },
 
@@ -159,7 +160,7 @@
             decodeToken(token) {
                 const tokenParts = token.split('.');
                 if (tokenParts.length !== 3) {
-                    throw new Error('Invalid token format');
+                    throw new Error('잘못된 토큰 방식 입니다.');
                 }
                 return JSON.parse(atob(tokenParts[1]));
             },

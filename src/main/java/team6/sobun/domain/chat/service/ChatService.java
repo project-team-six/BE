@@ -21,7 +21,6 @@ public class ChatService {
     private final RedisTemplate redisTemplate;
     private final RedisChatRepository redisChatRepository;
 
-
     /**
      * destination정보에서 roomId 추출
      */
@@ -32,7 +31,6 @@ public class ChatService {
         else
             return "";
     }
-
 
     /**
      * 채팅방에 메시지 발송

@@ -360,23 +360,16 @@ public class JwtProvider {
         }
     }
 
-    public String generateToken(String name) {
+    public String generateToken(String name,UserRoleEnum role) {
         Date date = new Date();
         return
         Jwts.builder()
                 .setSubject(name)
+                .claim(AUTHORIZATION_KEY, role)
                 .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
                 .setIssuedAt(date)
                 .signWith(key, signatureAlgorithm)
                 .compact();
-    }
-    public String extractUsername(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
     }
 }
 

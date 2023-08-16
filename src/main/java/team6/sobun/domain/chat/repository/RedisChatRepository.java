@@ -124,6 +124,11 @@ public class RedisChatRepository {
     public long minusUserCount(String roomId) {
         return Optional.ofNullable(valueOps.decrement(USER_COUNT + "_" + roomId)).filter(count -> count > 0).orElse(0L);
     }
+    public boolean isUserSubscribed(String sessionId, String roomId) {
+        return hashOpsEnterInfo.hasKey(ENTER_INFO, sessionId) &&
+                hashOpsEnterInfo.get(ENTER_INFO, sessionId).equals(roomId);
+    }
+
 
 
 }

@@ -21,9 +21,7 @@ public class ChatController {
     private final RedisChatRepository redisChatRepository;
     private final ChatService chatService;
 
-    /**
-     * websocket "/pub/chat/message"로 들어오는 메시징을 처리한다.
-     */
+     //pub/chat/message 로 들어오는 메세지를 처리함
     @MessageMapping("/chat/message")
     public void message(ChatMessage message, @Header("Authorization") String token) {
         String nickname = jwtProvider.getNickNameFromToken(token);
@@ -35,7 +33,6 @@ public class ChatController {
         message.setUserCount(redisChatRepository.getUserCount(message.getRoomId()));
         // Websocket에 발행된 메시지를 redis로 발행(publish)
         chatService.sendChatMessage(message);
-
         log.info("메시지 전송: sender={}, roomId={}, message={}", nickname, message.getRoomId(), message.getMessage());
     }
 }

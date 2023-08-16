@@ -40,6 +40,7 @@ public class PostResponseDto {
     private String price;
     private String status;
     private double mannerTemperature;
+    private String profileImageUrl;
 
     // 전체 조회 시에 사용되는 생성자
     @QueryProjection
@@ -63,6 +64,7 @@ public class PostResponseDto {
             this.status = post.getStatus().name();
         }
         this.mannerTemperature = post.getMannerTemperature();
+        this.profileImageUrl = post.getProfileImageUrl();
     }
 
 
@@ -96,6 +98,7 @@ public class PostResponseDto {
             this.status = post.getStatus().name();
         }
         this.mannerTemperature = post.getMannerTemperature();
+        this.profileImageUrl = post.getProfileImageUrl();
     }
 
     // 유저 조회 시에 사용하는 생성자

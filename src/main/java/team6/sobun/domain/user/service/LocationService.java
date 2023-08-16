@@ -26,7 +26,7 @@ public class LocationService {
     private final RefreshTokenRedisRepository redisRepository;
     private final EntityManager em;
     private final JwtProvider jwtProvider;
-
+  
     @Transactional
     public ApiResponse<?> locationUpdate(LocationRquestDto locationRquestDto, User user,HttpServletResponse response) {
         User findUser = userRepository.findById(user.getId())
@@ -48,7 +48,7 @@ public class LocationService {
         addToken(findUser,response);
         return ApiResponse.okWithMessage(SuccessCodeEnum.LOCATION_CHANGE_SUCCESS);
     }
-
+  
     private ApiResponse<?> addToken(User user, HttpServletResponse response) {
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
                 user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));

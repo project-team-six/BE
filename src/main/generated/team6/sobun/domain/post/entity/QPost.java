@@ -52,6 +52,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final StringPath price = createString("price");
 
+    public final StringPath profileImageUrl = createString("profileImageUrl");
+
     public final StringPath purchaseDate = createString("purchaseDate");
 
     public final EnumPath<PostStatus> status = createEnum("status", PostStatus.class);

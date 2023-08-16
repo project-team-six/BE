@@ -102,6 +102,8 @@ public class Post extends Timestamped {
 
     private long pined ;
 
+    private String profileImageUrl;
+
     public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user) {
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
@@ -116,6 +118,7 @@ public class Post extends Timestamped {
         this.price = postRequestDto.getPrice();
         this.user = user;
         this.mannerTemperature = user.getMannerTemperature();
+        this.profileImageUrl = user.getProfileImageUrl();
 
     }
     public void markInProgress() {

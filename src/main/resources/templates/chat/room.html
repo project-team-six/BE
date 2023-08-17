@@ -146,13 +146,11 @@
                     }
                 })
                     .then(response => {
-                        console.log(decodedToken);
                         alert(`${response.data.name} 방 개설에 성공하였습니다.`);
                         this.room_name = '';
                         this.findAllRoom();
                     })
                     .catch(error => {
-                        console.log(decodedToken);
                         alert('채팅방 개설에 실패하였습니다.');
                         console.error('채팅방 개설 중 에러 발생:', error);
                     });

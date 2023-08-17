@@ -45,68 +45,58 @@ public class MyPageService {
     private String from;
 
     private final UserRepository userRepository;
-    private final MypageRepository mypageRepository;
     private final PasswordEncoder passwordEncoder;
     private final SpringTemplateEngine templateEngine;
     private final JavaMailSender mailSender;
     private final S3Service s3Service;
 
-    @Transactional(readOnly = true)
-    public Page<MypageResponseDto> getCurrentUserDetails(Long requestingUserId, Pageable pageable) {
+    @Transactional
+    public MypageResponseDto getCurrentUserDetails(Long requestingUserId) {
         Optional<User> optionalUser = userRepository.findById(requestingUserId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            Page<Post> userPosts = userRepository.findPostsByUserId(requestingUserId, pageable);
-            List<Post> pinnedPosts = userRepository.findPinnedPostsByUserId(requestingUserId);
+            List<Post> userPosts = userRepository.findPostsByUserId(requestingUserId);
+            List<Post> pinedPost = userRepository.findPinnedPostsByUserId(requestingUserId);
 
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
-            return new PageImpl<>(
-                    Collections.singletonList(new MypageResponseDto(
-                            user.getId(),
-                            user.getNickname(),
-                            user.getProfileImageUrl(),
-                            user.getPhoneNumber(),
-                            user.getMannerTemperature(),
-                            userPosts.getContent(), // 페이지의 컨텐츠만 사용
-                            pinnedPosts
-                    )),
-                    pageable,
-                    userPosts.getTotalElements() // 전체 요소 개수 설정
+            MypageResponseDto responseDto = new MypageResponseDto(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getProfileImageUrl(),
+                    user.getPhoneNumber(),
+                    user.getMannerTemperature(),
+                    userPosts,
+                    pinedPost
             );
+            return responseDto;
         } else {
             // 사용자를 찾지 못한 경우 에러 응답을 리턴합니다.
             throw new IllegalArgumentException();
         }
     }
-
-    @Transactional(readOnly = true)
-    public Page<MypageResponseDto> getUserDetails(Long userId, Pageable pageable) {
+    @Transactional
+    public MypageResponseDto getUserDetails(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            Page<Post> userPosts = userRepository.findPostsByUserId(userId, pageable);
+            List<Post> userPosts = userRepository.findPostsByUserId(userId);
 
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
-            return new PageImpl<>(
-                    Collections.singletonList(new MypageResponseDto(
-                            user.getId(),
-                            user.getNickname(),
-                            user.getProfileImageUrl(),
-                            user.getPhoneNumber(),
-                            user.getMannerTemperature(),
-                            userPosts.getContent(), // 페이지의 컨텐츠만 사용
-                            null
-                    )),
-                    pageable,
-                    userPosts.getTotalElements() // 전체 요소 개수 설정
+            MypageResponseDto responseDto = new MypageResponseDto(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getProfileImageUrl(),
+                    user.getPhoneNumber(),
+                    user.getMannerTemperature(),
+                    userPosts,
+                    null
             );
+            return responseDto;
         } else {
             // 사용자를 찾지 못한 경우 에러 응답을 리턴합니다.
             throw new IllegalArgumentException();
         }
     }
-
-
 
     @Transactional
     public ApiResponse<?> updateUserProfile(Long id, MypageRequestDto mypageRequestDto, User user) {

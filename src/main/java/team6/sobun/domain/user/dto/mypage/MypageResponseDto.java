@@ -24,7 +24,7 @@ public class MypageResponseDto {
     private List<PostResponseDto> pinedPosts;
 
 
-    @QueryProjection
+
     public MypageResponseDto(Long userId, String nickname, String profileImageUrl, String phoneNumber, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
         this.userId = userId;
         this.nickname = nickname;

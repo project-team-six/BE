@@ -92,7 +92,7 @@ public class S3Service {
     /**
      * S3에서 이미지를 삭제합니다.
      *
-     * @param imageUrl 삭제할 이미지의 URL
+     * @param imageUrlList 삭제할 이미지의 URL
      * @throws IllegalArgumentException 이미지 삭제 실패 시 발생하는 예외
      */
     public void delete(List<String> imageUrlList) {

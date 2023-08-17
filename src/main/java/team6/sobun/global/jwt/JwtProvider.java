@@ -33,7 +33,7 @@ public class JwtProvider {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L; // 1시간
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 10 * 60 * 1000L; // 1시간
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 1주일
 
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
@@ -94,7 +94,7 @@ public class JwtProvider {
              refreshToken = URLEncoder.encode(refreshToken, "utf-8").replaceAll("\\+", "%20");
 
             response.setHeader(AUTHORIZATION_HEADER, accessToken);
-            response.setHeader("Refresh-Token", refreshToken);
+            response.setHeader("RefreshToken", refreshToken);
         } catch (UnsupportedEncodingException e) {
             log.error(e.getMessage());
         }

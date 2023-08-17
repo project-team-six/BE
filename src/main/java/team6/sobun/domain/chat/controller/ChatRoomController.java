@@ -3,19 +3,13 @@ package team6.sobun.domain.chat.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.annotation.SendToUser;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import team6.sobun.domain.chat.dto.ChatRoom;
-import team6.sobun.domain.chat.entity.LoginInfo;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
-import team6.sobun.domain.user.entity.UserRoleEnum;
-import team6.sobun.global.jwt.JwtProvider;
+import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.security.UserDetailsImpl;
 
 import java.util.HashMap;
@@ -29,7 +23,6 @@ import java.util.Map;
 public class ChatRoomController {
 
     private final RedisChatRepository chatRoomRepository;
-    private final JwtProvider jwtProvider;
 
     // chat/room 템플릿으로 진입
     @GetMapping("/room")
@@ -43,9 +36,9 @@ public class ChatRoomController {
     @GetMapping("/rooms")
     @ResponseBody
     public List<ChatRoom> room() {
-        List<ChatRoom> chatRooms = chatRoomRepository.findAllRoom();
-        chatRooms.stream().forEach(room -> room.setUserCount(chatRoomRepository.getUserCount(room.getRoomId())));
-        return chatRooms;
+        List<ChatRoom> chatRoom = chatRoomRepository.findAllRoom();
+        chatRoom.stream().forEach(room -> room.setUserCount(chatRoomRepository.getUserCount(room.getRoomId())));
+        return chatRoom;
     }
     // 채팅방 생성
     @PostMapping("/room")
@@ -54,6 +47,7 @@ public class ChatRoomController {
         ChatRoom chatRoom = chatRoomRepository.createChatRoom(name);
         return chatRoom;
     }
+
     // 특정 채팅방 조회
     @GetMapping("/room/{roomId}")
     @ResponseBody

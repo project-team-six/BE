@@ -1,5 +1,6 @@
 package team6.sobun.domain.chat.config.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -31,6 +32,7 @@ public class StompHandler implements ChannelInterceptor {
     private final RedisChatRepository redisChatRepository;
     private final ChatService chatService;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     // websocket을 통해 들어온 요청이 처리 되기전 실행된다.
     @Override
@@ -96,7 +98,7 @@ public class StompHandler implements ChannelInterceptor {
                 redisChatRepository.removeUserEnterInfo(sessionId);
                 log.info("DISCONNECT 메소드 : DISCONNECTED {}, {}, {}", name, sessionId, roomId);
             }
-    } else if (StompCommand.SEND == accessor.getCommand()) {
+        } else if (StompCommand.SEND == accessor.getCommand()) {
             try {
                 // header에서 roomId 추출
                 String sessionId = (String) message.getHeaders().get("simpSessionId");
@@ -104,25 +106,29 @@ public class StompHandler implements ChannelInterceptor {
                 log.info("SEND 메소드 : roomId는 뭐야? roomId = {}", roomId);
                 // 인증된 사용자의 이름 가져오기
                 String sender = jwtProvider.getNickNameFromToken(jwtToken);
-                log.info("SEND 메소드 : sender는 뭐야?={}",sender);
+                log.info("SEND 메소드 : sender는 뭐야?={}", sender);
 
                 byte[] payloadBytes = (byte[]) message.getPayload();
                 String messageContent = new String(payloadBytes, StandardCharsets.UTF_8);
                 log.info("SEND 메소드 : 내용은 뭐야? 메시지 내용 = {}", messageContent);
-                // 메시지 저장
+
+                ChatMessage originalChatMessageDto = objectMapper.readValue(messageContent, ChatMessage.class);
                 ChatMessage chatMessage = ChatMessage.builder()
                         .type(ChatMessage.MessageType.TALK)
                         .roomId(roomId)
                         .sender(sender)
                         .message(messageContent)
+                        .imageUrl(originalChatMessageDto.getImageUrl())
                         .userCount(redisChatRepository.getUserCount(roomId))
                         .build();
+
                 redisChatRepository.storeChatMessage(chatMessage);
                 log.info("레디스에 채팅 메시지 저장됨: {} in room: {}", messageContent, roomId);
             } catch (Exception e) {
                 log.error("전송 중 에러 발생!! : {}", e.getMessage(), e);
             }
         }
+
         return message;
     }
 }

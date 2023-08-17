@@ -4,13 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.chat.dto.ChatMessage;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
+import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.global.jwt.JwtProvider;
-import team6.sobun.global.security.UserDetailsImpl;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,20 +24,43 @@ public class ChatController {
 
     private final JwtProvider jwtProvider;
     private final RedisChatRepository redisChatRepository;
+    private final S3Service s3Service;
     private final ChatService chatService;
 
-     //pub/chat/message 로 들어오는 메세지를 처리함
+    //pub/chat/message 로 들어오는 메세지를 처리함
+
     @MessageMapping("/chat/message")
     public void message(ChatMessage message, @Header("Authorization") String token) {
         String nickname = jwtProvider.getNickNameFromToken(token);
-        log.info("토큰이 들어오나={}",token);
-        // 로그인 회원 정보로 대화명 설정
+
         message.setSender(nickname);
-        log.info("닉네임은 뭐야?={}", nickname);
-        // 채팅방 인원수 세팅
+
+        if (message.getImageUrl() != null) {
+            try {
+                // URL에서 이미지를 다운로드하고 MultipartFile로 변환
+                URL imageUrl = new URL(message.getImageUrl());
+                HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
+                connection.setRequestMethod("GET");
+                MultipartFile imageFile = new MockMultipartFile(
+                        "image",
+                        imageUrl.getFile(),
+                        HttpURLConnection.guessContentTypeFromName(imageUrl.getFile()),
+                        connection.getInputStream()
+                );
+
+                // 다운로드한 이미지를 S3에 업로드하고 이미지 URL을 가져옴
+                String uploadedImageUrl = s3Service.upload(imageFile);
+                message.setImageUrl(uploadedImageUrl);
+            } catch (IOException e) {
+                // 다운로드 및 업로드 에러 처리
+                log.error("이미지 다운로드/업로드 에러: {}", e.getMessage(), e);
+            }
+        }
+
         message.setUserCount(redisChatRepository.getUserCount(message.getRoomId()));
-        // Websocket에 발행된 메시지를 redis로 발행(publish)
+
         chatService.sendChatMessage(message);
+
         log.info("메시지 전송: sender={}, roomId={}, message={}", nickname, message.getRoomId(), message.getMessage());
     }
 }

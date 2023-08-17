@@ -26,7 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByPhoneNumber(String phoneNumber);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.commentList c WHERE p.user.id = :userId")
-    Page<Post> findPostsByUserId(@Param("userId") Long userId, Pageable pageable);
+    List<Post> findPostsByUserId(@Param("userId") Long userId);
 
     @Query("SELECT p.post FROM Pin p WHERE p.user.id = :userId")
     List<Post> findPinnedPostsByUserId(@Param("userId") Long userId);

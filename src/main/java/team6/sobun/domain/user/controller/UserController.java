@@ -4,10 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -52,24 +48,20 @@ public class UserController {
     public ApiResponse<?> logout(@RequestHeader("Authorization") String token,HttpServletResponse response) {
         return userService.logout(token,response);
     }
-    @GetMapping("/mypage/{userId}")
-    public ApiResponse<?> userDetailView(@PathVariable Long userId, HttpServletRequest req,
-                                         @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                         @RequestParam(defaultValue = "0") int page,
-                                         @RequestParam(defaultValue = "10") int size) {
+    @GetMapping("/mypage/{userid}")
+    public ApiResponse<?> userDetailView(@PathVariable Long userid, HttpServletRequest req,
+                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long requestingUserId = userDetails != null ? userDetails.getUser().getId() : null;
-        if (requestingUserId != null && requestingUserId.equals(userId)) {
+        if (requestingUserId != null && requestingUserId.equals(userid)) {
             // 로그인한 사용자와 조회 대상 사용자가 같은 경우 (본인 페이지 조회)
-            log.info("사용자 ID '{}'가 본인 페이지를 조회합니다.", userId);
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-            Page<MypageResponseDto> responseDtoPage = myPageService.getCurrentUserDetails(userId, pageable);
-            return success(responseDtoPage);
+            log.info("사용자 ID '{}'가 본인 페이지를 조회합니다.", userid);
+            MypageResponseDto responseDto = myPageService.getCurrentUserDetails(requestingUserId);
+            return success(responseDto);
         } else {
             // 로그인한 사용자와 조회 대상 사용자가 다른 경우 (일반 사용자 페이지 조회)
-            log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userId);
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-            Page<MypageResponseDto> responseDtoPage = myPageService.getUserDetails(userId, pageable);
-            return success(responseDtoPage);
+            log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userid);
+            MypageResponseDto responseDto = myPageService.getUserDetails(userid);
+            return success(responseDto);
         }
     }
 

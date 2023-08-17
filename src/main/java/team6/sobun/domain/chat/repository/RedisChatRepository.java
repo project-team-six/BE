@@ -7,14 +7,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import team6.sobun.domain.chat.dto.ChatMessage;
 import team6.sobun.domain.chat.dto.ChatRoom;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -47,8 +47,8 @@ public class RedisChatRepository {
         return hashOpsChatRoom.get(CHAT_ROOMS, id);
     }
 
-    public void storeChatMessage(ChatMessage chatMessage) {
-        String roomId = chatMessage.getRoomId();
+    public void storeChatMessage(ChatMessage chatMessageDto) {
+        String roomId = chatMessageDto.getRoomId();
         if (roomId == null || roomId.isEmpty()) {
             log.error("유효하지 않은 채팅 메시지: roomId is null or empty");
             return;
@@ -56,13 +56,13 @@ public class RedisChatRepository {
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            String serializedMessage = objectMapper.writeValueAsString(chatMessage);
+            String serializedMessage = objectMapper.writeValueAsString(chatMessageDto);
 
-            if (chatMessage.getMessage() != null) {
+            if (chatMessageDto.getMessage() != null) {
                 // 실제 메시지를 객체로 저장한 Redis 리스트에 추가
                 listOpsChatMessage.leftPush(CHAT_MESSAGES + "_" + roomId, serializedMessage);
             } else {
-                log.error("유효하지 않은 채팅 메시지: content={}", chatMessage.getMessage());
+                log.error("유효하지 않은 채팅 메시지: content={}", chatMessageDto.getMessage());
             }
         } catch (JsonProcessingException e) {
             log.error("채팅 메시지 저장 중 에러 발생: {}", e.getMessage(), e);
@@ -78,7 +78,7 @@ public class RedisChatRepository {
         for (String serializedMessage : serializedMessages) {
             try {
                 ChatMessage chatMessage = objectMapper.readValue(serializedMessage, ChatMessage.class);
-                chatMessages.add(chatMessage);
+                chatMessage.add(chatMessage);
             } catch (JsonProcessingException e) {
                 log.error("채팅 조회 중 에러 발생: {}", e.getMessage(), e);
             }

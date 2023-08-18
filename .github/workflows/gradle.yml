@@ -11,6 +11,8 @@ env:
   BUCKET_NAME: cicd-s3-1
   CODE_DEPLOY_APP_NAME: cicd
   DEPLOYMENT_GROUP_NAME: cicd
+permissions:
+  contents: read
 # 실제 실행될 내용들을 정의
 jobs:
   build:

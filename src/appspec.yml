@@ -4,8 +4,10 @@ os: linux
 files:
   - source: /
     destination: /home/ubuntu/moduform
+    overwrite: yes
 permissions:
   - object: /home/ubuntu/moduform/
+    pattern: "**"
     owner: ubuntu
     group: ubuntu
 hooks:

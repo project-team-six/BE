@@ -17,6 +17,7 @@ import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.security.UserDetailsImpl;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
@@ -93,9 +94,9 @@ public class UserService {
     // 소셜 로그인시 토큰생성 로직
     public ApiResponse<?> addToken(User user, HttpServletResponse response) {
         String token = jwtProvider.createToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+                user.getProfileImageUrl(), user.getLocation()==null?"서울시 구로구 가산동":user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()),user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+                user.getProfileImageUrl(), user.getLocation()==null?"서울시 구로구 가산동":user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
 
         jwtProvider.addJwtHeaders(token,refreshToken, response);
 

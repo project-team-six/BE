@@ -8,6 +8,8 @@ import team6.sobun.domain.comment.dto.CommentRequestDto;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.comment.entity.Comment;
 import team6.sobun.domain.comment.repository.CommentRepository;
+import team6.sobun.domain.notification.service.NotificationService;
+import team6.sobun.domain.notification.util.AlarmType;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.user.entity.User;
@@ -28,6 +30,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
 
     public Post findPostWithComments(Long postId) {
@@ -49,6 +52,8 @@ public class CommentService {
         Post post = findPost(postId);
         post.addComment(comment);
         commentRepository.save(comment);
+        User Writer = findPostUser(postId);
+        notificationService.send(Writer, AlarmType.eventCreateComment, "새로운 댓글이 생성 되었습니다.", user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/post/" + post.getId());
         return ResponseUtils.okWithMessage(SuccessCodeEnum.COMMENT_CREATE_SUCCESS);
     }
 
@@ -86,5 +91,9 @@ public class CommentService {
         if (!comment.getUser().getId().equals(user.getId())) {
             throw new InvalidConditionException(ErrorCodeEnum.USER_NOT_MATCH);
         }
+    }
+    private User findPostUser(Long postId) {
+        Post post = findPost(postId);
+        return post.getUser();
     }
 }

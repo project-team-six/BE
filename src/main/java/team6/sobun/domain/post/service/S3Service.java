@@ -80,7 +80,7 @@ public class S3Service {
      * @param fileName    업로드할 이미지의 파일 이름
      * @param contentType 업로드할 이미지의 컨텐츠 타입
      */
-    private void putS3(byte[] fileBytes, String fileName, String contentType) {
+    public void putS3(byte[] fileBytes, String fileName, String contentType) {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(fileBytes.length);
         metadata.setContentType(contentType);
@@ -122,7 +122,7 @@ public class S3Service {
      * @return 추출된 S3 객체 키
      * @throws IllegalArgumentException 잘못된 URL 형식일 경우 발생하는 예외
      */
-    private String extractObjectKeyFromUrl(String imageUrl) {
+    public String extractObjectKeyFromUrl(String imageUrl) {
         try {
             URL url = new URL(imageUrl);
             return url.getPath().substring(1); // leading slash 제거
@@ -138,7 +138,7 @@ public class S3Service {
      * @return 생성된 고유한 파일 이름
      * @throws IllegalArgumentException 파일 이름이 유효하지 않을 경우 발생하는 예외
      */
-    private String generateFileName(String originalFilename) {
+    public String generateFileName(String originalFilename) {
         if (StringUtils.hasText(originalFilename)) {
             String extension = extractExtension(originalFilename);
             String uniqueId = UUID.randomUUID().toString();
@@ -154,7 +154,7 @@ public class S3Service {
      * @return 추출된 확장자
      * @throws IllegalArgumentException 확장자를 추출할 수 없을 경우 발생하는 예외
      */
-    private String extractExtension(String originalFilename) {
+    public String extractExtension(String originalFilename) {
         if (StringUtils.hasText(originalFilename)) {
             int extensionIndex = originalFilename.lastIndexOf(".");
             if (extensionIndex != -1) {
@@ -170,7 +170,7 @@ public class S3Service {
      * @param objectKey S3 객체 키
      * @return 유효기간이 없는 서명되지 않은 URL
      */
-    private String generateUnsignedUrl(String objectKey) {
+    public String generateUnsignedUrl(String objectKey) {
         String baseUrl = "https://" + bucket + ".s3.amazonaws.com/";
         return baseUrl + objectKey;
     }

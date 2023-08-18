@@ -12,7 +12,7 @@ public class ChatMessage implements Serializable {
 
 
     public enum MessageType {
-        ENTER, QUIT, TALK
+        ENTER, QUIT, TALK, IMAGE
     }
 
     private MessageType type; // 메시지 타입

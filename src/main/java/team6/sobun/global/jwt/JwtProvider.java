@@ -31,9 +31,10 @@ import java.util.Date;
 public class JwtProvider {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String REFRESHTOKEN_HEADER = "RefreshToken";
     public static final String AUTHORIZATION_KEY = "auth";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 10 * 60 * 1000L; // 1시간
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 20 * 60 * 1000L; // 1시간
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 1주일
 
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
@@ -94,7 +95,7 @@ public class JwtProvider {
              refreshToken = URLEncoder.encode(refreshToken, "utf-8").replaceAll("\\+", "%20");
 
             response.setHeader(AUTHORIZATION_HEADER, accessToken);
-            response.setHeader("RefreshToken", refreshToken);
+            response.setHeader(REFRESHTOKEN_HEADER, refreshToken);
         } catch (UnsupportedEncodingException e) {
             log.error(e.getMessage());
         }
@@ -124,7 +125,7 @@ public class JwtProvider {
     }
 
     public String getRefreshTokenFromHeader(HttpServletRequest req) {
-        String refreshToken = req.getHeader("Refresh-Token");
+        String refreshToken = req.getHeader(REFRESHTOKEN_HEADER);
         if (refreshToken != null) {
             try {
                 return URLDecoder.decode(refreshToken, "UTF-8");
@@ -261,7 +262,7 @@ public class JwtProvider {
                             .claim(AUTHORIZATION_KEY, role)
                             .claim("profileImageUrl", claims.get("profileImageUrl", String.class))
                             .claim("location", claims.get("location", String.class))
-                            .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료 시간
+                            .setExpiration(new Date(date.getTime() + 5 * 60 * 1000L)) // 만료 시간
                             .setIssuedAt(date)
                             .signWith(key, signatureAlgorithm)
                             .compact();
@@ -358,18 +359,6 @@ public class JwtProvider {
             log.error("액세스 토큰 만료 실패: {}", e.getMessage());
             throw new RuntimeException("액세스 토큰 만료 실패");
         }
-    }
-
-    public String generateToken(String name,UserRoleEnum role) {
-        Date date = new Date();
-        return
-        Jwts.builder()
-                .setSubject(name)
-                .claim(AUTHORIZATION_KEY, role)
-                .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
-                .setIssuedAt(date)
-                .signWith(key, signatureAlgorithm)
-                .compact();
     }
 }
 

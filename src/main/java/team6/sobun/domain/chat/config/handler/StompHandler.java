@@ -1,5 +1,7 @@
 package team6.sobun.domain.chat.config.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -12,14 +14,21 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.chat.dto.ChatMessage;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
+import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.global.jwt.JwtProvider;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -33,6 +42,7 @@ public class StompHandler implements ChannelInterceptor {
     private final ChatService chatService;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
+    private final S3Service s3Service;
 
     // websocket을 통해 들어온 요청이 처리 되기전 실행된다.
     @Override
@@ -112,23 +122,104 @@ public class StompHandler implements ChannelInterceptor {
                 String messageContent = new String(payloadBytes, StandardCharsets.UTF_8);
                 log.info("SEND 메소드 : 내용은 뭐야? 메시지 내용 = {}", messageContent);
 
-                ChatMessage originalChatMessageDto = objectMapper.readValue(messageContent, ChatMessage.class);
-                ChatMessage chatMessage = ChatMessage.builder()
-                        .type(ChatMessage.MessageType.TALK)
-                        .roomId(roomId)
-                        .sender(sender)
-                        .message(messageContent)
-                        .imageUrl(originalChatMessageDto.getImageUrl())
-                        .userCount(redisChatRepository.getUserCount(roomId))
-                        .build();
+                ChatMessage originalChatMessage = objectMapper.readValue(messageContent, ChatMessage.class);
+                ChatMessage.MessageType messageType = originalChatMessage.getType();
 
-                redisChatRepository.storeChatMessage(chatMessage);
-                log.info("레디스에 채팅 메시지 저장됨: {} in room: {}", messageContent, roomId);
-            } catch (Exception e) {
-                log.error("전송 중 에러 발생!! : {}", e.getMessage(), e);
+                if (messageType == ChatMessage.MessageType.IMAGE) {
+                    // 이미지 메시지 처리 로직 추가
+                    String imageUrl = originalChatMessage.getImageUrl();
+                    log.info("들어오나 이미지={}",imageUrl);
+                    // 이미지를 S3에 업로드하고 URL을 반환
+                    MultipartFile imageFile = getMultipartFileFromUrl(imageUrl);
+                    log.info("들어오나 이미지파일={}",imageFile);
+                    if (imageFile != null) {
+                        String uploadedImageUrl = s3Service.upload(imageFile);
+                        log.info("들어오나 업로드 이미지={}",uploadedImageUrl);
+                        // ChatMessage의 imageUrl 설정
+                        ChatMessage chatMessage = ChatMessage.builder()
+                                .type(ChatMessage.MessageType.IMAGE)
+                                .roomId(roomId)
+                                .sender(sender)
+                                .imageUrl(uploadedImageUrl)
+                                .userCount(redisChatRepository.getUserCount(roomId))
+                                .build();
+
+                        redisChatRepository.storeChatMessage(chatMessage);
+                        log.info("레디스에 이미지 메시지 저장됨: {} in room: {}", imageUrl, roomId);
+                    }
+                } else if (messageType == ChatMessage.MessageType.TALK) {
+                    ChatMessage chatMessage = ChatMessage.builder()
+                            .type(ChatMessage.MessageType.TALK)
+                            .roomId(roomId)
+                            .sender(sender)
+                            .message(messageContent)
+                            .imageUrl(originalChatMessage.getImageUrl())
+                            .userCount(redisChatRepository.getUserCount(roomId))
+                            .build();
+
+                    redisChatRepository.storeChatMessage(chatMessage);
+                    log.info("레디스에 채팅 메시지 저장됨: {} in room: {}", messageContent, roomId);
+                }
+            } catch (JsonMappingException e) {
+                throw new RuntimeException(e);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
         }
 
         return message;
     }
+
+    // 이미지 URL을 기반으로 MultipartFile을 생성하는 메서드
+    private MultipartFile getMultipartFileFromUrl(String imageUrl) {
+        try {
+            if (StringUtils.hasText(imageUrl)) {
+                URL url = new URL(imageUrl);
+                // 이미지를 S3에 업로드하지 않고, URL을 그대로 사용
+                String imageName = generateFileNameFromUrl(imageUrl);
+                String contentType = getContentTypeFromUrl(imageUrl);
+
+                // 이미지 데이터를 가져오기 위한 InputStream
+                try (InputStream inputStream = url.openStream()) {
+                    // MockMultipartFile로 생성
+                    return new MockMultipartFile(
+                            imageName, imageName, contentType, inputStream
+                    );
+                }
+            } else {
+                log.error("이미지 URL이 유효하지 않습니다.");
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("이미지 가져오기 실패: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+
+    // 이미지 URL에서 파일 이름 추출
+    private String generateFileNameFromUrl(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            String path = url.getPath();
+            String[] pathSegments = path.split("/");
+            return pathSegments[pathSegments.length - 1];
+        } catch (Exception e) {
+            log.error("파일 이름 추출 실패: {}", e.getMessage(), e);
+            throw new RuntimeException("파일 이름 추출 실패", e);
+        }
+    }
+
+    // 이미지 URL에서 컨텐츠 타입 추출
+    private String getContentTypeFromUrl(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            return connection.getContentType();
+        } catch (Exception e) {
+            log.error("컨텐츠 타입 추출 실패: {}", e.getMessage(), e);
+            throw new RuntimeException("컨텐츠 타입 추출 실패", e);
+        }
+    }
 }
+

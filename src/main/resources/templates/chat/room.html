@@ -146,11 +146,13 @@
                     }
                 })
                     .then(response => {
+                        console.log(decodedToken);
                         alert(`${response.data.name} 방 개설에 성공하였습니다.`);
                         this.room_name = '';
                         this.findAllRoom();
                     })
                     .catch(error => {
+                        console.log(decodedToken);
                         alert('채팅방 개설에 실패하였습니다.');
                         console.error('채팅방 개설 중 에러 발생:', error);
                     });
@@ -160,10 +162,18 @@
                 if (tokenParts.length !== 3) {
                     throw new Error('잘못된 토큰 방식 입니다.');
                 }
-                return JSON.parse(atob(tokenParts[1]));
+
+                const payload = tokenParts[1];
+                const decodedPayload = atob(payload); // Base64 디코딩
+
+                try {
+                    const decodedJSON = JSON.parse(decodeURIComponent(escape(decodedPayload))); // 한글 디코딩
+                    return decodedJSON;
+                } catch (error) {
+                    console.error('토큰 페이로드 디코딩 에러:', error);
+                    return null;
+                }
             },
-
-
 
             enterRoom: function (roomId, roomName) {
                 const accessToken = this.getCookie('accessToken');

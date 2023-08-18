@@ -61,32 +61,22 @@ public class RedisChatRepository {
             if (chatMessageDto.getMessage() != null) {
                 // 실제 메시지를 객체로 저장한 Redis 리스트에 추가
                 listOpsChatMessage.leftPush(CHAT_MESSAGES + "_" + roomId, serializedMessage);
+            } else if (chatMessageDto.getImageUrl() != null) {
+                // 이미지 URL을 객체로 저장한 Redis 리스트에 추가
+                listOpsChatMessage.leftPush(CHAT_MESSAGES_TEXT + "_" + roomId, chatMessageDto.getImageUrl());
             } else {
-                log.error("유효하지 않은 채팅 메시지: content={}", chatMessageDto.getMessage());
+                log.error("유효하지 않은 채팅 메시지: content={}, imageUrl={}", chatMessageDto.getMessage(), chatMessageDto.getImageUrl());
             }
         } catch (JsonProcessingException e) {
             log.error("채팅 메시지 저장 중 에러 발생: {}", e.getMessage(), e);
         }
     }
 
-
-    public List<ChatMessage> getChatMessages(String roomId) {
-        List<String> serializedMessages = listOpsChatMessage.range(CHAT_MESSAGES + "_" + roomId, 0, -1);
-        List<ChatMessage> chatMessages = new ArrayList<>();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        for (String serializedMessage : serializedMessages) {
-            try {
-                ChatMessage chatMessage = objectMapper.readValue(serializedMessage, ChatMessage.class);
-                chatMessage.add(chatMessage);
-            } catch (JsonProcessingException e) {
-                log.error("채팅 조회 중 에러 발생: {}", e.getMessage(), e);
-            }
-        }
-
-        log.info("채팅 메세지 뭐가 들어있어? = {}", chatMessages);
-        return chatMessages;
+    public List<String> getChatMessagesWithUrls(String roomId) {
+        // 이미지 URL을 포함한 메시지 리스트를 가져옴
+        return listOpsChatMessage.range(CHAT_MESSAGES_TEXT + "_" + roomId, 0, -1);
     }
+
 
     // 채팅방 생성 : 서버간 채팅방 공유를 위해 redis hash에 저장한다.
     public ChatRoom createChatRoom(String name) {
@@ -128,7 +118,4 @@ public class RedisChatRepository {
         return hashOpsEnterInfo.hasKey(ENTER_INFO, sessionId) &&
                 hashOpsEnterInfo.get(ENTER_INFO, sessionId).equals(roomId);
     }
-
-
-
 }

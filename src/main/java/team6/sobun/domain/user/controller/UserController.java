@@ -78,6 +78,7 @@ public class UserController {
         return myPageService.updateUserImage(userId, image, userDetailsImpl.getUser());
     }
 
+
     @Transactional
     @PostMapping ("/kakao/login")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {

@@ -16,7 +16,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import team6.sobun.domain.user.dto.social.KakaoDto;
+import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
 
 import java.net.URI;
@@ -37,7 +39,7 @@ public class KakaoService {
     private String kakaoLoginClientId;
 
 
-    @Transactional
+
     public User kakaoSignUpOrLinkUser(String code) throws JsonProcessingException {
         log.info("카카오 로그인 시도 중. 인증 코드: {}", code);
 
@@ -83,7 +85,7 @@ public class KakaoService {
         String phoneNumber = String.valueOf(id);
         String username = jsonNode.get("properties").get("nickname").asText();
         String nickname = "카카오유저"+ id;
-        String profileImageUrl = jsonNode.get("properties").get("profile_image").asText(); // 프로필 이미지 URL 가져오기
+        String profileImageUrl = jsonNode.get("properties").get("profile_image").asText();
         log.info("카카오 사용자 정보: " + id + ", " + username + ", " + email);
         return new KakaoDto(id, email, phoneNumber, username, nickname, profileImageUrl); // 프로필 이미지 URL도 KakaoDto에 추가해서 반환
     }
@@ -127,9 +129,4 @@ public class KakaoService {
         }
         return user;
     }
-
-
-
-
-
 }

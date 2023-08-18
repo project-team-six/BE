@@ -13,7 +13,7 @@ public class KakaoDto {
     private String nickname;
     private String profileImageUrl;
 
-    public KakaoDto(Long id, String email, String phoneNumber, String username, String nickname, String profileImageUrl) {
+    public KakaoDto(Long id, String email,String phoneNumber, String username, String nickname, String profileImageUrl) {
         this.id = id;
         this.email = email;
         this.phoneNumber = phoneNumber;

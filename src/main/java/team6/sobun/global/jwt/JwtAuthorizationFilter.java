@@ -35,33 +35,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(tokenValue)) {
             tokenValue = jwtProvider.substringHeaderToken(tokenValue);
-
             if (!jwtProvider.validateToken(tokenValue)) {
                 // 액세스 토큰이 만료된 경우 새로운 액세스 토큰 발급
                 if (StringUtils.hasText(refreshTokenValue)) {
                     jwtProvider.refreshAccessToken(refreshTokenValue, res);
                     // 리프레시 토큰을 통한 새로운 액세스 토큰 발급
-                    String decryptedRefreshToken = jwtProvider.decryptRefreshToken(refreshTokenValue);
-                    if (StringUtils.hasText(decryptedRefreshToken) && jwtProvider.validateToken(decryptedRefreshToken)) {
-                        String redisStoredRefreshToken = jwtProvider.getRefreshTokenFromRedis(decryptedRefreshToken);
-                        log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
-                        if (redisStoredRefreshToken != null && redisStoredRefreshToken.equals(decryptedRefreshToken)) {
-                            log.info("복호화 토큰도 한번 보자= {}", decryptedRefreshToken);
-                        }
-                        // 리프레시 토큰을 통한 707 반환 요청
-                        Claims info = jwtProvider.getUserInfoFromToken(decryptedRefreshToken);
-                        // 리프레시 토큰이 유요한 경우 인증진행
-                        try {
-                            setAuthentication(info.getSubject());
-                            res.setStatus(707);
-                        } catch (Exception e) {
-                            log.error("사용자 인증 설정 (리프레시 토큰) 중 에러 발생: " + e.getMessage());
-                            return;
-                        }
-                    }
                 }
-                chain.doFilter(req, res);
-                return;
             }
             Claims info = jwtProvider.getUserInfoFromToken(tokenValue);
             // 액세스 토큰이 유효한 경우 인증진행

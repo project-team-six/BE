@@ -9,7 +9,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import team6.sobun.domain.chat.dto.ChatRoom;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
-import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.security.UserDetailsImpl;
 
 import java.util.HashMap;

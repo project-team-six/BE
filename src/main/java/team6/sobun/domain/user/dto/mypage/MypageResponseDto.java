@@ -37,7 +37,7 @@ public class MypageResponseDto {
                 .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(),post.getStatus().name(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
-                        post.getPrice()))
+                        post.getPrice(), post.getOriginPrice()))
                 .collect(Collectors.toList());
 
         if (pinedPosts == null) {
@@ -49,7 +49,7 @@ public class MypageResponseDto {
                 .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(),post.getStatus().name(), post.getTitle(), post.getUser().getNickname(),
                         post.getContent(), post.getCreatedAt(), Collections.singletonList(post.getImageUrlList().get(0)), post.getPined(), post.getViews(),
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
-                        post.getPrice()))
+                        post.getPrice(), post.getOriginPrice()))
                 .collect(Collectors.toList());
     }
 }

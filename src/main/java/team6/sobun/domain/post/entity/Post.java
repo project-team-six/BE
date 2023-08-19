@@ -104,6 +104,9 @@ public class Post extends Timestamped {
 
     private String profileImageUrl;
 
+    @Column(nullable = false)
+    private String originPrice;
+
 
     public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user) {
         this.category = postRequestDto.getCategory();
@@ -120,6 +123,7 @@ public class Post extends Timestamped {
         this.user = user;
         this.mannerTemperature = user.getMannerTemperature();
         this.profileImageUrl = user.getProfileImageUrl();
+        this.originPrice = postRequestDto.getOriginPrice();
 
     }
     public void markInProgress() {
@@ -138,6 +142,7 @@ public class Post extends Timestamped {
         this.consumerPeriod = postRequestDto.getConsumerPeriod();
         this.purchaseDate = postRequestDto.getPurchaseDate();
         this.price = postRequestDto.getPrice();
+        this.originPrice = postRequestDto.getOriginPrice();
     }
 
 

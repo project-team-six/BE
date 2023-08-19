@@ -41,6 +41,7 @@ public class PostResponseDto {
     private String status;
     private double mannerTemperature;
     private String profileImageUrl;
+    private String originPrice;
 
     // 전체 조회 시에 사용되는 생성자
     @QueryProjection
@@ -65,6 +66,7 @@ public class PostResponseDto {
         }
         this.mannerTemperature = post.getMannerTemperature();
         this.profileImageUrl = post.getProfileImageUrl();
+        this.originPrice = post.getOriginPrice();
     }
 
 
@@ -99,11 +101,15 @@ public class PostResponseDto {
         }
         this.mannerTemperature = post.getMannerTemperature();
         this.profileImageUrl = post.getProfileImageUrl();
+        this.originPrice = post.getOriginPrice();
     }
 
     // 유저 조회 시에 사용하는 생성자
 
-    public PostResponseDto(Long id, Long userId, Category category, String status, String title, String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList, long pined, int views, String transactionStartDate, String transactionEndDate, String consumerPeriod, String purchaseDate, String location, String price) {
+    public PostResponseDto(Long id, Long userId, Category category, String status, String title,
+                           String nickname, String content, LocalDateTime createdAt, List<String> imageUrlList,
+                           long pined, int views, String transactionStartDate, String transactionEndDate,
+                           String consumerPeriod, String purchaseDate, String location, String price, String originPrice) {
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -121,6 +127,7 @@ public class PostResponseDto {
         this.purchaseDate = purchaseDate;
         this.location = location;
         this.price = price;
+        this.originPrice = originPrice;
 
     }
 }

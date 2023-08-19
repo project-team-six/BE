@@ -70,16 +70,12 @@ public class UserController {
     }
 
     @PutMapping("mypage/{userId}")
-    public ApiResponse<?> updateUserNickname(@PathVariable Long userId,
-                                           @RequestBody MypageRequestDto mypageRequestDto,
-                                           @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return myPageService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser());
-    }
-    @PutMapping("mypage/{userId}/image")
-    public ApiResponse<?> updateUserImage(@PathVariable Long userId,
-                                           @RequestPart(value = "file",required = false) MultipartFile image,
-                                           @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return myPageService.updateUserImage(userId, image, userDetailsImpl.getUser());
+    public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
+                                                    @RequestPart(value = "data", required = false) MypageRequestDto mypageRequestDto,
+                                                    @RequestPart(value = "file", required = false) MultipartFile image,
+                                                    @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        User user = userDetailsImpl.getUser();
+        return myPageService.updateUserProfile(userId, mypageRequestDto, image, user);
     }
 
 

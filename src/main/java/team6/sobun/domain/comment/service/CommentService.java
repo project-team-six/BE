@@ -25,6 +25,8 @@ import team6.sobun.global.utils.ResponseUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static team6.sobun.global.stringCode.ErrorCodeEnum.USER_NOT_MATCH;
+
 @Slf4j
 @Service
 @Transactional
@@ -34,7 +36,6 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
-    private final UserService userService;
 
 
     public Post findPostWithComments(Long postId) {
@@ -92,8 +93,8 @@ public class CommentService {
     }
 
     private void checkUsername(Comment comment, User user) {
-        if (!comment.getUser().getId().equals(user.getId())||user.getRole()==UserRoleEnum.ADMIN) {
-            throw new InvalidConditionException(ErrorCodeEnum.USER_NOT_MATCH);
+        if (!user.getId().equals(comment.getUser().getId()) && !user.getRole().equals(UserRoleEnum.ADMIN)) {
+            throw new InvalidConditionException(USER_NOT_MATCH);
         }
     }
     private User findPostUser(Long postId) {

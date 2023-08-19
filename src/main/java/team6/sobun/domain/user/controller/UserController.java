@@ -44,6 +44,10 @@ public class UserController {
                                  @RequestPart(value = "file", required = false) MultipartFile image) {
         return userService.signup(signupRequestDto, image);
     }
+    @PostMapping("/admin/{userId}")
+    public ApiResponse<?> makeUserAdmin(@PathVariable Long userId) {
+        return userService.makeUserAdmin(userId);
+    }
     @PostMapping("/logout")
     public ApiResponse<?> logout(@RequestHeader("Authorization") String token,HttpServletResponse response) {
         return userService.logout(token,response);

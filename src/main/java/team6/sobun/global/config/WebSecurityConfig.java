@@ -120,6 +120,7 @@ public class WebSecurityConfig {
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers(GET,"/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/auth/admin/{userId}").permitAll()
                                 .requestMatchers("/auth/naver/login").permitAll()
                                 .requestMatchers("/auth/naver").permitAll()
                                 .requestMatchers(GET,"/auth/mypage/pin").permitAll()

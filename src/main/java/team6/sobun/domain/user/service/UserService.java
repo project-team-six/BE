@@ -109,7 +109,20 @@ public class UserService {
         redisRepository.save(refresh);
         return ApiResponse.success("토큰 발급 성공 !");
     }
+    public ApiResponse<?> makeUserAdmin(Long userId) {
+        User user = findUserById(userId);
+        user.setRole(UserRoleEnum.ADMIN);
+        userRepository.save(user);
+        return ApiResponse.success("사용자 권한을 ADMIN으로 변경하였습니다.");
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() ->
+                new InvalidConditionException(ErrorCodeEnum.USER_NOT_EXIST));
+    }
 }
+
+
 
 
 

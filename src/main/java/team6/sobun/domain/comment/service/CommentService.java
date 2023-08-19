@@ -13,7 +13,10 @@ import team6.sobun.domain.notification.util.AlarmType;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.entity.UserRoleEnum;
+import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.exception.InvalidConditionException;
+import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
@@ -31,6 +34,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
+    private final UserService userService;
 
 
     public Post findPostWithComments(Long postId) {
@@ -88,7 +92,7 @@ public class CommentService {
     }
 
     private void checkUsername(Comment comment, User user) {
-        if (!comment.getUser().getId().equals(user.getId())) {
+        if (!comment.getUser().getId().equals(user.getId())||user.getRole()==UserRoleEnum.ADMIN) {
             throw new InvalidConditionException(ErrorCodeEnum.USER_NOT_MATCH);
         }
     }

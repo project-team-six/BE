@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
@@ -24,6 +25,7 @@ import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -359,6 +361,10 @@ public class JwtProvider {
             log.error("액세스 토큰 만료 실패: {}", e.getMessage());
             throw new RuntimeException("액세스 토큰 만료 실패");
         }
+    }
+    // JwtProvider 클래스에 추가 메소드
+    public boolean isAdmin(UserRoleEnum userRole) {
+        return userRole == UserRoleEnum.ADMIN;
     }
 }
 

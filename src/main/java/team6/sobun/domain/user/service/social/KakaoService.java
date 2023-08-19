@@ -38,8 +38,7 @@ public class KakaoService {
     @Value("${kakao.login.client.id}")
     private String kakaoLoginClientId;
 
-
-
+    @Transactional
     public User kakaoSignUpOrLinkUser(String code) throws JsonProcessingException {
         log.info("카카오 로그인 시도 중. 인증 코드: {}", code);
 
@@ -124,7 +123,7 @@ public class KakaoService {
         } else {
             String randomPwd = passwordEncoder.encode(String.valueOf(kakaoUserDto.getId()));
             String profileImageUrl = kakaoUserDto.getProfileImageUrl(); // 프로필 이미지 URL 가져오기
-            user = new User(kakaoUserDto, randomPwd, profileImageUrl); // 프로필 이미지 URL로 User 객체 생성
+            user = new User(kakaoUserDto, randomPwd, profileImageUrl);// 프로필 이미지 URL로 User 객체 생성
             userRepository.save(user);
         }
         return user;

@@ -18,13 +18,17 @@ import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.poststatus.repository.PostStatusRepository;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
+import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
 import static team6.sobun.global.stringCode.ErrorCodeEnum.USER_NOT_MATCH;
@@ -44,6 +48,8 @@ public class PostService {
     private final PinRepository pinRepository;
     private final PostStatusRepository postStatusRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
+
     // 최신순 전체조회
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return ok(postRepository.searchPostByPage(condition, pageable));
@@ -58,21 +64,21 @@ public class PostService {
     }
 
     @Transactional
-    public ApiResponse<?> getSinglePost(Long postId , HttpServletRequest req) {
+    public ApiResponse<?> getSinglePost(Long postId, HttpServletRequest req) {
         String token = jwtProvider.getTokenFromHeader(req);
         String subStringToken;
-        Boolean isPined=false;
-        Boolean isComplete=false;
-        if(token!=null) {
+        Boolean isPined = false;
+        Boolean isComplete = false;
+        if (token != null) {
             subStringToken = jwtProvider.substringHeaderToken(token);
             Claims userInfo = jwtProvider.getUserInfoFromToken(subStringToken);
-            Post post = postRepository.findById(postId).orElseThrow(()->new IllegalArgumentException("?"));
-            User user = userRepository.findByEmail(userInfo.getSubject()).orElseThrow(()->new IllegalArgumentException("?"));
+            Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("?"));
+            User user = userRepository.findByEmail(userInfo.getSubject()).orElseThrow(() -> new IllegalArgumentException("?"));
 
-            if(pinRepository.findByPostAndUser(post, user).isPresent()) {
+            if (pinRepository.findByPostAndUser(post, user).isPresent()) {
                 isPined = true;
             }
-            if(postStatusRepository.findByPostAndUser(post, user).isPresent()){
+            if (postStatusRepository.findByPostAndUser(post, user).isPresent()) {
                 isComplete = true;
             }
         }
@@ -80,7 +86,7 @@ public class PostService {
                 new InvalidConditionException(POST_NOT_EXIST));
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
-        return ok (new PostResponseDto(post, isPined, isComplete));
+        return ok(new PostResponseDto(post, isPined, isComplete));
     }
 
     @Transactional
@@ -103,6 +109,7 @@ public class PostService {
             }
         }
     }
+
     @Transactional
     public ApiResponse<?> deletePost(Long postId, User user) {
         Post post = confirmPost(postId, user);
@@ -127,7 +134,7 @@ public class PostService {
 
     private Post confirmPost(Long postId, User user) {
         Post post = findPost(postId);
-        if (!user.getId().equals(post.getUser().getId())) {
+        if (!user.getId().equals(post.getUser().getId())||user.getRole() == UserRoleEnum.ADMIN) {
             throw new InvalidConditionException(USER_NOT_MATCH);
         }
         return post;

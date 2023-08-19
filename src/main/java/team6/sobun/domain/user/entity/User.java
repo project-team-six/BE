@@ -10,6 +10,8 @@ import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.social.KakaoDto;
 import team6.sobun.global.utils.Timestamped;
 
+import java.util.Set;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -70,7 +72,7 @@ public class User extends Timestamped {
         this.nickname = kakaoDto.getNickname();
         this.username = kakaoDto.getUsername();
         this.password = password;
-        this.role = UserRoleEnum.USER;
+        this.role = UserRoleEnum.KAKAO;
         this.profileImageUrl = profileImageUrl;
     }
 
@@ -119,6 +121,11 @@ public class User extends Timestamped {
 
     public void setLocation(Location defaultLocation) {
         this.location = defaultLocation;
+    }
+
+
+    public void setRole(UserRoleEnum userRoleEnum) {
+        this.role = userRoleEnum;
     }
 }
 

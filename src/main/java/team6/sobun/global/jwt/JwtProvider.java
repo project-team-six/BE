@@ -362,9 +362,5 @@ public class JwtProvider {
             throw new RuntimeException("액세스 토큰 만료 실패");
         }
     }
-    // JwtProvider 클래스에 추가 메소드
-    public boolean isAdmin(UserRoleEnum userRole) {
-        return userRole == UserRoleEnum.ADMIN;
-    }
 }
 

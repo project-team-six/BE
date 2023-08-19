@@ -48,7 +48,6 @@ public class PostService {
     private final PinRepository pinRepository;
     private final PostStatusRepository postStatusRepository;
     private final UserRepository userRepository;
-    private final UserService userService;
 
     // 최신순 전체조회
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
@@ -134,9 +133,15 @@ public class PostService {
 
     private Post confirmPost(Long postId, User user) {
         Post post = findPost(postId);
-        if (!user.getId().equals(post.getUser().getId())||user.getRole() == UserRoleEnum.ADMIN) {
+        log.info("Confirming post access: postId={}, user={}, postUser={}, userRole={}",
+                postId, user.getId(), post.getUser().getId(), user.getRole());
+        if (!user.getId().equals(post.getUser().getId()) && !user.getRole().equals(UserRoleEnum.ADMIN)) {
             throw new InvalidConditionException(USER_NOT_MATCH);
         }
+
+        log.info("Post access confirmed: postId={}, user={}", postId, user.getId());
         return post;
     }
 }
+
+

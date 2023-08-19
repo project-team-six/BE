@@ -99,36 +99,9 @@ public class MyPageService {
     }
 
     @Transactional
-    public ApiResponse<?> updateUserProfile(Long id, MypageRequestDto mypageRequestDto, User user) {
-        log.info("닉네임, 비밀번호, 전화번호 변경 요청");
-        User checkUser = userRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("존재하지 않는 사용자 입니다."));
-
-        if (!checkUser.getId().equals(user.getId())) {
-            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
-        }
-
-        if (mypageRequestDto.getNickname() != null) {
-            checkUser.updateNickname(mypageRequestDto.getNickname());
-        }
-
-        if (mypageRequestDto.getPassword() != null) {
-            String encodedPassword = passwordEncoder.encode(mypageRequestDto.getPassword());
-            checkUser.updatePassword(encodedPassword);
-        }
-
-        if (mypageRequestDto.getPhoneNumber() != null) {
-            checkUser.updatePhoneNumber(mypageRequestDto.getPhoneNumber());
-        }
-
-        checkUser.update(mypageRequestDto);
-        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
-    }
-
-
-    @Transactional
-    public ApiResponse<?> updateUserImage(Long userId, MultipartFile image, User user) {
-        log.info("'{}'님이 프로필 이미지를 변경했습니다.", user.getNickname());
+    public ApiResponse<?> updateUserProfile(Long userId, MypageRequestDto mypageRequestDto,
+                                                    MultipartFile image, User user) {
+        log.info("'{}'님이 프로필 정보와 이미지를 변경했습니다.", user.getNickname());
 
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
@@ -137,21 +110,28 @@ public class MyPageService {
             throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
         }
 
-        // 이미지가 없을 경우 기존 이미지를 삭제 처리
-        if (image == null || image.isEmpty()) {
-            String existingImageUrl = user.getProfileImageUrl();
-            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
-                s3Service.delete(Collections.singletonList(existingImageUrl));
-                existingUser.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
-            }
-        } else {
-            updateUserImageDetail(image, existingUser);
+        if (mypageRequestDto.getNickname() != null) {
+            existingUser.updateNickname(mypageRequestDto.getNickname());
         }
+
+        if (mypageRequestDto.getPassword() != null) {
+            String encodedPassword = passwordEncoder.encode(mypageRequestDto.getPassword());
+            existingUser.updatePassword(encodedPassword);
+        }
+
+        if (mypageRequestDto.getPhoneNumber() != null) {
+            existingUser.updatePhoneNumber(mypageRequestDto.getPhoneNumber());
+        }
+
+        existingUser.update(mypageRequestDto);
+
+        // 이미지 업데이트 로직 추가
+        updateUserImageDetail(image, existingUser);
 
         userRepository.save(existingUser);
 
-        // 프로필 이미지 변경에 대한 성공 응답을 반환합니다.
-        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_IMAGE_SUCCESS);
+        // 프로필 정보와 이미지 변경에 대한 성공 응답을 반환합니다.
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
     }
 
     private void updateUserImageDetail(MultipartFile image, User user) {

@@ -1,5 +1,7 @@
 package team6.sobun.domain.post.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,7 @@ import team6.sobun.global.security.UserDetailsImpl;
 
 import java.util.List;
 
+@Tag(name = "게시글 관련 API", description = "게시글 작성 및 조회, 수정, 삭제")
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
@@ -21,15 +24,19 @@ public class PostController {
 
     private final PostService postService;
 
+    @Operation(summary = "게시글 최신순으로 전체 조회")
     @GetMapping
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return postService.searchPost(condition, pageable);
     }
+
+    @Operation(summary = "게시글 상세조회")
     @GetMapping("/{postId}")
     public ApiResponse<?> readOnePost(@PathVariable Long postId, HttpServletRequest req) {
         return postService.getSinglePost(postId, req);
     }
 
+    @Operation(summary = "게시글 작성")
     @PostMapping
     public ApiResponse<?> createPost(@RequestPart(value = "data") PostRequestDto postRequestDto,
                                      @RequestPart(value = "file", required = false) List<MultipartFile> images,
@@ -37,6 +44,7 @@ public class PostController {
         return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
     }
 
+    @Operation(summary = "게시글 수정")
     @PutMapping("/{postId}")
     public ApiResponse<?> modifyPost(@PathVariable Long postId,
                                      @RequestPart(value = "data", required = false) PostRequestDto postRequestDto,
@@ -45,11 +53,10 @@ public class PostController {
         return postService.updatePost(postId, postRequestDto, images, userDetailsImpl.getUser());
     }
 
+    @Operation(summary = "게시글 삭제")
     @DeleteMapping ("/{postId}")
     public ApiResponse<?> removePost(@PathVariable Long postId,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.deletePost(postId, userDetailsImpl.getUser());
     }
-
-
 }

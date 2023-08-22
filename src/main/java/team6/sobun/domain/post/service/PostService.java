@@ -22,6 +22,7 @@ import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.exception.InvalidConditionException;
+import team6.sobun.global.exception.UploadException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
@@ -89,10 +90,9 @@ public class PostService {
     }
 
     @Transactional
-    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
+    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, User user) {
         Post post = confirmPost(postId, user);
         post.update(postRequestDto);
-        updatePostDetail(images, post);
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
@@ -141,6 +141,40 @@ public class PostService {
 
         log.info("Post access confirmed: postId={}, user={}", postId, user.getId());
         return post;
+    }
+
+    @Transactional
+    public ApiResponse<?> postImageDelete(Long postId, int imageIndex, User user) {
+        Post post = findPost(postId);
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("게시글 수정에 대한 권한이 없습니다.");
+        }
+        List<String> loadImageList = post.getImageUrlList();
+
+        s3Service.del(loadImageList.get(imageIndex));
+
+        loadImageList.remove(imageIndex);
+
+        log.info(loadImageList.toString());
+        post.update(loadImageList);
+        postRepository.save(post);
+        return okWithMessage(POST_UPDATE_SUCCESS);
+    }
+
+    @Transactional
+    public ApiResponse<?> postImageAppend(Long postId, List<MultipartFile> images, User user) {
+        Post post = findPost(postId);
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("게시글 수정에 대한 권한이 없습니다.");
+        }
+        List<String> loadImageList = post.getImageUrlList();
+        List<String> imageUrlList = s3Service.uploads(images);
+        for (String imageUrl : imageUrlList) {
+            loadImageList.add(imageUrl);
+        }
+        post.update(loadImageList);
+        postRepository.save(post);
+        return okWithMessage(POST_UPDATE_SUCCESS);
     }
 }
 

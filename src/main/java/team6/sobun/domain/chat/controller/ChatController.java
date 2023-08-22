@@ -1,5 +1,7 @@
 package team6.sobun.domain.chat.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+@Tag(name = "채팅 관련 API", description = "채팅방 안에서 메세지 전송 및 이미지 전송관련")
 @Slf4j
 @RequiredArgsConstructor
 @Controller
@@ -34,6 +37,7 @@ public class ChatController {
     private final ChatService chatService;
 
 
+    @Operation(summary = "메세지 보내기")
     @MessageMapping("/chat/message")
     public void message(ChatMessage message, @Header("Authorization") String token) {
         String nickname = jwtProvider.getNickNameFromToken(token);
@@ -70,6 +74,7 @@ public class ChatController {
     }
 
     // 업로드를 처리하는 새로운 엔드포인트
+    @Operation(summary = "채팅시 이미지 업로드")
     @PostMapping("/upload/image")
     @ResponseBody
     public ResponseEntity<String> uploadImage(@RequestPart("file") MultipartFile file, @CookieValue("accessToken") String token) {

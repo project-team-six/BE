@@ -8,9 +8,9 @@ on:
 # 코드의 내용을 이 파일을 실행하여 action을 수행하는주체(Github Actions에서 사용하는 VM)가 읽을 수 있도록 허용
 env:
   PROJECT_NAME: cubeninggen
-  BUCKET_NAME: cicd-s3-1
+  BUCKET_NAME: cicd-sobun-bucket
   CODE_DEPLOY_APP_NAME: cicd
-  DEPLOYMENT_GROUP_NAME: codedploy-deployment-group
+  DEPLOYMENT_GROUP_NAME: cicd-module
 # 실제 실행될 내용들을 정의
 jobs:
   build:

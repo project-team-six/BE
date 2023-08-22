@@ -1,3 +1,4 @@
+
 name: CD with Gradle
 # 언제 이 파일의 내용이 실행될 것인지 정의
 on:
@@ -7,10 +8,10 @@ on:
     branches: [ "dev" ]
 # 코드의 내용을 이 파일을 실행하여 action을 수행하는주체(Github Actions에서 사용하는 VM)가 읽을 수 있도록 허용
 env:
-  PROJECT_NAME: cubeninggen
-  BUCKET_NAME: cicd-s3-1
+  PROJECT_NAME: BE
+  BUCKET_NAME: cicd-sobun-bucket
   CODE_DEPLOY_APP_NAME: cicd
-  DEPLOYMENT_GROUP_NAME: codedploy-deployment-group
+  DEPLOYMENT_GROUP_NAME: cicd-module
 # 실제 실행될 내용들을 정의
 jobs:
   build:
@@ -24,11 +25,13 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      # gradle을 통해 소스를 빌드
-      - name: Build with Gradle
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build -x test
+      - name: Permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+      - name: Build and Test
+        run: ./gradlew build test
+        
       - name: Make Zip File
         run: zip -qq -r ./$GITHUB_SHA.zip .
         shell: bash
@@ -41,8 +44,4 @@ jobs:
       - name: Upload to S3
         run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
       - name: Code Deploy To EC2 instance
-        run: aws deploy create-deployment
-          --application-name $CODE_DEPLOY_APP_NAME
-          --deployment-config-name CodeDeployDefault.AllAtOnce
-          --deployment-group-name $DEPLOYMENT_GROUP_NAME
-          --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
+        run: aws deploy create-deployment --application-name $CODE_DEPLOY_APP_NAME --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name $DEPLOYMENT_GROUP_NAME --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip

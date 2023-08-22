@@ -3,10 +3,10 @@ os: linux
 
 files:
   - source: /
-    destination: /home/ubuntu/moduform
+    destination: /home/ubuntu/BE
     overwrite: yes
 permissions:
-  - object: /home/ubuntu/moduform/
+  - object: /
     pattern: "**"
     owner: ubuntu
     group: ubuntu

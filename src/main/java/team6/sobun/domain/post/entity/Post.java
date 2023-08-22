@@ -145,6 +145,10 @@ public class Post extends Timestamped {
         this.originPrice = postRequestDto.getOriginPrice();
     }
 
+    public void update(List<String> imageUrlList) {
+        this.imageUrlList = imageUrlList;
+    }
+
 
     public void increaseViews() {
         this.views++;

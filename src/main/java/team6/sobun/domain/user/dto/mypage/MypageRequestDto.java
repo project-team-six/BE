@@ -7,6 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MypageRequestDto {
     String nickname;
-    String password;
     String phoneNumber;
 }

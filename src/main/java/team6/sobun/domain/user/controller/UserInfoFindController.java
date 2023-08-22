@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import team6.sobun.domain.user.dto.find.FindEmailRequestDto;
 import team6.sobun.domain.user.dto.find.FindEmailResponseDto;
-import team6.sobun.domain.user.dto.find.PasswordRequestDto;
-import team6.sobun.domain.user.service.UserService;
+import team6.sobun.domain.user.dto.find.PasswordFindRequestDto;
 import team6.sobun.domain.user.service.util.MyPageService;
 import team6.sobun.global.responseDto.ApiResponse;
 
@@ -23,7 +22,7 @@ public class UserInfoFindController {
 
     @Operation(summary = "비밀번호 찾기")
     @PostMapping("/auth/findpassword")
-    public ApiResponse<?> findPassword(@Valid @RequestBody PasswordRequestDto requestDto) throws Exception {
+    public ApiResponse<?> findPassword(@Valid @RequestBody PasswordFindRequestDto requestDto) throws Exception {
         return myPageService.findPassword(requestDto);
     }
 

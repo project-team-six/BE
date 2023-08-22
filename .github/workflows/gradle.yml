@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '17'
-          #distribution: 'temurin'
+          distribution: 'temurin'
       # gradle을 통해 소스를 빌드
       - name: Build with Gradle
         run: |

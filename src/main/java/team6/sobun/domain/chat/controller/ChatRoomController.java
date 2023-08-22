@@ -1,5 +1,7 @@
 package team6.sobun.domain.chat.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "채팅방 관련 API", description = "템플릿 연결 및 채팅방 생성 및 조회")
 @Slf4j
 @RequiredArgsConstructor
 @Controller
@@ -28,6 +31,7 @@ public class ChatRoomController {
     private final JwtProvider jwtProvider;
 
     // chat/room 템플릿으로 진입
+    @Operation(summary = "템플릿으로 진입")
     @GetMapping("/room")
     public String rooms(HttpServletRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         String token = request.getHeader("Authorization"); // Authorization 헤더에서 토큰 가져오기
@@ -36,6 +40,7 @@ public class ChatRoomController {
         return "chat/room";
     }
     // 전체 채팅방 조회
+    @Operation(summary = "전체 채팅방 조회")
     @GetMapping("/rooms")
     @ResponseBody
     public List<ChatRoom> room() {
@@ -44,6 +49,7 @@ public class ChatRoomController {
         return chatRoom;
     }
     // 채팅방 생성
+    @Operation(summary = "채팅방 생성")
     @PostMapping("/room")
     @ResponseBody
     public ChatRoom createRoom(@CookieValue("accessToken") String token) {
@@ -70,6 +76,7 @@ public class ChatRoomController {
         return ResponseEntity.ok("삭제 완료.");
     }
     // 특정 채팅방 조회
+    @Operation(summary = "특정 채팅방 조회")
     @GetMapping("/room/{roomId}")
     @ResponseBody
     public ChatRoom roomInfo(@PathVariable String roomId) {
@@ -77,6 +84,7 @@ public class ChatRoomController {
     }
 
     // 채팅 방 입장 페이지 ( 템플릿 진입 ) -> 스톰프 서버와 연결
+    @Operation(summary = "채팅 방 입장 페이지(템플릿 진입)")
     @GetMapping("/room/enter/{roomId}")
     public String roomDetail(Model model, @PathVariable String roomId) {
         model.addAttribute("roomId", roomId);
@@ -84,6 +92,7 @@ public class ChatRoomController {
         return "chat/roomdetail";
     }
     // 프론트에서 SockJS로 스톰프 구현시 사용
+    @Operation(summary = "SockJS")
     @GetMapping("/room/enterA/{roomId}")
     @ResponseBody
     public Map<String, String> roomDetail(@PathVariable String roomId) {

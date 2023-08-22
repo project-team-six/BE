@@ -1,6 +1,9 @@
 package team6.sobun.domain.user.controller;
 
+
 import jakarta.mail.MessagingException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import java.io.IOException;
 
 import static team6.sobun.global.responseDto.ApiResponse.success;
 
+@Tag(name = "유저정보 관련 API", description = "회원가입 및 유저 정보 수정 관련")
 @Slf4j
 @RestController
 @RequestMapping("/auth")
@@ -40,23 +44,31 @@ public class UserController {
     private final NaverService naverService;
     private  final FacebookService facebookService;
 
+    @Operation(summary = "회원가입")
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) throws MessagingException {
         return userService.signup(signupRequestDto, image);
     }
+
     @GetMapping("/email")
     public ApiResponse<?> verifyEmail(@RequestParam String verificationToken) {
         return userService.verifyEmail(verificationToken);
     }
+
+    @Operation(summary = "관리자 권한 부여")
     @PostMapping("/admin/{userId}")
     public ApiResponse<?> makeUserAdmin(@PathVariable Long userId) {
         return userService.makeUserAdmin(userId);
     }
+
+    @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     public ApiResponse<?> logout(@RequestHeader("Authorization") String token,HttpServletResponse response) {
         return userService.logout(token,response);
     }
+
+    @Operation(summary = "마이페이지 상세 조회")
     @GetMapping("/mypage/{userid}")
     public ApiResponse<?> userDetailView(@PathVariable Long userid, HttpServletRequest req,
                                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -74,6 +86,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "마이페이지 정보수정")
     @PutMapping("mypage/{userId}")
     public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
                                                     @RequestPart(value = "data", required = false) MypageRequestDto mypageRequestDto,
@@ -84,6 +97,7 @@ public class UserController {
     }
 
 
+    @Operation(summary = "카카오 로그인")
     @Transactional
     @PostMapping ("/kakao/login")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
@@ -96,6 +110,7 @@ public class UserController {
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
 
+    @Operation(summary = "구글 로그인")
     @Transactional
     @PostMapping("/google/login")
     public ApiResponse<?> googleCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
@@ -107,6 +122,7 @@ public class UserController {
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
 
+    @Operation(summary = "네이버 로그인")
     @Transactional
     @PostMapping("/naver/login")
     public ApiResponse<?> naverCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
@@ -118,6 +134,8 @@ public class UserController {
         userService.addToken(user,response);
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
+
+    @Operation(summary = "페이스북 로그인")
     @PostMapping("/facebook/login")
     public ApiResponse<?> facebookCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("페이스북 로그인 콜백 요청 받음. 인증 코드: {}", code);

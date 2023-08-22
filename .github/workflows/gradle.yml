@@ -25,11 +25,13 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      # gradle을 통해 소스를 빌드
-      - name: Build with Gradle
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build -x test
+      - name: Permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+      - name: Build and Test
+        run: ./gradlew build test
+        
       - name: Make Zip File
         run: zip -qq -r ./$GITHUB_SHA.zip .
         shell: bash

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import team6.sobun.domain.user.dto.location.LocationRquestDto;
 import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.social.KakaoDto;
@@ -17,6 +18,7 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = PROTECTED)
 @Table(name = "users")
 public class User extends Timestamped {
@@ -53,6 +55,14 @@ public class User extends Timestamped {
     @JoinColumn(name = "location_id")
     private Location location;
 
+    @Column(name = "is_verified")
+    private boolean verified = false; // 이메일 인증 상태를 나타내는 필드
+
+    @Column
+    private String roomId;
+
+    @Column
+    private String sessionId;
 
 
     @Builder
@@ -80,6 +90,17 @@ public class User extends Timestamped {
     public void update(MypageRequestDto mypageRequestDto) {
         this.nickname = mypageRequestDto.getNickname();
         this.phoneNumber = mypageRequestDto.getPhoneNumber();
+    }
+
+
+    // 이메일 인증 상태 설정
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    // 이메일 인증 상태 가져오기
+    public boolean isVerified() {
+        return this.verified;
     }
 
     public void updateNickname(String nickname) {

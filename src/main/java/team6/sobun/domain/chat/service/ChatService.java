@@ -19,7 +19,6 @@ public class ChatService {
 
     private final ChannelTopic channelTopic;
     private final RedisTemplate redisTemplate;
-    private final S3Service s3Service;
     private final RedisChatRepository redisChatRepository;
 
     /**
@@ -32,12 +31,12 @@ public class ChatService {
         else
             return "";
     }
-
     /**
      * 채팅방에 메시지 발송
      */
     public void sendChatMessage(ChatMessage chatMessage) {
         chatMessage.setUserCount(redisChatRepository.getUserCount(chatMessage.getRoomId()));
+        redisChatRepository.saveMessage(chatMessage.getRoomId(), chatMessage);
         if (ChatMessage.MessageType.ENTER.equals(chatMessage.getType())) {
             chatMessage.setMessage(chatMessage.getSender() + "님이 방에 입장했습니다.");
             chatMessage.setSender("[알림]");
@@ -48,19 +47,5 @@ public class ChatService {
         redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
     }
 
-    public String uploadImage(MultipartFile image) {
-        return s3Service.upload(image);
-    }
 
-    public List<String> uploadImages(List<MultipartFile> images) {
-        return s3Service.uploads(images);
-    }
-
-    public void deleteImages(List<String> imageUrls) {
-        s3Service.delete(imageUrls);
-    }
-
-    public boolean doesImageExist(String imageUrl) {
-        return s3Service.fileExists(imageUrl);
-    }
 }

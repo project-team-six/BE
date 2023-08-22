@@ -22,7 +22,7 @@
         </div>
         <div class="col-md-6 text-right">
             <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
-            <a class="btn btn-info btn-sm" href="/chat/room" v-on:click="leaveChatRoom">채팅방 나가기</a>
+            <a class="btn btn-info btn-sm" href="/chat/room" v-on:click="disconnectWebSocket">채팅방 나가기</a>
         </div>
 
     </div>
@@ -38,13 +38,36 @@
             <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">보내기</button>
         </div>
     </div>
+    <!-- 이미지 클릭 시 모달 열기 -->
     <ul class="list-group">
         <li class="list-group-item" v-for="message in messages">
-            {{ message.sender }} - {{ message.message }}
+            <div v-if="message.type === 'IMAGE'" class="d-flex align-items-center">
+                <div>
+                    <strong>{{ message.sender }}</strong>
+                    <br>
+                    <img :src="message.imageUrl" alt="Image" style="max-width: 300px; max-height: 200px;" @click="selectedImageUrl = message.imageUrl">
+                </div>
+            </div>
+            <div v-else>
+                {{ message.sender }} - {{ message.message }}
+            </div>
         </li>
     </ul>
 </div>
-<!-- JavaScript -->
+
+    <!-- 모달 창 -->
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <img :src="selectedImageUrl" alt="Image" style="width: 100%;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript -->
 <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
 <script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
 <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
@@ -63,7 +86,9 @@
             roomName: '',
             message: '',
             messages: [],
-            userCount: 0
+            userCount: 0,
+            currentUserEmail: '',
+            selectedImageUrl: ''
         },
         created() {
             this.roomId = localStorage.getItem('wschat.roomId');
@@ -74,21 +99,37 @@
                     var recv = JSON.parse(message.body);
                     _this.recvMessage(recv);
                 },{'Authorization': accessToken});
+
+
             }, function (error) {
                 alert("서버 연결에 실패하였습니다. 다시 접속해 주십시요.");
                 location.href = "/chat/room";
             });
         },
+        mounted() {
+            this.fetchChatMessages(); // 페이지가 로딩될 때 채팅 메시지를 불러옴
+        },
 
         methods: {
-            sendMessage: function (type) {
+            fetchChatMessages: function() {
+                axios.get(`/chat/${this.roomId}`).then(response => {
+                    this.messages = response.data;
+                }).catch(error => {
+                    console.error('채팅 메시지 불러오기 에러:', error);
+                });
+            },
+            sendMessage: function (type, imageUrl) {
                 wss.send("/pub/chat/message", {"Authorization": accessToken},
-                    JSON.stringify({type: type, roomId: this.roomId, message: this.message}));
+                    JSON.stringify({type: type, roomId: this.roomId, message: this.message, imageUrl: imageUrl}));
                 this.message = '';
             },
             recvMessage: function (recv) {
                 this.userCount = recv.userCount;
-                this.messages.unshift({"type": recv.type, "sender": recv.sender, "message": recv.message});
+                if (recv.type === 'IMAGE') {
+                    this.messages.unshift({"type": recv.type, "sender": recv.sender, "imageUrl": recv.imageUrl});
+                } else {
+                    this.messages.unshift({"type": recv.type, "sender": recv.sender, "message": recv.message});
+                }
             },
             disconnectWebSocket: function () {
                 wss.disconnect(function () {
@@ -98,11 +139,7 @@
                     "Authorization": accessToken  // 토큰 정보 추가
                 });
             },
-            leaveChatRoom: function () {
-                // 채팅방 나가기 버튼 클릭 시 호출되는 함수
-                this.disconnectWebSocket(); // 웹소켓 연결 해제
-                // 여기에 채팅방 나가기 로직을 추가하세요.
-            },
+
             openImagePicker: function() {
                 this.$refs.imageInput.click();
             },
@@ -111,18 +148,22 @@
                 if (file) {
                     const formData = new FormData();
                     formData.append('file', file);
-                    axios.post('/upload/image', formData, {
+                    axios.post('/chat/image', formData, {
                         headers: {
-                            'Content-Type' : 'multipart/form-data'
+                            'Content-Type' : 'multipart/form-data',
                         }
                     }).then(response => {
-                        const imageUrl = response.data.imageUrl;
+                        const imageUrl = response.data.data;
                         this.sendMessage('IMAGE', imageUrl); // 이미지 URL을 함께 보내기
                     }).catch(error => {
                         console.error('이미지 업로드 에러:', error);
                     });
                 }
             },
+            openImageModal: function(imageUrl) {
+                this.selectedImageUrl = imageUrl;
+                $('#imageModal').modal('show'); // 모달 열기
+            }
         }
     });
     // 토큰 쿠키를 가져오는 함수

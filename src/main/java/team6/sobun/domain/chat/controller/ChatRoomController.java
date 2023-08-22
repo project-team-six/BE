@@ -5,12 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import team6.sobun.domain.chat.dto.ChatRoom;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
+import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.security.UserDetailsImpl;
 
 import java.util.HashMap;
@@ -25,6 +28,7 @@ import java.util.Map;
 public class ChatRoomController {
 
     private final RedisChatRepository chatRoomRepository;
+    private final JwtProvider jwtProvider;
 
     // chat/room 템플릿으로 진입
     @Operation(summary = "템플릿으로 진입")
@@ -48,11 +52,29 @@ public class ChatRoomController {
     @Operation(summary = "채팅방 생성")
     @PostMapping("/room")
     @ResponseBody
-    public ChatRoom createRoom(@RequestParam String name) {
+    public ChatRoom createRoom(@CookieValue("accessToken") String token) {
+        String jwtToken = token.substring(7);
+        String name = jwtProvider.getNickNameFromToken(jwtToken);
         ChatRoom chatRoom = chatRoomRepository.createChatRoom(name);
         return chatRoom;
     }
+    // 채팅방 삭제
+    @DeleteMapping("/room/{roomId}")
+    public ResponseEntity<String> deleteRoom(@PathVariable String roomId, @CookieValue("accessToken") String token) {
+        String jwtToken = token.substring(7);
+        ChatRoom chatRoom = chatRoomRepository.findRoomById(roomId);
+        // 채팅방이 존재하지 않는 경우
+        if (chatRoom == null) {
+            return ResponseEntity.notFound().build();
+        }
+        // 채팅방을 생성한 사용자와 현재 사용자가 같은지 확인
+        if (!chatRoom.getName().equals(jwtProvider.getNickNameFromToken(jwtToken))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 할 권한이 없습니다.");
+        }
+        chatRoomRepository.deleteChatRoom(roomId);
 
+        return ResponseEntity.ok("삭제 완료.");
+    }
     // 특정 채팅방 조회
     @Operation(summary = "특정 채팅방 조회")
     @GetMapping("/room/{roomId}")

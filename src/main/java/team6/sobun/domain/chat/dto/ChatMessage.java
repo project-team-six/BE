@@ -1,14 +1,16 @@
 package team6.sobun.domain.chat.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import team6.sobun.global.utils.Timestamped;
 
 import java.io.Serializable;
 
+@Data
+@NoArgsConstructor  // 기본 생성자 추가
 @Getter
 @Setter
-public class ChatMessage implements Serializable {
+@Builder
+public class ChatMessage extends Timestamped implements Serializable {
 
 
     public enum MessageType {

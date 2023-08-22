@@ -1,12 +1,14 @@
 package team6.sobun.domain.chat.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import team6.sobun.domain.chat.dto.ChatMessage;
@@ -23,8 +25,6 @@ public class RedisChatRepository {
 
     // Redis CacheKeys
     private static final String CHAT_ROOMS = "CHAT_ROOM"; // 채팅룸 저장
-    private static final String CHAT_MESSAGES = "CHAT_MESSAGES";
-    private static final String CHAT_MESSAGES_TEXT = "CHAT_MESSAGES_TEXT"; // 채팅 메시지를 문자열로 저장하는 키
     public static final String USER_COUNT = "USER_COUNT"; // 채팅룸에 입장한 클라이언트수 저장
     public static final String ENTER_INFO = "ENTER_INFO"; // 채팅룸에 입장한 클라이언트의 sessionId와 채팅룸 id를 맵핑한 정보 저장
 
@@ -32,10 +32,13 @@ public class RedisChatRepository {
     private HashOperations<String, String, ChatRoom> hashOpsChatRoom;
     @Resource(name = "redisTemplate")
     private HashOperations<String, String, String> hashOpsEnterInfo;
+
+    @Resource(name = "redisTemplate")
+    private HashOperations<String, String, ChatMessage> hashOpsChatMessage;
     @Resource(name = "redisTemplate")
     private ValueOperations<String, String> valueOps;
-    @Resource(name = "redisTemplate")
-    private ListOperations<String, String> listOpsChatMessage;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 모든 채팅방 조회
     public List<ChatRoom> findAllRoom() {
@@ -47,36 +50,6 @@ public class RedisChatRepository {
         return hashOpsChatRoom.get(CHAT_ROOMS, id);
     }
 
-    public void storeChatMessage(ChatMessage chatMessageDto) {
-        String roomId = chatMessageDto.getRoomId();
-        if (roomId == null || roomId.isEmpty()) {
-            log.error("유효하지 않은 채팅 메시지: roomId is null or empty");
-            return;
-        }
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String serializedMessage = objectMapper.writeValueAsString(chatMessageDto);
-
-            if (chatMessageDto.getMessage() != null) {
-                // 실제 메시지를 객체로 저장한 Redis 리스트에 추가
-                listOpsChatMessage.leftPush(CHAT_MESSAGES + "_" + roomId, serializedMessage);
-            } else if (chatMessageDto.getImageUrl() != null) {
-                // 이미지 URL을 객체로 저장한 Redis 리스트에 추가
-                listOpsChatMessage.leftPush(CHAT_MESSAGES_TEXT + "_" + roomId, chatMessageDto.getImageUrl());
-            } else {
-                log.error("유효하지 않은 채팅 메시지: content={}, imageUrl={}", chatMessageDto.getMessage(), chatMessageDto.getImageUrl());
-            }
-        } catch (JsonProcessingException e) {
-            log.error("채팅 메시지 저장 중 에러 발생: {}", e.getMessage(), e);
-        }
-    }
-
-    public List<String> getChatMessagesWithUrls(String roomId) {
-        // 이미지 URL을 포함한 메시지 리스트를 가져옴
-        return listOpsChatMessage.range(CHAT_MESSAGES_TEXT + "_" + roomId, 0, -1);
-    }
-
 
     // 채팅방 생성 : 서버간 채팅방 공유를 위해 redis hash에 저장한다.
     public ChatRoom createChatRoom(String name) {
@@ -84,6 +57,24 @@ public class RedisChatRepository {
         hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
         return chatRoom;
     }
+    public void deleteChatRoom(String roomId) {
+        // 해당 채팅방을 해시에서 삭제
+        hashOpsChatRoom.delete(CHAT_ROOMS, roomId);
+        // 해당 채팅방의 입장 정보를 삭제
+        hashOpsEnterInfo.delete(ENTER_INFO, roomId);
+        // 해당 채팅방의 유저 수 정보를 삭제
+        valueOps.getOperations().delete(USER_COUNT + "_" + roomId);
+    }
+    public void saveMessage(String roomId, ChatMessage chatMessage) {
+        String key = "CHAT_MESSAGES:" + roomId;
+        hashOpsChatMessage.put(key, chatMessage.getRoomId().toString(), chatMessage);
+    }
+
+    public List<ChatMessage> findMessagesByRoom(String roomId) {
+        String key = "CHAT_MESSAGES:" + roomId;
+        return hashOpsChatMessage.values(key);
+    }
+
 
     // 유저가 입장한 채팅방ID와 유저 세션ID 맵핑 정보 저장
     public void setUserEnterInfo(String sessionId, String roomId) {
@@ -114,8 +105,15 @@ public class RedisChatRepository {
     public long minusUserCount(String roomId) {
         return Optional.ofNullable(valueOps.decrement(USER_COUNT + "_" + roomId)).filter(count -> count > 0).orElse(0L);
     }
-    public boolean isUserSubscribed(String sessionId, String roomId) {
-        return hashOpsEnterInfo.hasKey(ENTER_INFO, sessionId) &&
-                hashOpsEnterInfo.get(ENTER_INFO, sessionId).equals(roomId);
+
+    public String findUserIdByVerificationToken(String verificationToken) {
+        String key = "verificationToken:" + verificationToken;
+        return (String) redisTemplate.opsForValue().get(key);
     }
+
+    public void deleteVerificationToken(String verificationToken) {
+        String key = "verificationToken:" + verificationToken;
+        redisTemplate.delete(key);
+    }
+
 }

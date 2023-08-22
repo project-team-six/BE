@@ -55,7 +55,6 @@ public class JwtProvider {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-
     /**
      * 헤더에서 토큰을 추출합니다.
      *
@@ -102,9 +101,13 @@ public class JwtProvider {
             log.error(e.getMessage());
         }
     }
-    public String getNickNameFromToken(String token) {
+    public String getEmailFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.get("sub", String.class);
+    }
+    public String getNickNameFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("nickname", String.class);
     }
 
     /**

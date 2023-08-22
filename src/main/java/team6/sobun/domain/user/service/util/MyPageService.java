@@ -1,12 +1,10 @@
 package team6.sobun.domain.user.service.util;
 
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,12 +18,13 @@ import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.find.FindEmailRequestDto;
 import team6.sobun.domain.user.dto.find.FindEmailResponseDto;
-import team6.sobun.domain.user.dto.find.PasswordRequestDto;
+import team6.sobun.domain.user.dto.find.PasswordFindRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
+import team6.sobun.domain.user.dto.password.PasswordRequestDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.repository.MypageRepository;
+import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
@@ -44,6 +43,7 @@ public class MyPageService {
     @Value("${spring.mail.username}")
     private String from;
 
+    private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SpringTemplateEngine templateEngine;
@@ -74,6 +74,7 @@ public class MyPageService {
             throw new IllegalArgumentException();
         }
     }
+
     @Transactional
     public MypageResponseDto getUserDetails(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -100,11 +101,10 @@ public class MyPageService {
 
     @Transactional
     public ApiResponse<?> updateUserProfile(Long userId, MypageRequestDto mypageRequestDto,
-                                                    MultipartFile image, User user) {
+                                            User user, HttpServletResponse response) {
         log.info("'{}'님이 프로필 정보와 이미지를 변경했습니다.", user.getNickname());
 
-        User existingUser = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        User existingUser = findUser(userId);
 
         if (!existingUser.getId().equals(user.getId())) {
             throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
@@ -114,21 +114,13 @@ public class MyPageService {
             existingUser.updateNickname(mypageRequestDto.getNickname());
         }
 
-        if (mypageRequestDto.getPassword() != null) {
-            String encodedPassword = passwordEncoder.encode(mypageRequestDto.getPassword());
-            existingUser.updatePassword(encodedPassword);
-        }
-
         if (mypageRequestDto.getPhoneNumber() != null) {
             existingUser.updatePhoneNumber(mypageRequestDto.getPhoneNumber());
         }
 
         existingUser.update(mypageRequestDto);
 
-        // 이미지 업데이트 로직 추가
-        updateUserImageDetail(image, existingUser);
-
-        userRepository.save(existingUser);
+        userService.addToken(existingUser, response);
 
         // 프로필 정보와 이미지 변경에 대한 성공 응답을 반환합니다.
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
@@ -155,7 +147,7 @@ public class MyPageService {
 
 
     @Transactional
-    public ApiResponse<?> findPassword(PasswordRequestDto requestDto) throws Exception {
+    public ApiResponse<?> findPassword(PasswordFindRequestDto requestDto) throws Exception {
         User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 이메일 입니다."));
 
@@ -197,9 +189,43 @@ public class MyPageService {
 
         return responseDto;
     }
+
     private String generateHtmlTemplate(String tempPassword) {
         Context context = new Context();
         context.setVariable("tempPassword", tempPassword);
         return templateEngine.process("new_password_template", context);
+    }
+
+    public ApiResponse<?> updateUserProfileImage(Long userId, MultipartFile image, User user, HttpServletResponse response) {
+        User existingUser = findUser(userId);
+
+        if (!existingUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+
+        updateUserImageDetail(image, existingUser);
+        userRepository.save(existingUser);
+
+        userService.addToken(existingUser, response);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
+    }
+
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        }
+
+    public ApiResponse<?> updateUserPassword(Long userId, PasswordRequestDto passwordRequestDto, User user) {
+        User existingUser = findUser(userId);
+
+        if (!existingUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+        if (passwordRequestDto.getPassword() != null) {
+            String encodedPassword = passwordEncoder.encode(passwordRequestDto.getPassword());
+            existingUser.updatePassword(encodedPassword);
+        }
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
     }
 }

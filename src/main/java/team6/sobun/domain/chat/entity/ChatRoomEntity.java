@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,8 +15,17 @@ import java.util.List;
 @Setter
 public class ChatRoomEntity implements Serializable {
     private static final long serialVersionUID = 1L;
+
     @Id
+    @Column(unique = true)
     private String roomId;
+
     @ElementCollection
-    private List<String> userIds;
+    private List<String> nicknames = new ArrayList<>(); // 채팅방 참여한 사용자의 닉네임 목록
+    public void addUser(String nickname) {
+        if (!nicknames.contains(nickname)) {
+            nicknames.add(nickname);
+        }
+    }
 }
+

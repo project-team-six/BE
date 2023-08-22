@@ -43,22 +43,40 @@ public class RedisChatRepository {
         return hashOpsChatRoom.values(CHAT_ROOMS);
     }
 
-    public Set<String> findChatRoomsByNickname(String nickname) {
-        return hashOpsEnterInfo.keys(ENTER_INFO).stream()
-                .filter(sessionId -> nickname.equals(hashOpsEnterInfo.get(ENTER_INFO, sessionId)))
-                .collect(Collectors.toSet());
-    }
+
     // 특정 채팅방 조회
     public ChatRoom findRoomById(String id) {
         return hashOpsChatRoom.get(CHAT_ROOMS, id);
     }
 
+    // 대화 상대를 채팅방에 추가하는 메소드
+    public void addUserToRoom(String roomId, String userNickname) {
+        ChatRoom chatRoom = hashOpsChatRoom.get(CHAT_ROOMS, roomId);
 
-    // 채팅방 생성 : 서버간 채팅방 공유를 위해 redis hash에 저장한다.
+        if (chatRoom != null) {
+            chatRoom.getParticipants().add(userNickname);
+            hashOpsChatRoom.put(CHAT_ROOMS, roomId, chatRoom);
+
+            // 사용자가 참여한 채팅방 목록에 roomId를 추가
+            hashOpsEnterInfo.put(ENTER_INFO + ":" + userNickname, roomId, roomId);
+        } else {
+            log.warn("채팅방이 존재하지 않습니다. roomId={}", roomId);
+        }
+    }
+
     public ChatRoom createChatRoom(String name) {
         ChatRoom chatRoom = ChatRoom.create(name);
         hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
         return chatRoom;
+    }
+    public void changeChatRoomName(String roomId, String newRoomName) {
+        ChatRoom chatRoom = findRoomById(roomId);
+        if (chatRoom != null) {
+            chatRoom.setName(newRoomName);
+            hashOpsChatRoom.put(CHAT_ROOMS, roomId, chatRoom);
+        } else {
+            log.warn("채팅방이 존재하지 않습니다. roomId={}", roomId);
+        }
     }
 
     public void deleteChatRoom(String roomId) {
@@ -83,13 +101,12 @@ public class RedisChatRepository {
         hashOpsChatMessage.put(key, String.valueOf(messageId), chatMessage);
     }
 
-
     public List<ChatMessage> findMessagesByRoom(String roomId) {
         String key = "CHAT_MESSAGES:" + roomId;
         Map<String, ChatMessage> messages = hashOpsChatMessage.entries(key);
-        // 메시지를 messageId 순으로 정렬하여 리스트에 저장
         List<ChatMessage> sortedMessages = new ArrayList<>(messages.values());
-        Collections.sort(sortedMessages, Comparator.comparingLong(ChatMessage::getMessageId));
+
+        sortedMessages.sort(Comparator.comparingLong(ChatMessage::getMessageId));
 
         return sortedMessages;
     }
@@ -109,15 +126,6 @@ public class RedisChatRepository {
     public void removeUserEnterInfo(String sessionId) {
         hashOpsEnterInfo.delete(ENTER_INFO, sessionId);
     }
-
-    public void removeUserFromChatRoom(String sessionId, String roomId) {
-        // 채팅방의 입장 정보를 삭제
-        hashOpsEnterInfo.delete(ENTER_INFO, sessionId);
-
-        // 채팅방의 유저 수 정보 감소
-        minusUserCount(roomId);
-    }
-
 
     // 채팅방 유저수 조회
     public long getUserCount(String roomId) {
@@ -144,22 +152,4 @@ public class RedisChatRepository {
         redisTemplate.delete(key);
     }
 
-
-    // 사용자의 잠깐 나가기 상태를 설정
-    public void setTemporarilyLeft(String sessionId, String roomId) {
-        String key = "TEMPORARILY_LEFT:" + sessionId + ":" + roomId;
-        valueOps.set(key, "true");
-    }
-
-    // 사용자의 잠깐 나가기 상태를 취소
-    public void cancelTemporaryLeave(String sessionId, String roomId) {
-        String key = "TEMPORARILY_LEFT:" + sessionId + ":" + roomId;
-        redisTemplate.delete(key);
-    }
-
-    // 사용자의 잠깐 나가기 상태인지 확인
-    public boolean isTemporarilyLeft(String sessionId, String roomId) {
-        String key = "TEMPORARILY_LEFT:" + sessionId + ":" + roomId;
-        return valueOps.get(key) != null;
-    }
 }

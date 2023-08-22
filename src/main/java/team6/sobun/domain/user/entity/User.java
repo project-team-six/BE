@@ -11,6 +11,8 @@ import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.social.KakaoDto;
 import team6.sobun.global.utils.Timestamped;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -60,7 +62,6 @@ public class User extends Timestamped {
 
     @Column
     private String roomId;
-
     @Column
     private String sessionId;
 
@@ -125,12 +126,13 @@ public class User extends Timestamped {
         return this.role;
     }
 
-    public User kakaoIdUpdate(KakaoDto kakaoDto){
-        return this;
+
+    public void setRole(UserRoleEnum userRoleEnum) {
+        this.role = userRoleEnum;
     }
 
-    public void updateMannerTemperature(double newTemperature) {
-        this.mannerTemperature = newTemperature;
+    public User kakaoIdUpdate(KakaoDto kakaoDto){
+        return this;
     }
 
 
@@ -145,9 +147,5 @@ public class User extends Timestamped {
         this.location = defaultLocation;
     }
 
-
-    public void setRole(UserRoleEnum userRoleEnum) {
-        this.role = userRoleEnum;
-    }
 }
 

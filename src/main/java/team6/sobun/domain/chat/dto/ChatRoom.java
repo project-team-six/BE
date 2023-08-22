@@ -7,9 +7,7 @@ import org.springframework.web.socket.WebSocketSession;
 import team6.sobun.domain.chat.service.ChatService;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
@@ -19,7 +17,8 @@ public class ChatRoom implements Serializable {
 
     private String roomId;
     private String name;
-    private long userCount; // 채팅방 인원수
+    private long userCount;
+    private List<String> participants = new ArrayList<>(); // 채팅방 인원수
 
     public static ChatRoom create(String name) {
         ChatRoom chatRoom = new ChatRoom();
@@ -27,4 +26,13 @@ public class ChatRoom implements Serializable {
         chatRoom.name = name;
         return chatRoom;
     }
+
+    public void addParticipant(String participant) {
+        participants.add(participant);
+    }
+
+    public List<String> getParticipants() {
+        return participants;
+    }
+
 }

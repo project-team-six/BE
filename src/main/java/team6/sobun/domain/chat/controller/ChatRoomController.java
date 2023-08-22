@@ -19,6 +19,8 @@ import team6.sobun.global.security.UserDetailsImpl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Tag(name = "채팅방 관련 API", description = "템플릿 연결 및 채팅방 생성 및 조회")
 @Slf4j
@@ -48,27 +50,36 @@ public class ChatRoomController {
         chatRoom.stream().forEach(room -> room.setUserCount(chatRoomRepository.getUserCount(room.getRoomId())));
         return chatRoom;
     }
+    @GetMapping("/rooms/user")
+    public ResponseEntity<List<ChatRoom>> userRooms(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        String nickname = userDetails.getNickname();
+        Set<String> userChatRoomIds = chatRoomRepository.findChatRoomsByNickname(nickname);
+        List<ChatRoom> userRooms = userChatRoomIds.stream()
+                .map(roomId -> chatRoomRepository.findRoomById(roomId))
+                .collect(Collectors.toList());
+        userRooms.forEach(room -> room.setUserCount(chatRoomRepository.getUserCount(room.getRoomId())));
+        return ResponseEntity.ok(userRooms);
+    }
+
     // 채팅방 생성
     @Operation(summary = "채팅방 생성")
     @PostMapping("/room")
     @ResponseBody
-    public ChatRoom createRoom(@CookieValue("accessToken") String token) {
-        String jwtToken = token.substring(7);
-        String name = jwtProvider.getNickNameFromToken(jwtToken);
-        ChatRoom chatRoom = chatRoomRepository.createChatRoom(name);
+    public ChatRoom createRoom(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        String nickname = userDetails.getNickname();
+        ChatRoom chatRoom = chatRoomRepository.createChatRoom(nickname);
         return chatRoom;
     }
     // 채팅방 삭제
     @DeleteMapping("/room/{roomId}")
-    public ResponseEntity<String> deleteRoom(@PathVariable String roomId, @CookieValue("accessToken") String token) {
-        String jwtToken = token.substring(7);
+    public ResponseEntity<String> deleteRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         ChatRoom chatRoom = chatRoomRepository.findRoomById(roomId);
         // 채팅방이 존재하지 않는 경우
         if (chatRoom == null) {
             return ResponseEntity.notFound().build();
         }
         // 채팅방을 생성한 사용자와 현재 사용자가 같은지 확인
-        if (!chatRoom.getName().equals(jwtProvider.getNickNameFromToken(jwtToken))) {
+        if (!chatRoom.getName().equals(userDetails.getNickname())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 할 권한이 없습니다.");
         }
         chatRoomRepository.deleteChatRoom(roomId);

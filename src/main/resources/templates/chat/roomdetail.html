@@ -12,6 +12,59 @@
         [v-cloak] {
             display: none;
         }
+
+        #app {
+            margin-top: 20px;
+        }
+
+        .chat-room {
+            border: none;
+            cursor: pointer;
+        }
+
+        .chat-room:hover {
+            background-color: #f7f7f7;
+        }
+
+        .badge-pill {
+            margin-left: 5px;
+        }
+
+        /* 기존 스타일 유지하면서 추가될 스타일 */
+        .chat-box {
+            max-height: 1000px; /* 대화창 최대 높이 조정 */
+            overflow-y: auto; /* 스크롤 생성 */
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f7f7f7;
+        }
+
+        /* 추가되는 스타일 */
+        .list-group {
+            margin-bottom: 0; /* 리스트 그룹의 하단 여백 제거 */
+        }
+
+        .list-group-item {
+            padding: 10px 12px; /* 각 메시지의 패딩을 조정 */
+            font-size: 15px; /* 메시지 폰트 크기 조정 */
+            line-height: 2.0; /* 줄 높이 설정 */
+        }
+
+        .input-group {
+            margin-top: 10px;
+        }
+
+        .image-picker {
+            margin-right: 10px;
+        }
+
+        .modal-dialog {
+            max-width: 90%;
+        }
+
+        .modal-body {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -21,50 +74,59 @@
             <h4>{{ roomName }} <span class="badge badge-info badge-pill">{{ userCount }}</span></h4>
         </div>
         <div class="col-md-6 text-right">
-            <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
             <a class="btn btn-info btn-sm" href="/chat/room" v-on:click="disconnectWebSocket">채팅방 나가기</a>
         </div>
-
     </div>
+    <div class="chat-box">
+        <ul class="list-group">
+            <li class="list-group-item" v-for="(message, index) in messages.slice(0, 30)" :key="index">
+                <!-- 이미지 메시지인 경우 -->
+                <div v-if="message.type === 'IMAGE'" class="d-flex align-items-center">
+                    <div>
+                        <strong>{{ message.sender }}</strong>
+                        <br>
+                        <img :src="message.imageUrl" alt="Image" style="max-width: 100px; max-height: 100px; cursor: pointer;" @click="openImageModal(message.imageUrl)">
+                    </div>
+                    <div class="ml-auto">
+                        <span class="badge badge-secondary">{{ message.messageId }}</span>
+                    </div>
+                </div>
+                <!-- 일반 텍스트 메시지인 경우 -->
+                <div v-else>
+                    {{ message.sender }} - {{ message.message }}
+                    <span class="badge badge-secondary">{{ message.messageId }}</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 이미지 선택 버튼과 이미지 미리보기 -->
     <div class="input-group">
-        <div class="input-group-prepend">
-            <label class="input-group-text">내용</label>
+        <div class="input-group-prepend image-picker">
+            <button class="btn btn-secondary" type="button" @click="openImagePicker">이미지 선택</button>
+            <input type="file" ref="imageInput" style="display: none" @change="handleImageUpload">
+            <div v-if="selectedImagePreview" class="ml-2">
+                <img :src="selectedImagePreview" alt="Image" style="max-height: 50px; max-width: 50px;">
+                <button class="btn btn-sm btn-danger ml-2" @click="cancelImagePreview">X</button>
+            </div>
         </div>
         <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')">
         <div class="input-group-append">
-            <!-- 이미지 선택 버튼과 보내기 버튼 사이에 공백을 줌 -->
-            <input type="file" ref="imageInput" style="display:none" @change="handleImageUpload">
-            <button class="btn btn-secondary" type="button" @click="openImagePicker">이미지 선택</button>
             <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">보내기</button>
         </div>
     </div>
-    <!-- 이미지 클릭 시 모달 열기 -->
-    <ul class="list-group">
-        <li class="list-group-item" v-for="message in messages">
-            <div v-if="message.type === 'IMAGE'" class="d-flex align-items-center">
-                <div>
-                    <strong>{{ message.sender }}</strong>
-                    <br>
-                    <img :src="message.imageUrl" alt="Image" style="max-width: 300px; max-height: 200px;" @click="selectedImageUrl = message.imageUrl">
-                </div>
-            </div>
-            <div v-else>
-                {{ message.sender }} - {{ message.message }}
-            </div>
-        </li>
-    </ul>
-</div>
 
-    <!-- 모달 창 -->
+    <!-- 이미지 모달 창 -->
     <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-body">
-                    <img :src="selectedImageUrl" alt="Image" style="width: 100%;">
+                    <img :src="selectedImageUrl" alt="Image" style="max-width: 100%; cursor: pointer;" @click="closeImageModal">
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 
     <!-- JavaScript -->
@@ -88,7 +150,9 @@
             messages: [],
             userCount: 0,
             currentUserEmail: '',
-            selectedImageUrl: ''
+            selectedImageUrl: '',
+            selectedImagePreview: '',
+            isImageModalOpen: false
         },
         created() {
             this.roomId = localStorage.getItem('wschat.roomId');
@@ -112,16 +176,40 @@
 
         methods: {
             fetchChatMessages: function() {
-                axios.get(`/chat/${this.roomId}`).then(response => {
-                    this.messages = response.data;
+                axios.get(`/chat/${this.roomId}`, {
+                    headers: {
+                        Authorization: accessToken
+                    }
+                }).then(response => {
+                    this.messages = response.data.map(message => {
+                        if (message.type === 'IMAGE') {
+                            return {
+                                type: message.type,
+                                sender: message.sender,
+                                imageUrl: message.imageUrl
+                            };
+                        } else {
+                            return {
+                                type: message.type,
+                                sender: message.sender,
+                                message: message.message
+                            };
+                        }
+                    });
+
+                    // 채팅 메시지 리스트를 뒤집어서 추가하여 아래로 스크롤되도록 함
+                    this.messages.reverse();
                 }).catch(error => {
                     console.error('채팅 메시지 불러오기 에러:', error);
                 });
             },
             sendMessage: function (type, imageUrl) {
-                wss.send("/pub/chat/message", {"Authorization": accessToken},
-                    JSON.stringify({type: type, roomId: this.roomId, message: this.message, imageUrl: imageUrl}));
-                this.message = '';
+                if (type === 'TALK' || (type === 'IMAGE' && imageUrl)) {
+                    wss.send("/pub/chat/message", {"Authorization": accessToken},
+                        JSON.stringify({type: type, roomId: this.roomId, message: this.message, imageUrl: imageUrl}));
+                    this.message = '';
+                    this.selectedImagePreview = ''; // 이미지 전송 후 미리보기 초기화
+                }
             },
             recvMessage: function (recv) {
                 this.userCount = recv.userCount;
@@ -139,13 +227,16 @@
                     "Authorization": accessToken  // 토큰 정보 추가
                 });
             },
-
             openImagePicker: function() {
-                this.$refs.imageInput.click();
+                vm.$refs.imageInput.click();
             },
+            // input에서 이미지 선택 시 호출되는 함수
             handleImageUpload: function(event) {
                 const file = event.target.files[0];
                 if (file) {
+                    // 선택한 이미지를 미리보기로 표시
+                    this.selectedImagePreview = URL.createObjectURL(file);
+
                     const formData = new FormData();
                     formData.append('file', file);
                     axios.post('/chat/image', formData, {
@@ -155,14 +246,31 @@
                     }).then(response => {
                         const imageUrl = response.data.data;
                         this.sendMessage('IMAGE', imageUrl); // 이미지 URL을 함께 보내기
+
+                        // 이미지 선택 후 미리보기 초기화
+                        this.selectedImagePreview = '';
                     }).catch(error => {
                         console.error('이미지 업로드 에러:', error);
+                        // 이미지 선택 후 미리보기 초기화
+                        this.selectedImagePreview = '';
                     });
                 }
             },
+
+            cancelImagePreview: function() {
+                this.selectedImagePreview = '';
+            },
+            // 이미지 모달 열기
             openImageModal: function(imageUrl) {
                 this.selectedImageUrl = imageUrl;
-                $('#imageModal').modal('show'); // 모달 열기
+                this.isImageModalOpen = true;
+            },
+            // 이미지 모달 닫기
+            closeImageModal: function() {
+                this.selectedImageUrl = '';
+                this.isImageModalOpen = false;
+                // 이미지 모달 닫을 때 스크롤 처리
+                document.body.classList.remove('modal-open');
             }
         }
     });

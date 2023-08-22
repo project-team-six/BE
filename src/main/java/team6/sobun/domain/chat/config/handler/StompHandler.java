@@ -1,6 +1,5 @@
 package team6.sobun.domain.chat.config.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -19,7 +18,6 @@ import org.springframework.util.StringUtils;
 import team6.sobun.domain.chat.dto.ChatMessage;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
-import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtProvider;
@@ -36,8 +34,6 @@ public class StompHandler implements ChannelInterceptor {
     private final RedisChatRepository redisChatRepository;
     private final ChatService chatService;
     private final UserDetailsService userDetailsService;
-    private final ObjectMapper objectMapper;
-    private final S3Service s3Service;
 
     // websocket을 통해 들어온 요청이 처리 되기전 실행된다.
     @Override

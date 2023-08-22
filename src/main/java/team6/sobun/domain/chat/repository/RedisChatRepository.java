@@ -14,9 +14,8 @@ import org.springframework.stereotype.Service;
 import team6.sobun.domain.chat.dto.ChatMessage;
 import team6.sobun.domain.chat.dto.ChatRoom;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,7 +31,6 @@ public class RedisChatRepository {
     private HashOperations<String, String, ChatRoom> hashOpsChatRoom;
     @Resource(name = "redisTemplate")
     private HashOperations<String, String, String> hashOpsEnterInfo;
-
     @Resource(name = "redisTemplate")
     private HashOperations<String, String, ChatMessage> hashOpsChatMessage;
     @Resource(name = "redisTemplate")
@@ -45,6 +43,11 @@ public class RedisChatRepository {
         return hashOpsChatRoom.values(CHAT_ROOMS);
     }
 
+    public Set<String> findChatRoomsByNickname(String nickname) {
+        return hashOpsEnterInfo.keys(ENTER_INFO).stream()
+                .filter(sessionId -> nickname.equals(hashOpsEnterInfo.get(ENTER_INFO, sessionId)))
+                .collect(Collectors.toSet());
+    }
     // 특정 채팅방 조회
     public ChatRoom findRoomById(String id) {
         return hashOpsChatRoom.get(CHAT_ROOMS, id);
@@ -57,22 +60,38 @@ public class RedisChatRepository {
         hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
         return chatRoom;
     }
+
     public void deleteChatRoom(String roomId) {
+        // 해당 채팅방의 메시지를 해시에서 삭제
+        String messagesKey = "CHAT_MESSAGES:" + roomId;
+        redisTemplate.delete(messagesKey);
+
         // 해당 채팅방을 해시에서 삭제
         hashOpsChatRoom.delete(CHAT_ROOMS, roomId);
+
         // 해당 채팅방의 입장 정보를 삭제
         hashOpsEnterInfo.delete(ENTER_INFO, roomId);
+
         // 해당 채팅방의 유저 수 정보를 삭제
         valueOps.getOperations().delete(USER_COUNT + "_" + roomId);
     }
+
     public void saveMessage(String roomId, ChatMessage chatMessage) {
         String key = "CHAT_MESSAGES:" + roomId;
-        hashOpsChatMessage.put(key, chatMessage.getRoomId().toString(), chatMessage);
+        long messageId = hashOpsChatMessage.size(key) + 1; // 이전 메시지 개수 + 1
+        chatMessage.setMessageId(messageId); // 메시지에 고유한 messageId 추가
+        hashOpsChatMessage.put(key, String.valueOf(messageId), chatMessage);
     }
+
 
     public List<ChatMessage> findMessagesByRoom(String roomId) {
         String key = "CHAT_MESSAGES:" + roomId;
-        return hashOpsChatMessage.values(key);
+        Map<String, ChatMessage> messages = hashOpsChatMessage.entries(key);
+        // 메시지를 messageId 순으로 정렬하여 리스트에 저장
+        List<ChatMessage> sortedMessages = new ArrayList<>(messages.values());
+        Collections.sort(sortedMessages, Comparator.comparingLong(ChatMessage::getMessageId));
+
+        return sortedMessages;
     }
 
 
@@ -90,6 +109,15 @@ public class RedisChatRepository {
     public void removeUserEnterInfo(String sessionId) {
         hashOpsEnterInfo.delete(ENTER_INFO, sessionId);
     }
+
+    public void removeUserFromChatRoom(String sessionId, String roomId) {
+        // 채팅방의 입장 정보를 삭제
+        hashOpsEnterInfo.delete(ENTER_INFO, sessionId);
+
+        // 채팅방의 유저 수 정보 감소
+        minusUserCount(roomId);
+    }
+
 
     // 채팅방 유저수 조회
     public long getUserCount(String roomId) {
@@ -116,4 +144,22 @@ public class RedisChatRepository {
         redisTemplate.delete(key);
     }
 
+
+    // 사용자의 잠깐 나가기 상태를 설정
+    public void setTemporarilyLeft(String sessionId, String roomId) {
+        String key = "TEMPORARILY_LEFT:" + sessionId + ":" + roomId;
+        valueOps.set(key, "true");
+    }
+
+    // 사용자의 잠깐 나가기 상태를 취소
+    public void cancelTemporaryLeave(String sessionId, String roomId) {
+        String key = "TEMPORARILY_LEFT:" + sessionId + ":" + roomId;
+        redisTemplate.delete(key);
+    }
+
+    // 사용자의 잠깐 나가기 상태인지 확인
+    public boolean isTemporarilyLeft(String sessionId, String roomId) {
+        String key = "TEMPORARILY_LEFT:" + sessionId + ":" + roomId;
+        return valueOps.get(key) != null;
+    }
 }

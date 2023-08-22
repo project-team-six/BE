@@ -18,6 +18,7 @@ import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,18 +45,15 @@ public class ChatController {
     }
     @GetMapping("/chat/{roomId}")
     @ResponseBody
-    public List<ChatMessage> getChatMessages(@CookieValue("accessToken") String token) {
-        String jwtToken = token.substring(7);
-        String email = jwtProvider.getEmailFromToken(jwtToken);
+    public List<ChatMessage> getChatMessages(@PathVariable String roomId) {
+        List<ChatMessage> messages = redisChatRepository.findMessagesByRoom(roomId);
 
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new NullPointerException("유저를 찾을 수 없습니다."));
-
-        List<ChatMessage> messages = redisChatRepository.findMessagesByRoom(user.getRoomId());
+        // 메시지를 messageId 순으로 정렬
+        messages.sort(Comparator.comparingLong(ChatMessage::getMessageId));
 
         return messages;
     }
-    
+
     @Operation(summary = "채팅시 이미지 업로드")
     @PostMapping("/chat/image")
     @ResponseBody

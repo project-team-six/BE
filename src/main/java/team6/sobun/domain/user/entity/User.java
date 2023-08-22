@@ -65,6 +65,7 @@ public class User extends Timestamped {
     private String sessionId;
 
 
+
     @Builder
     public User(String email, String phoneNumber, String nickname, String password, String username, String profileImageUrl, UserRoleEnum role) {
         this.email = email;

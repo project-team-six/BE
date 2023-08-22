@@ -11,27 +11,67 @@
             display: none;
         }
 
-        .form-container {
-            max-width: 400px;
+        body {
+            background-color: #f0f2f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .chat-container {
+            max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
+            background-color: #ffffff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        .form-container h3 {
-            text-align: center;
-        }
-
-        .form-container form {
-            margin-top: 20px;
-        }
-
-        .btn-container {
+        .chat-header {
             display: flex;
-            justify-content: center;
-            margin-top: 20px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #007AF5;
+            color: #ffffff;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+        }
+
+        .chat-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .chat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.3s ease;
+        }
+
+        .chat-item:last-child {
+            border-bottom: none;
+        }
+
+        .chat-item:hover {
+            background-color: #f2f2f2;
+        }
+
+        .chat-item-name {
+            font-weight: bold;
+        }
+
+        .chat-item-count {
+            background-color: #1DCB16;
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 50%;
         }
     </style>
 </head>
@@ -76,6 +116,13 @@
                 <div class="form-group">
                     <input type="password" class="form-control" v-model="signupData.password" placeholder="Password">
                 </div>
+                <!-- 이미지 업로드를 위한 input 추가 -->
+                <div class="form-group">
+                    <label for="profileImage" class="btn btn-success btn-block">
+                        프로필 사진 추가
+                        <input id="profileImage" type="file" style="display: none;" @change="onImageChange">
+                    </label>
+                </div>
                 <button class="btn btn-success btn-block" type="submit">Sign Up</button>
             </form>
         </div>
@@ -92,16 +139,18 @@
                 </div>
             </div>
             <div class="input-group">
-                </div>
                 <div class="input-group-append">
                     <button class="btn btn-primary" type="button" @click="createRoom">채팅방 개설</button>
                 </div>
             </div>
-            <ul class="list-group">
-                <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomId" v-on:click="enterRoom(item.roomId, item.name)">
+            <ul class="list-group mt-3">
+                <li class="list-group-item list-group-item-action chat-room" v-for="item in chatrooms" :key="item.roomId" @click="enterRoom(item.roomId, item.name)">
                     <div class="d-flex justify-content-between align-items-center">
-                    <h6>{{item.name}} <span class="badge badge-info badge-pill">{{item.userCount}}</span></h6>
-                    <button class="btn btn-danger btn-sm" @click.stop="deleteRoom(item.roomId)">삭제</button>
+                        <div class="chat-room-info">
+                            <h6 class="mb-1">{{ item.name }}</h6>
+                            <small class="text-muted">참여 인원: {{ item.userCount }}</small>
+                        </div>
+                        <button class="btn btn-danger btn-sm" @click.stop="deleteRoom(item.roomId)">삭제</button>
                     </div>
                 </li>
             </ul>
@@ -192,10 +241,29 @@
                 this.showLoginForm = true;
                 this.showSignupForm = false;
             },
-
+            // 이미지 변경 시 호출되는 메소드
+            onImageChange(event) {
+                const selectedImage = event.target.files[0];
+                this.signupData.image = selectedImage; // signupData에 이미지 파일을 할당합니다.
+            },
             // 회원가입
             signup() {
-                axios.post('/auth/signup', this.signupData)
+                // FormData 객체를 생성하고 데이터 추가
+                const formData = new FormData();
+                formData.append('data', JSON.stringify({
+                    email: this.signupData.email,
+                    nickname: this.signupData.nickname,
+                    phoneNumber: this.signupData.phoneNumber,
+                    username: this.signupData.username,
+                    password: this.signupData.password
+                }));
+                formData.append('file', this.signupData.image); // 이미지 파일 추가
+
+                axios.post('/auth/signup', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
                     .then(response => {
                         alert('회원가입 성공');
                         // 회원가입 성공 시 추가 작업 수행
@@ -205,7 +273,6 @@
                         console.error(error);
                     });
             },
-
             findAllRoom:function() {
                 axios.get('/chat/rooms', {
                 })
@@ -220,9 +287,6 @@
             createRoom: function() {
                 axios.post('/chat/room', null, {
                     params: { name: this.room_name }, // 요청 매개변수
-                    headers: {
-                        Authorization: this.accessToken
-                    }
                 })
                     .then(response => {
                         alert(`${response.data.name} 방 개설에 성공하였습니다.`);

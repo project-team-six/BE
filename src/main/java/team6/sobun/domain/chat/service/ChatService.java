@@ -36,7 +36,11 @@ public class ChatService {
      */
     public void sendChatMessage(ChatMessage chatMessage) {
         chatMessage.setUserCount(redisChatRepository.getUserCount(chatMessage.getRoomId()));
-        redisChatRepository.saveMessage(chatMessage.getRoomId(), chatMessage);
+        if (!ChatMessage.MessageType.ENTER.equals(chatMessage.getType()) &&
+                !ChatMessage.MessageType.QUIT.equals(chatMessage.getType())) {
+            // 일반 대화 메시지일 경우만 저장하고 발송
+            redisChatRepository.saveMessage(chatMessage.getRoomId(), chatMessage);
+        }
         if (ChatMessage.MessageType.ENTER.equals(chatMessage.getType())) {
             chatMessage.setMessage(chatMessage.getSender() + "님이 방에 입장했습니다.");
             chatMessage.setSender("[알림]");
@@ -46,6 +50,5 @@ public class ChatService {
         }
         redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
     }
-
 
 }

@@ -85,7 +85,6 @@ public class UserController {
             return success(responseDto);
         }
     }
-
     @Operation(summary = "마이페이지 정보수정")
     @PutMapping("mypage/{userId}")
     public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
@@ -95,7 +94,6 @@ public class UserController {
         User user = userDetailsImpl.getUser();
         return myPageService.updateUserProfile(userId, mypageRequestDto, image, user);
     }
-
 
     @Operation(summary = "카카오 로그인")
     @Transactional

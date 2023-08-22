@@ -128,23 +128,31 @@
         </div>
     </div>
     <div v-else>
-        <!-- 채팅방 목록 표시 -->
-        <div class="container">
+        <div class="container mt-4">
             <div class="row">
                 <div class="col-md-6">
-                    <h3>채팅방 리스트</h3>
+                    <h3>채팅방 목록</h3>
                 </div>
                 <div class="col-md-6 text-right">
                     <button class="btn btn-primary btn-sm" @click="logout">로그아웃</button>
+                    <button class="btn btn-success btn-sm" @click.stop="openChatRequestModal(targetUserId)">채팅 신청</button>
                 </div>
             </div>
-            <div class="input-group">
+            <div class="input-group mt-3">
                 <div class="input-group-append">
                     <button class="btn btn-primary" type="button" @click="createRoom">채팅방 개설</button>
                 </div>
             </div>
+            <ul class="nav nav-tabs mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">전체 채팅</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'my' }" @click="activeTab = 'my'">내 채팅</a>
+                </li>
+            </ul>
             <ul class="list-group mt-3">
-                <li class="list-group-item list-group-item-action chat-room" v-for="item in chatrooms" :key="item.roomId" @click="enterRoom(item.roomId, item.name)">
+                <li class="list-group-item list-group-item-action chat-room" v-for="item in displayedChatrooms" :key="item.roomId" @click="enterRoom(item.roomId, item.name)">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="chat-room-info">
                             <h6 class="mb-1">{{ item.name }}</h6>
@@ -158,6 +166,8 @@
     </div>
 </div>
 <!-- JavaScript -->
+<script src="/webjars/jquery/3.6.0/jquery.min.js"></script>
+<script src="/webjars/bootstrap/4.3.1/dist/js/bootstrap.min.js"></script>
 <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
 <script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
 <script>
@@ -178,14 +188,32 @@
             },
             room_name: '',
             chatrooms: [],
+            myChatrooms: [],
             accessToken: null,
             showLoginForm: false,
-            showSignupForm: false
+            showSignupForm: false,
+            activeTab: 'all',
+            chatRequestData: {
+                targetUserId: '',
+            },
         },
+        computed: {
+            displayedChatrooms() {
+                if (this.activeTab === 'all') {
+                    return this.chatrooms; // 전체 채팅 탭이 활성화되었을 때
+                } else if (this.activeTab === 'my') {
+                    // 내 채팅 탭이 활성화되었을 때, 로그인된 사용자의 채팅방만 필터링하여 반환
+                    return this.myChatrooms;
+                }
+                return [];
+            }
+        },
+
         created() {
             // 로그인 상태 확인 및 초기 데이터 로드
             this.checkLoginStatus();
             this.findAllRoom();
+            this.findMyChatrooms();
         },
         methods: {
             // 로그인 상태 확인
@@ -284,6 +312,16 @@
                     });
             },
 
+            findMyChatrooms() {
+                axios.get('/chat/rooms/user')
+                    .then(response => {
+                        this.myChatrooms = response.data; // 내 채팅방 리스트 저장
+                    })
+                    .catch(error => {
+                        console.error('내 채팅방 리스트를 불러오는 도중 에러 발생:', error);
+                    });
+            },
+
             createRoom: function() {
                 axios.post('/chat/room', null, {
                     params: { name: this.room_name }, // 요청 매개변수
@@ -292,12 +330,31 @@
                         alert(`${response.data.name} 방 개설에 성공하였습니다.`);
                         this.room_name = '';
                         this.findAllRoom();
+                        location.reload();
                     })
                     .catch(error => {
                         alert('채팅방 개설에 실패하였습니다.');
                         console.error('채팅방 개설 중 에러 발생:', error);
                     });
             },
+            // 채팅 신청 메소드
+            startChat: function(targetUserId) {
+                axios.post(`/chat/room/start/${targetUserId}`, null, {
+                    headers: {
+                        Authorization: this.accessToken
+                    }
+                }).then(response => {
+                    // 채팅 시작이 성공적으로 처리된 경우의 동작을 추가할 수 있습니다.
+                    console.log("채팅이 시작되었습니다.");
+                }).catch(error => {
+                    console.error('채팅 시작 에러:', error);
+                });
+            },
+            openChatRequestModal(targetUserId) {
+                this.chatRequestData.targetUserId = targetUserId;
+                $('#chatRequestModal').modal('show');
+            },
+
             deleteRoom: function (roomId) {
                 if (confirm("정말로 이 채팅방을 삭제하시겠습니까?")) {
                     axios.delete('/chat/room/' + roomId, {
@@ -308,6 +365,7 @@
                         // 채팅방 삭제 후 필요한 작업 수행
                         alert("채팅방이 삭제되었습니다.");
                         this.findAllRoom(); // 채팅방 목록을 다시 불러옴
+                        location.reload();
                     }).catch(error => {
                         console.error('채팅방 삭제 에러:', error);
                     });
@@ -335,5 +393,29 @@
         }
     });
 </script>
+<div id="chatRequestModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">채팅 신청하기</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="targetUserId">대화 상대의 userId:</label>
+                        <input type="number" class="form-control" id="targetUserId" v-model="chatRequestData.targetUserId">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @click="startChat(chatRequestData.targetUserId)">신청하기</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

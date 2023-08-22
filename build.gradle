@@ -29,6 +29,10 @@ dependencies {
     implementation 'org.webjars.bower:vue:2.5.16'
     implementation 'org.webjars.bower:axios:0.17.1'
 
+    // jQuery
+    implementation 'org.webjars:jquery:3.6.0'
+
+
     // 웹소켓
     implementation 'org.webjars:sockjs-client:1.5.1'
     implementation 'org.webjars:stomp-websocket:2.3.4'

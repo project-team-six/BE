@@ -32,7 +32,7 @@
 
         /* 기존 스타일 유지하면서 추가될 스타일 */
         .chat-box {
-            max-height: 1000px; /* 대화창 최대 높이 조정 */
+            max-height: 800px; /* 대화창 최대 높이 조정 */
             overflow-y: auto; /* 스크롤 생성 */
             border: 1px solid #ddd;
             padding: 10px;
@@ -65,6 +65,42 @@
         .modal-body {
             text-align: center;
         }
+        /* 내 메시지 스타일 */
+        .my-message {
+            background-color: #0084ff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin: 5px;
+            max-width: 70%; /* 내 메시지의 최대 너비 설정 */
+            word-wrap: break-word; /* 긴 문장을 자동 줄바꿈 */
+            align-self: flex-end;
+        }
+
+        /* 다른 사용자 메시지 스타일 */
+        .other-message {
+            background-color: white;
+            color: black;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin: 5px;
+            max-width: 70%; /* 다른 사용자 메시지의 최대 너비 설정 */
+            word-wrap: break-word; /* 긴 문장을 자동 줄바꿈 */
+            align-self: flex-start;
+        }
+
+        /* 이미지 메시지 스타일 */
+        .image-message {
+            display: flex;
+            align-items: center;
+        }
+
+        .image-message img {
+            max-width: 100px;
+            max-height: 100px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -79,10 +115,11 @@
     </div>
     <div class="chat-box">
         <ul class="list-group">
-            <li class="list-group-item" v-for="(message, index) in messages.slice(0, 30)" :key="index">
+            <li class="list-group-item" v-for="(message, index) in messages.slice(0, 30).reverse()" :key="index">
                 <!-- 이미지 메시지인 경우 -->
                 <div v-if="message.type === 'IMAGE'" class="d-flex align-items-center">
                     <div>
+                        <!-- 프로필 이미지와 메시지 내용 표시 -->
                         <strong>{{ message.sender }}</strong>
                         <br>
                         <img :src="message.imageUrl" alt="Image" style="max-width: 100px; max-height: 100px; cursor: pointer;" @click="openImageModal(message.imageUrl)">
@@ -92,13 +129,20 @@
                     </div>
                 </div>
                 <!-- 일반 텍스트 메시지인 경우 -->
-                <div v-else>
+                <div v-else-if="message.sender === currentUserNickname" class="my-message">
+                    <!-- 프로필 이미지와 메시지 내용 표시 -->
+                    {{ message.message }}
+                    <span class="badge badge-secondary">{{ message.messageId }}</span>
+                </div>
+                <div v-else class="other-message">
+                    <!-- 프로필 이미지와 메시지 내용 표시 -->
                     {{ message.sender }} - {{ message.message }}
                     <span class="badge badge-secondary">{{ message.messageId }}</span>
                 </div>
             </li>
         </ul>
     </div>
+
 
     <!-- 이미지 선택 버튼과 이미지 미리보기 -->
     <div class="input-group">
@@ -128,8 +172,9 @@
     </div>
 </div>
 
-
     <!-- JavaScript -->
+    <script src="/webjars/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/4.3.1/dist/js/bootstrap.min.js"></script>
 <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
 <script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
 <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
@@ -150,6 +195,7 @@
             messages: [],
             userCount: 0,
             currentUserEmail: '',
+            currentUserNickname: '',
             selectedImageUrl: '',
             selectedImagePreview: '',
             isImageModalOpen: false
@@ -172,10 +218,13 @@
         },
         mounted() {
             this.fetchChatMessages(); // 페이지가 로딩될 때 채팅 메시지를 불러옴
+            this.$nextTick(() => {
+                this.scrollToBottom();
+            });
         },
 
         methods: {
-            fetchChatMessages: function() {
+            fetchChatMessages: function () {
                 axios.get(`/chat/${this.roomId}`, {
                     headers: {
                         Authorization: accessToken
@@ -203,6 +252,10 @@
                     console.error('채팅 메시지 불러오기 에러:', error);
                 });
             },
+            scrollToBottom: function () {
+                const chatBox = this.$refs.chatBox;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            },
             sendMessage: function (type, imageUrl) {
                 if (type === 'TALK' || (type === 'IMAGE' && imageUrl)) {
                     wss.send("/pub/chat/message", {"Authorization": accessToken},
@@ -218,6 +271,10 @@
                 } else {
                     this.messages.unshift({"type": recv.type, "sender": recv.sender, "message": recv.message});
                 }
+                // 새로운 메시지가 추가될 때마다 스크롤을 아래로 내리는 함수 호출
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                });
             },
             disconnectWebSocket: function () {
                 wss.disconnect(function () {
@@ -227,11 +284,11 @@
                     "Authorization": accessToken  // 토큰 정보 추가
                 });
             },
-            openImagePicker: function() {
+            openImagePicker: function () {
                 vm.$refs.imageInput.click();
             },
             // input에서 이미지 선택 시 호출되는 함수
-            handleImageUpload: function(event) {
+            handleImageUpload: function (event) {
                 const file = event.target.files[0];
                 if (file) {
                     // 선택한 이미지를 미리보기로 표시
@@ -241,7 +298,8 @@
                     formData.append('file', file);
                     axios.post('/chat/image', formData, {
                         headers: {
-                            'Content-Type' : 'multipart/form-data',
+                            "Authorization": accessToken,
+                            'Content-Type': 'multipart/form-data'
                         }
                     }).then(response => {
                         const imageUrl = response.data.data;
@@ -257,20 +315,19 @@
                 }
             },
 
-            cancelImagePreview: function() {
+            cancelImagePreview: function () {
                 this.selectedImagePreview = '';
             },
             // 이미지 모달 열기
-            openImageModal: function(imageUrl) {
+            openImageModal: function (imageUrl) {
                 this.selectedImageUrl = imageUrl;
-                this.isImageModalOpen = true;
+                // 모달 열림 상태로 설정
+                $('#imageModal').modal('show');
             },
-            // 이미지 모달 닫기
-            closeImageModal: function() {
+            closeImageModal: function () {
                 this.selectedImageUrl = '';
-                this.isImageModalOpen = false;
-                // 이미지 모달 닫을 때 스크롤 처리
-                document.body.classList.remove('modal-open');
+                // 모달 닫힘 상태로 설정
+                $('#imageModal').modal('hide');
             }
         }
     });

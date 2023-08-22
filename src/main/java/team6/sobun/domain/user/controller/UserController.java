@@ -1,5 +1,7 @@
 package team6.sobun.domain.user.controller;
 
+
+import jakarta.mail.MessagingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,8 +48,13 @@ public class UserController {
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
-                                 @RequestPart(value = "file", required = false) MultipartFile image) {
+                                 @RequestPart(value = "file", required = false) MultipartFile image) throws MessagingException {
         return userService.signup(signupRequestDto, image);
+    }
+
+    @GetMapping("/email")
+    public ApiResponse<?> verifyEmail(@RequestParam String verificationToken) {
+        return userService.verifyEmail(verificationToken);
     }
 
     @Operation(summary = "관리자 권한 부여")

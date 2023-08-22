@@ -10,17 +10,75 @@
         [v-cloak] {
             display: none;
         }
+
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .form-container h3 {
+            text-align: center;
+        }
+
+        .form-container form {
+            margin-top: 20px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 <div id="app" v-cloak>
-    <div v-if="!isLoggedIn">
+    <div class="form-container" v-if="!isLoggedIn">
+        <div class="btn-container">
+            <button class="btn btn-primary" @click="showLogin">Login</button>
+            <button class="btn btn-success" @click="showSignup">Sign Up</button>
+        </div>
+
         <!-- 로그인 폼 -->
-        <form @submit.prevent="login">
-            <input type="text" v-model="loginData.email" placeholder="Email">
-            <input type="password" v-model="loginData.password" placeholder="Password">
-            <button type="submit">Login</button>
-        </form>
+        <div v-if="showLoginForm">
+            <h3>Login</h3>
+            <form @submit.prevent="login">
+                <div class="form-group">
+                    <input type="text" class="form-control" v-model="loginData.email" placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" v-model="loginData.password" placeholder="Password">
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <div v-if="showSignupForm">
+            <h3>Sign Up</h3>
+            <form @submit.prevent="signup">
+                <div class="form-group">
+                    <input type="text" class="form-control" v-model="signupData.email" placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" v-model="signupData.nickname" placeholder="Nickname">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" v-model="signupData.phoneNumber" placeholder="Phone Number">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" v-model="signupData.username" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" v-model="signupData.password" placeholder="Password">
+                </div>
+                <button class="btn btn-success btn-block" type="submit">Sign Up</button>
+            </form>
+        </div>
     </div>
     <div v-else>
         <!-- 채팅방 목록 표시 -->
@@ -30,21 +88,21 @@
                     <h3>채팅방 리스트</h3>
                 </div>
                 <div class="col-md-6 text-right">
-                    <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
+                    <button class="btn btn-primary btn-sm" @click="logout">로그아웃</button>
                 </div>
             </div>
             <div class="input-group">
-                <div class="input-group-prepend">
-                    <label class="input-group-text">방제목</label>
                 </div>
-                <input type="text" class="form-control" v-model="room_name" v-on:keyup.enter="createRoom">
                 <div class="input-group-append">
                     <button class="btn btn-primary" type="button" @click="createRoom">채팅방 개설</button>
                 </div>
             </div>
             <ul class="list-group">
                 <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomId" v-on:click="enterRoom(item.roomId, item.name)">
+                    <div class="d-flex justify-content-between align-items-center">
                     <h6>{{item.name}} <span class="badge badge-info badge-pill">{{item.userCount}}</span></h6>
+                    <button class="btn btn-danger btn-sm" @click.stop="deleteRoom(item.roomId)">삭제</button>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -62,9 +120,18 @@
                 email: '',
                 password: ''
             },
+            signupData: {
+                email: '',
+                nickname: '',
+                phoneNumber: '',
+                username: '',
+                password: ''
+            },
             room_name: '',
             chatrooms: [],
-            accessToken: null
+            accessToken: null,
+            showLoginForm: false,
+            showSignupForm: false
         },
         created() {
             // 로그인 상태 확인 및 초기 데이터 로드
@@ -78,7 +145,7 @@
                 if (accessToken) {
                     this.isLoggedIn = true;
                     this.accessToken = accessToken; // 토큰 저장
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+                    axios.defaults.headers.common['Authorization'] = this.accessToken;
                 }
             },
 
@@ -97,14 +164,11 @@
                         // 로그인 성공 시
                         if (successMessage === "로그인 성공") {
                             const jwtToken = response.headers.authorization;
-                            const decodedToken = decodeURIComponent(jwtToken); // URL 디코딩
-                            const tokenWithoutBearer = decodedToken.replace("Bearer ", ""); // "Bearer " 제거
-                            document.cookie = `accessToken=${tokenWithoutBearer}; path=/;`;
+                            document.cookie = `accessToken=${jwtToken}; path=/;`;
 
-                            axios.defaults.headers.common['Authorization'] = `${decodedToken}`;
+                            axios.defaults.headers.common['Authorization'] = `${jwtToken}`;
 
                             this.isLoggedIn = true;
-                            this.accessToken = decodedToken;
                             this.loginData.email = '';
                             this.loginData.password = '';
 
@@ -117,10 +181,33 @@
                         console.error(error);
                     });
             },
+            // 로그아웃
+            logout() {
+                // 토큰 삭제 및 로그아웃 처리
+                document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                this.isLoggedIn = false;
+                axios.defaults.headers.common['Authorization'] = '';
+
+                // 로그인 페이지로 이동
+                this.showLoginForm = true;
+                this.showSignupForm = false;
+            },
+
+            // 회원가입
+            signup() {
+                axios.post('/auth/signup', this.signupData)
+                    .then(response => {
+                        alert('회원가입 성공');
+                        // 회원가입 성공 시 추가 작업 수행
+                    })
+                    .catch(error => {
+                        alert('회원가입 실패');
+                        console.error(error);
+                    });
+            },
 
             findAllRoom:function() {
                 axios.get('/chat/rooms', {
-
                 })
                     .then(response => {
                         this.chatrooms = response.data; // 채팅방 리스트 저장
@@ -131,50 +218,37 @@
             },
 
             createRoom: function() {
-                if (this.room_name === '') {
-                    alert('방 제목을 입력해 주십시요.');
-                    return;
-                }
-
-                const decodedToken = this.decodeToken(this.accessToken); // 토큰 디코딩
-                const tokenWithoutBearer = this.accessToken.replace("Bearer ", ""); // "Bearer " 제거
-
                 axios.post('/chat/room', null, {
                     params: { name: this.room_name }, // 요청 매개변수
                     headers: {
-                        Authorization: `Bearer ${tokenWithoutBearer}`
+                        Authorization: this.accessToken
                     }
                 })
                     .then(response => {
-                        console.log(decodedToken);
                         alert(`${response.data.name} 방 개설에 성공하였습니다.`);
                         this.room_name = '';
                         this.findAllRoom();
                     })
                     .catch(error => {
-                        console.log(decodedToken);
                         alert('채팅방 개설에 실패하였습니다.');
                         console.error('채팅방 개설 중 에러 발생:', error);
                     });
             },
-            decodeToken(token) {
-                const tokenParts = token.split('.');
-                if (tokenParts.length !== 3) {
-                    throw new Error('잘못된 토큰 방식 입니다.');
-                }
-
-                const payload = tokenParts[1];
-                const decodedPayload = atob(payload); // Base64 디코딩
-
-                try {
-                    const decodedJSON = JSON.parse(decodeURIComponent(escape(decodedPayload))); // 한글 디코딩
-                    return decodedJSON;
-                } catch (error) {
-                    console.error('토큰 페이로드 디코딩 에러:', error);
-                    return null;
+            deleteRoom: function (roomId) {
+                if (confirm("정말로 이 채팅방을 삭제하시겠습니까?")) {
+                    axios.delete('/chat/room/' + roomId, {
+                        headers: {
+                            Authorization: this.accessToken
+                        }
+                    }).then(response => {
+                        // 채팅방 삭제 후 필요한 작업 수행
+                        alert("채팅방이 삭제되었습니다.");
+                        this.findAllRoom(); // 채팅방 목록을 다시 불러옴
+                    }).catch(error => {
+                        console.error('채팅방 삭제 에러:', error);
+                    });
                 }
             },
-
             enterRoom: function (roomId, roomName) {
                 const accessToken = this.getCookie('accessToken');
 
@@ -185,6 +259,14 @@
                 localStorage.setItem('wschat.roomId', roomId);
                 localStorage.setItem('wschat.roomName', roomName);
                 location.href = `/chat/room/enter/${roomId}`;
+            },
+            showLogin() {
+                this.showLoginForm = true;
+                this.showSignupForm = false;
+            },
+            showSignup() {
+                this.showLoginForm = false;
+                this.showSignupForm = true;
             }
         }
     });

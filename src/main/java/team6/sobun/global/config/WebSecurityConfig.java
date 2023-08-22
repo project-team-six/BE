@@ -120,6 +120,7 @@ public class WebSecurityConfig {
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers(GET,"/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/auth/email/**").permitAll()
                                 .requestMatchers("/auth/admin/{userId}").permitAll()
                                 .requestMatchers("/auth/naver/login").permitAll()
                                 .requestMatchers("/auth/naver").permitAll()
@@ -133,7 +134,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers(GET,"/post/**").permitAll()
                                 .requestMatchers(GET,"/test").permitAll()
-                                .requestMatchers("/upload/image").permitAll()
+                                .requestMatchers("/chat/image").permitAll()
                                 .anyRequest().authenticated()) // 그 외 모든 요청 인증처리
                 .addFilter(corsFilter())
                 .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)

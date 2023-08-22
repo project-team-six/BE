@@ -23,7 +23,8 @@ public enum SuccessCodeEnum {
     TOKEN_REFRESH_SUCCESS("토큰 갱신 성공"),
     USER_IMAGE_SUCCESS("프로필 이미지 변경 성공"),
     FIND_EMAIL_SUCCESS("이메일 찾기 성공"),
-    LOCATION_CHANGE_SUCCESS("위치정보 변경 성공");
+    LOCATION_CHANGE_SUCCESS("위치정보 변경 성공"),
+    EMAIL_VERIFICATION_SUCCESS("이메일 인증 성공");
 
 
     private final String message;

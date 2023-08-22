@@ -64,6 +64,7 @@ public class MyPageService {
                     user.getNickname(),
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
+                    user.isVerified(),
                     user.getMannerTemperature(),
                     userPosts,
                     pinedPost
@@ -88,6 +89,7 @@ public class MyPageService {
                     user.getNickname(),
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
+                    user.isVerified(),
                     user.getMannerTemperature(),
                     userPosts,
                     null
@@ -145,7 +147,6 @@ public class MyPageService {
         }
     }
 
-
     @Transactional
     public ApiResponse<?> findPassword(PasswordFindRequestDto requestDto) throws Exception {
         User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
@@ -177,7 +178,6 @@ public class MyPageService {
         user.updatePassword(encodePassword);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
     }
-
     public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
         User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전화번호 입니다.")

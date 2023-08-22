@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
+import team6.sobun.domain.user.dto.password.PasswordRequestDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.service.UserService;
 import team6.sobun.domain.user.service.social.FacebookService;
@@ -89,10 +90,28 @@ public class UserController {
     @PutMapping("mypage/{userId}")
     public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
                                                     @RequestPart(value = "data", required = false) MypageRequestDto mypageRequestDto,
-                                                    @RequestPart(value = "file", required = false) MultipartFile image,
-                                                    @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+                                                    @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+                                            HttpServletResponse response) {
+        return myPageService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser(), response);
+    }
+
+    @Operation(summary = "마이페이지 프로필 이미지 수정")
+    @PutMapping("mypageImage/{userId}")
+    public ApiResponse<?> updateUserProfileImage(@PathVariable Long userId,
+                                            @RequestPart(value = "file", required = false) MultipartFile image,
+                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+                                            HttpServletResponse response) {
         User user = userDetailsImpl.getUser();
-        return myPageService.updateUserProfile(userId, mypageRequestDto, image, user);
+        return myPageService.updateUserProfileImage(userId, image, user, response);
+    }
+
+    @Operation(summary = "마이페이지 비밀번호 수정")
+    @PutMapping("mypagePassword/{userId}")
+    public ApiResponse<?> updateUserPassword(@PathVariable Long userId,
+                                             @RequestPart(value = "data", required = false)PasswordRequestDto passwordRequestDto,
+                                             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl
+                                             ) {
+        return myPageService.updateUserPassword(userId, passwordRequestDto, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "카카오 로그인")

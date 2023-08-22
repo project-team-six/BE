@@ -1,5 +1,6 @@
 package team6.sobun.domain.user.controller;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +42,12 @@ public class UserController {
 
     @PostMapping("/signup")
     public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
-                                 @RequestPart(value = "file", required = false) MultipartFile image) {
+                                 @RequestPart(value = "file", required = false) MultipartFile image) throws MessagingException {
         return userService.signup(signupRequestDto, image);
+    }
+    @GetMapping("/email")
+    public ApiResponse<?> verifyEmail(@RequestParam String verificationToken) {
+        return userService.verifyEmail(verificationToken);
     }
     @PostMapping("/admin/{userId}")
     public ApiResponse<?> makeUserAdmin(@PathVariable Long userId) {

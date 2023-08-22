@@ -2,32 +2,28 @@ package team6.sobun.domain.chat.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.chat.dto.ChatMessage;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.post.service.S3Service;
+import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtProvider;
+import team6.sobun.global.responseDto.ApiResponse;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
 @Controller
 public class ChatController {
-
+    private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final RedisChatRepository redisChatRepository;
     private final S3Service s3Service;
@@ -35,53 +31,48 @@ public class ChatController {
 
 
     @MessageMapping("/chat/message")
-    public void message(ChatMessage message, @Header("Authorization") String token) {
-        String nickname = jwtProvider.getNickNameFromToken(token);
-
+    public void message(ChatMessage message, @Header("Authorization") String token)  {
+        String nickname = jwtProvider.getNickNameFromToken(token.substring(9));
         message.setSender(nickname);
-
-        if (message.getImageUrl() != null) {
-            try {
-                // URL에서 이미지를 다운로드하고 MultipartFile로 변환
-                URL imageUrl = new URL(message.getImageUrl());
-                HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
-                connection.setRequestMethod("GET");
-                MultipartFile imageFile = new MockMultipartFile(
-                        "image",
-                        imageUrl.getFile(),
-                        HttpURLConnection.guessContentTypeFromName(imageUrl.getFile()),
-                        connection.getInputStream()
-                );
-
-                // 다운로드한 이미지를 S3에 업로드하고 이미지 URL을 가져옴
-                String uploadedImageUrl = s3Service.upload(imageFile);
-                message.setImageUrl(uploadedImageUrl); // 업로드된 이미지 URL 설정
-            } catch (IOException e) {
-                // 다운로드 및 업로드 에러 처리
-                log.error("이미지 다운로드/업로드 에러: {}", e.getMessage(), e);
-            }
-        }
-
         message.setUserCount(redisChatRepository.getUserCount(message.getRoomId()));
-
         chatService.sendChatMessage(message);
-
         log.info("메시지 전송: sender={}, roomId={}, message={}", nickname, message.getRoomId(), message.getMessage());
     }
-
-    // 업로드를 처리하는 새로운 엔드포인트
-    @PostMapping("/upload/image")
+    @GetMapping("/chat/{roomId}")
     @ResponseBody
-    public ResponseEntity<String> uploadImage(@RequestPart("file") MultipartFile file, @CookieValue("accessToken") String token) {
+    public List<ChatMessage> getChatMessages(@CookieValue("accessToken") String token) {
+        String jwtToken = token.substring(7);
+        String email = jwtProvider.getEmailFromToken(jwtToken);
+
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new NullPointerException("유저를 찾을 수 없습니다."));
+
+        List<ChatMessage> messages = redisChatRepository.findMessagesByRoom(user.getRoomId());
+
+        return messages;
+    }
+    // 업로드를 처리하는 새로운 엔드포인트
+    @PostMapping("/chat/image")
+    @ResponseBody
+    public ApiResponse<?> uploadImage(
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @CookieValue("accessToken") String token) {
+        log.info("토큰 어떻게 들어오냐..?={}",token);
+        String jwtToken = token.substring(7);
+        String email = jwtProvider.getEmailFromToken(jwtToken);
+        log.info("이메일은? 어떻게 들어오냐..?={}",email);
         // 이미지를 S3에 업로드하고 업로드된 이미지 URL을 가져옴
         String uploadedImageUrl = s3Service.upload(file);
         // 토큰으로부터 유저 정보를 얻어오는 부분
-        String username = jwtProvider.getNickNameFromToken(token);
-        log.info("토큰 제대로 들어오나?={}",token);
-
-
-        return ResponseEntity.ok(uploadedImageUrl);
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new NullPointerException("왜 안돼"));
+        // 채팅 메시지로 이미지 URL을 보내기
+        ChatMessage message = new ChatMessage();
+        message.setType(ChatMessage.MessageType.IMAGE);
+        message.setSender(user.getNickname());
+        message.setRoomId(user.getRoomId());
+        message.setImageUrl(uploadedImageUrl);
+        log.info("무슨 메시지를? 보낸겨..?={}",message);
+        return ApiResponse.success(uploadedImageUrl);
     }
-
 }
-

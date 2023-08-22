@@ -4,9 +4,6 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +22,6 @@ import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.repository.MypageRepository;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
@@ -64,6 +60,7 @@ public class MyPageService {
                     user.getNickname(),
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
+                    user.isVerified(),
                     user.getMannerTemperature(),
                     userPosts,
                     pinedPost
@@ -87,6 +84,7 @@ public class MyPageService {
                     user.getNickname(),
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
+                    user.isVerified(),
                     user.getMannerTemperature(),
                     userPosts,
                     null
@@ -153,7 +151,6 @@ public class MyPageService {
         }
     }
 
-
     @Transactional
     public ApiResponse<?> findPassword(PasswordRequestDto requestDto) throws Exception {
         User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
@@ -185,7 +182,6 @@ public class MyPageService {
         user.updatePassword(encodePassword);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.PASSWORD_CHANGE_SUCCESS);
     }
-
     public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
         User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전화번호 입니다.")

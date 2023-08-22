@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-REPOSITORY=/home/ubuntu/BE
+REPOSITORY=/home/ubuntu/moduform
 cd $REPOSITORY
 
-APP_NAME=BE
-JAR_NAME=$(ls $REPOSITORY/build/libs/ | grep 'ZZOGET-0.0.1-SNAPSHOT.jar' | tail -n 1)
+APP_NAME=moduform
+JAR_NAME=$(ls $REPOSITORY/build/libs/ | grep 'SNAPSHOT.jar' | tail -n 1)
 JAR_PATH=$REPOSITORY/build/libs/$JAR_NAME
 
 CURRENT_PID=$(pgrep -f $APP_NAME)

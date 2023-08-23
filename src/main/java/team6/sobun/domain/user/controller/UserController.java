@@ -44,7 +44,7 @@ public class UserController {
     private final KakaoService kakaoService;
     private final GoogleService googleService;
     private final NaverService naverService;
-    private  final FacebookService facebookService;
+    private final FacebookService facebookService;
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
@@ -66,8 +66,8 @@ public class UserController {
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ApiResponse<?> logout(@RequestHeader("Authorization") String token,HttpServletResponse response) {
-        return userService.logout(token,response);
+    public ApiResponse<?> logout(@RequestHeader("Authorization") String token, HttpServletResponse response) {
+        return userService.logout(token, response);
     }
 
     @Operation(summary = "마이페이지 상세 조회")
@@ -87,11 +87,12 @@ public class UserController {
             return success(responseDto);
         }
     }
+
     @Operation(summary = "마이페이지 정보수정")
     @PutMapping("mypage/{userId}")
     public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
-                                                    @RequestPart(value = "data", required = false) MypageRequestDto mypageRequestDto,
-                                                    @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+                                            @RequestPart(value = "data", required = false) MypageRequestDto mypageRequestDto,
+                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                             HttpServletResponse response) {
         return myPageService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser(), response);
     }
@@ -99,9 +100,9 @@ public class UserController {
     @Operation(summary = "마이페이지 프로필 이미지 수정")
     @PutMapping("mypageImage/{userId}")
     public ApiResponse<?> updateUserProfileImage(@PathVariable Long userId,
-                                            @RequestPart(value = "file", required = false) MultipartFile image,
-                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
-                                            HttpServletResponse response) {
+                                                 @RequestPart(value = "file", required = false) MultipartFile image,
+                                                 @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+                                                 HttpServletResponse response) {
         User user = userDetailsImpl.getUser();
         return myPageService.updateUserProfileImage(userId, image, user, response);
     }
@@ -109,22 +110,22 @@ public class UserController {
     @Operation(summary = "마이페이지 비밀번호 수정")
     @PutMapping("mypagePassword/{userId}")
     public ApiResponse<?> updateUserPassword(@PathVariable Long userId,
-                                             @RequestPart(value = "data", required = false)PasswordRequestDto passwordRequestDto,
+                                             @RequestPart(value = "data", required = false) PasswordRequestDto passwordRequestDto,
                                              @AuthenticationPrincipal UserDetailsImpl userDetailsImpl
-                                             ) {
+    ) {
         return myPageService.updateUserPassword(userId, passwordRequestDto, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "카카오 로그인")
     @Transactional
-    @PostMapping ("/kakao/login")
+    @PostMapping("/kakao/login")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
 
         // 카카오 로그인에 성공한 후, 사용자 정보 가져오기
         User user = kakaoService.kakaoSignUpOrLinkUser(code);
         log.info("카카오 로그인 성공. 유저 ID: {}", user.getId());
-        userService.addToken(user,response);
+        userService.addToken(user, response);
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
 
@@ -136,7 +137,7 @@ public class UserController {
 
         // 구글 로그인에 성공한 후, 사용자 정보 가져오기
         User user = googleService.googleSignUpOrLinkUser(code);
-        userService.addToken(user,response);
+        userService.addToken(user, response);
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
 
@@ -149,7 +150,7 @@ public class UserController {
         // 네이버 로그인에 성공한 후, 사용자 정보 가져오기
         User user = naverService.naverSignUpOrLinkUser(code);
         log.info("네이버 로그인 성공. 유저 ID: {}", user.getId());
-        userService.addToken(user,response);
+        userService.addToken(user, response);
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
 
@@ -160,11 +161,10 @@ public class UserController {
         // 페이스북 로그인에 성공한 후, 사용자 정보 가져오기
         User user = facebookService.facebookSignUpOrLinkUser(code);
         log.info("페이스북 로그인 성공. 유저 ID: {}", user.getId());
-        userService.addToken(user,response);
+        userService.addToken(user, response);
 
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
-
 }
 
 

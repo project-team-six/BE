@@ -75,7 +75,6 @@ public class UserService {
         // 프로필 이미지 URL을 사용하여 User 객체 생성
         User user = new User(email, phoneNumber, nickname, password, username, profileImageUrl, role);
         String verificationToken = UUID.randomUUID().toString();
-        log.info("토큰 들어오나? = {}", verificationToken);
 
         saveVerificationTokenToRedis(email, verificationToken);
         log.info("레디스에 이메일 토큰 저장되었나? = {}", verificationToken);
@@ -202,6 +201,10 @@ public class UserService {
         } else {
             log.error("verificationToken 값이 null이므로 Redis에 저장할 수 없습니다.");
         }
+    }
+
+    public void popularity(Long userId, User user) {
+
     }
 }
 

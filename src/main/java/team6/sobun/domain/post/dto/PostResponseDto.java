@@ -39,7 +39,7 @@ public class PostResponseDto {
     private String location;
     private String price;
     private String status;
-    private double mannerTemperature;
+    private double popularity;
     private String profileImageUrl;
     private String originPrice;
 
@@ -64,7 +64,7 @@ public class PostResponseDto {
         if (post.getStatus() != null) {
             this.status = post.getStatus().name();
         }
-        this.mannerTemperature = post.getMannerTemperature();
+        this.popularity = post.getPopularity();
         this.profileImageUrl = post.getProfileImageUrl();
         this.originPrice = post.getOriginPrice();
     }
@@ -99,7 +99,7 @@ public class PostResponseDto {
         if (post.getStatus() != null) {
             this.status = post.getStatus().name();
         }
-        this.mannerTemperature = post.getMannerTemperature();
+        this.popularity = post.getPopularity();
         this.profileImageUrl = post.getProfileImageUrl();
         this.originPrice = post.getOriginPrice();
     }

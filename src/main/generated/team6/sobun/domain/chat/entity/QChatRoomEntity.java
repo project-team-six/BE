@@ -22,6 +22,8 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public final ListPath<String, StringPath> nicknames = this.<String, StringPath>createList("nicknames", String.class, StringPath.class, PathInits.DIRECT2);
 
+    public final StringPath postTitle = createString("postTitle");
+
     public final StringPath roomId = createString("roomId");
 
     public QChatRoomEntity(String variable) {

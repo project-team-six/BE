@@ -154,11 +154,14 @@
             <ul class="list-group mt-3">
                 <li class="list-group-item list-group-item-action chat-room" v-for="item in displayedChatrooms" :key="item.roomId" @click="enterRoom(item.roomId, item.name)">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="chat-room-info">
+                        <div class="d-flex flex-column">
                             <h6 class="mb-1">{{ item.name }}</h6>
                             <small class="text-muted">참여 인원: {{ item.userCount }}</small>
                         </div>
-                        <button class="btn btn-danger btn-sm" @click.stop="deleteRoom(item.roomId)">삭제</button>
+                        <div>
+                            <button v-if="!isInMyChatrooms(item.roomId)" class="btn btn-primary btn-sm" @click.stop="joinRoom(item.roomId)">추가</button>
+                            <button v-else class="btn btn-danger btn-sm" @click.stop="leaveRoom(item.roomId)">나가기</button>
+                        </div>
                     </div>
                 </li>
             </ul>
@@ -224,6 +227,9 @@
                     this.accessToken = accessToken; // 토큰 저장
                     axios.defaults.headers.common['Authorization'] = this.accessToken;
                 }
+            },
+            isInMyChatrooms(roomId) {
+                return this.myChatrooms.some(chatroom => chatroom.roomId === roomId);
             },
 
             // 쿠키에서 특정 이름의 쿠키 값을 가져오는 함수
@@ -337,9 +343,55 @@
                         console.error('채팅방 개설 중 에러 발생:', error);
                     });
             },
+            joinRoom: function (roomId) {
+                if (confirm("해당 채팅방을 구독하시겠습니까?")) {
+                    axios.post(`/chat/room/post/` + roomId, {
+                        headers: {
+                            Authorization: this.accessToken
+                        }
+                    }).then(response => {
+                        alert("채팅방을 구독했습니다.");
+                        console.log("채팅방을 구독했습니다.");
+                    }).catch(error => {
+                        console.error('채팅방 구독 에러:', error);
+                    });
+                }
+            },
+            leaveRoom: function (roomId) {
+                if (confirm("정말로 이 채팅방의 구독을 해지 하겠습니까?")) {
+                    axios.delete('/chat/room/post/' + roomId, {
+                        headers: {
+                            Authorization: this.accessToken
+                        }
+                    }).then(response => {
+                        // 채팅방 삭제 후 필요한 작업 수행
+                        alert("채팅방 구독 삭제.");
+                        this.findAllRoom(); // 채팅방 목록을 다시 불러옴
+                        location.reload();
+                    }).catch(error => {
+                        console.error('채팅방 구독 삭제 에러:', error);
+                    });
+                }
+            },
+            deleteRoom: function (roomId) {
+                if (confirm("정말로 이 채팅방을 나가시겠습니까?")) {
+                    axios.delete('/chat/room/' + roomId, {
+                        headers: {
+                            Authorization: this.accessToken
+                        }
+                    }).then(response => {
+                        // 채팅방 삭제 후 필요한 작업 수행
+                        alert("채팅방을 나갔습니다.");
+                        this.findAllRoom(); // 채팅방 목록을 다시 불러옴
+                        location.reload();
+                    }).catch(error => {
+                        console.error('채팅방 나가기 에러:', error);
+                    });
+                }
+            },
             // 채팅 신청 메소드
             startChat: function(targetUserId) {
-                axios.post(`/chat/room/start/${targetUserId}`, null, {
+                axios.post('/chat/room/start/' + targetUserId,  {
                     headers: {
                         Authorization: this.accessToken
                     }
@@ -353,23 +405,6 @@
             openChatRequestModal(targetUserId) {
                 this.chatRequestData.targetUserId = targetUserId;
                 $('#chatRequestModal').modal('show');
-            },
-
-            deleteRoom: function (roomId) {
-                if (confirm("정말로 이 채팅방을 삭제하시겠습니까?")) {
-                    axios.delete('/chat/room/' + roomId, {
-                        headers: {
-                            Authorization: this.accessToken
-                        }
-                    }).then(response => {
-                        // 채팅방 삭제 후 필요한 작업 수행
-                        alert("채팅방이 삭제되었습니다.");
-                        this.findAllRoom(); // 채팅방 목록을 다시 불러옴
-                        location.reload();
-                    }).catch(error => {
-                        console.error('채팅방 삭제 에러:', error);
-                    });
-                }
             },
             enterRoom: function (roomId, roomName) {
                 const accessToken = this.getCookie('accessToken');

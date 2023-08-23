@@ -20,6 +20,8 @@ public class ChatRoomEntity implements Serializable {
     @Column(unique = true)
     private String roomId;
 
+    private String postTitle;
+
     @ElementCollection
     private List<String> nicknames = new ArrayList<>(); // 채팅방 참여한 사용자의 닉네임 목록
     public void addUser(String nickname) {

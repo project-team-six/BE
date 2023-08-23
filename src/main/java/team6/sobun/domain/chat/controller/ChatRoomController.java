@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import team6.sobun.domain.chat.dto.ChatRoom;
@@ -49,12 +48,6 @@ public class ChatRoomController {
     public ChatRoom createRoom(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return chatService.createRoom(userDetails.getNickname());
     }
-    @Operation(summary = "채팅 신청")
-    @PostMapping("/room/start/{userId}")
-    @ResponseBody
-    public ChatRoom startChatRoom(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long userId) {
-        return chatService.startChatRoom(userDetails.getUser(),userId);
-    }
     @Operation(summary = "채팅방 정보 조회")
     @GetMapping("/room/{roomId}")
     @ResponseBody
@@ -62,14 +55,32 @@ public class ChatRoomController {
         return redisChatRepository.findRoomById(roomId);
     }
 
-    @Operation(summary = "채팅방에 유저 추가")
+    @Operation(summary = "게시글 채팅방에 유저 추가(구독) -> 이거 쓰세요")
+    @PostMapping("/room/post/{roomId}")
+    @ResponseBody
+    public ChatRoom addParticipantToChatRoomByPost(@PathVariable String roomId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return chatService.addParticipantToChatRoomByPost(roomId,userDetails.getUser());
+    }
+    @Operation(summary = "채팅방 나가기(구독 삭제) -> 이거 쓰세요")
+    @DeleteMapping("/room/post/{roomId}")
+    public ResponseEntity<String> leaveRoomByPost(@PathVariable String roomId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return chatService.leaveRoomByPost(roomId,userDetails.getUser());
+    }
+
+    @Operation(summary = "채팅 신청 -> 이거 X")
+    @PostMapping("/room/start/{userId}")
+    @ResponseBody
+    public ChatRoom startChatRoom(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long userId) {
+        return chatService.startChatRoom(userDetails.getUser(),userId);
+    }
+
+    @Operation(summary = "채팅방에 유저 추가 -> 이거 X")
     @PostMapping("/room/{roomId}")
     @ResponseBody
-    @Transactional
     public ChatRoom addParticipantToChatRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return chatService.addParticipantToChatRoom(roomId,userDetails.getUser());
     }
-    @Operation(summary = "채팅방 삭제")
+    @Operation(summary = "채팅방 삭제 -> 이거 X")
     @DeleteMapping("/room/{roomId}")
     public ResponseEntity<String> deleteRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return chatService.deleteRoom(roomId,userDetails.getUser());

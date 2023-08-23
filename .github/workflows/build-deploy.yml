@@ -8,7 +8,7 @@ on:
 
 # --------------------------추가
 env:
-  PROJECT_NAME: sobunsobun
+  PROJECT_NAME: ZZOGET
   BUCKET_NAME: cicdcicd-bucket
   CODE_DEPLOY_APP_NAME: cicdcicd
   DEPLOYMENT_GROUP_NAME: cicdcicd
@@ -34,7 +34,7 @@ jobs:
 
       # --------------------------추가
       - name: Make Zip File
-        run: zip -r -qq -j ./springboot-sobun-build.zip ./deploy
+        run: zip -r ./team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip .
         shell: bash
 
       - name: Configure AWS credentials
@@ -45,12 +45,12 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./springboot-sobun-build.zip s3://$BUCKET_NAME/$PROJECT_NAME/$springboot-sobun-build.zip
+        run: aws s3 cp --region ap-northeast-2 ./springboot-sobun-build.zip s3://$BUCKET_NAME/$PROJECT_NAME/$team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip
 
       - name: Code Deploy To EC2 instance
         run: aws deploy create-deployment
           --application-name $CODE_DEPLOY_APP_NAME
           --deployment-config-name CodeDeployDefault.AllAtOnce
           --deployment-group-name $DEPLOYMENT_GROUP_NAME
-          --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$springboot-sobun-build.zip
+          --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip
 # --------------------------추가

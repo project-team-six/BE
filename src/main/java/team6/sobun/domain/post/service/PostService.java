@@ -22,16 +22,12 @@ import team6.sobun.domain.poststatus.repository.PostStatusRepository;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.exception.InvalidConditionException;
-import team6.sobun.global.exception.UploadException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
-import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.util.List;
-import java.util.Optional;
 
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
 import static team6.sobun.global.stringCode.ErrorCodeEnum.USER_NOT_MATCH;

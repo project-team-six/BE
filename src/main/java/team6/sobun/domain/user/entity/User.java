@@ -47,7 +47,7 @@ public class User extends Timestamped {
     @Column
     private String profileImageUrl;
 
-    private double mannerTemperature = 36.5;
+    private Long popularity = 0L;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -146,6 +146,12 @@ public class User extends Timestamped {
     public void setLocation(Location defaultLocation) {
         this.location = defaultLocation;
     }
+    public void increasePopularity() {
+        this.popularity += 1;
+    }
 
+    public void DecreasePopularity() {
+        this.popularity -= 1;
+    }
 }
 

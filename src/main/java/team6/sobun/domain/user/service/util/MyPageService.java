@@ -65,7 +65,7 @@ public class MyPageService {
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
                     user.isVerified(),
-                    user.getMannerTemperature(),
+                    user.getPopularity(),
                     userPosts,
                     pinedPost
             );
@@ -90,7 +90,7 @@ public class MyPageService {
                     user.getProfileImageUrl(),
                     user.getPhoneNumber(),
                     user.isVerified(),
-                    user.getMannerTemperature(),
+                    user.getPopularity(),
                     userPosts,
                     null
             );

@@ -90,7 +90,7 @@ public class Post extends Timestamped {
     private PostStatus status = PostStatus.IN_PROGRESS;
 
     @Column
-    private double mannerTemperature;
+    private double popularity;
 
     @JsonIgnore
     @ManyToOne(fetch = LAZY)
@@ -121,7 +121,7 @@ public class Post extends Timestamped {
         this.location = user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong());
         this.price = postRequestDto.getPrice();
         this.user = user;
-        this.mannerTemperature = user.getMannerTemperature();
+        this.popularity = user.getPopularity();
         this.profileImageUrl = user.getProfileImageUrl();
         this.originPrice = postRequestDto.getOriginPrice();
 

@@ -33,8 +33,6 @@ public class QUser extends EntityPathBase<User> {
 
     public final QLocation location;
 
-    public final NumberPath<Double> mannerTemperature = createNumber("mannerTemperature", Double.class);
-
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
@@ -43,6 +41,8 @@ public class QUser extends EntityPathBase<User> {
     public final StringPath password = createString("password");
 
     public final StringPath phoneNumber = createString("phoneNumber");
+
+    public final NumberPath<Long> popularity = createNumber("popularity", Long.class);
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 

@@ -18,7 +18,7 @@ public class MypageResponseDto {
     private Long userId;
     private String nickname;
     private String profileImageUrl;
-    private double mannerTemperature;
+    private double popularity;
     private String phoneNumber;
     private Boolean emailOk;
     private List<PostResponseDto> userPosts;
@@ -26,13 +26,13 @@ public class MypageResponseDto {
 
 
 
-    public MypageResponseDto(Long userId, String nickname, String profileImageUrl, String phoneNumber,Boolean emailOk, double mannerTemperature, List<Post> userPosts, List<Post> pinedPosts) {
+    public MypageResponseDto(Long userId, String nickname, String profileImageUrl, String phoneNumber,Boolean emailOk, double popularity, List<Post> userPosts, List<Post> pinedPosts) {
         this.userId = userId;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
         this.phoneNumber = phoneNumber;
         this.emailOk = emailOk;
-        this.mannerTemperature = mannerTemperature;
+        this.popularity = popularity;
 
         // 사용자의 게시물 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.userPosts = userPosts.stream()

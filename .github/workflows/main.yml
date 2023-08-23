@@ -3,6 +3,8 @@ name: sobunCI
 # main 브랜치에 PR 이벤트가 발생하면 Workflow가 실행된다.
 # 브랜치 구분이 없으면 on: [pull_request]로 해주어도 된다.
 on:
+  push:
+    branches: [ "dev" ]
   pull_request:
     branches: [ "dev" ]
 

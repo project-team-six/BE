@@ -90,6 +90,7 @@ public class ChatRoomController {
     public String rooms() {
         return "chat/room";
     }
+
     @Operation(summary = "서버 테스트용 템플릿")
     @GetMapping("/room/enter/{roomId}")
     public String roomDetail(Model model, @PathVariable String roomId) {

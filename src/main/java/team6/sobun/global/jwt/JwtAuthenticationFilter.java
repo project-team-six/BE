@@ -5,25 +5,32 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import team6.sobun.domain.user.dto.LoginRequestDto;
-import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.domain.user.entity.UserRoleEnum;
+import team6.sobun.domain.user.repository.UserRepository;
+import team6.sobun.global.jwt.entity.RefreshToken;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.responseDto.ErrorResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static team6.sobun.global.utils.ResponseUtils.*;
+import static team6.sobun.global.utils.ResponseUtils.customError;
+import static team6.sobun.global.utils.ResponseUtils.okWithMessage;
 
 /**
  * JWT 인증 필터 클래스입니다.
@@ -34,17 +41,21 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final JwtProvider jwtProvider;
     private final RefreshTokenRedisRepository redisRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     /**
      * JwtAuthenticationFilter 생성자입니다.
      *
      * @param jwtProvider     JwtProvider 인스턴스
-     * @param redisRepository
+     * @param redisRepository RefreshTokenRedisRepository 인스턴스
      */
-    public JwtAuthenticationFilter(JwtProvider jwtProvider, RefreshTokenRedisRepository redisRepository) {
+    public JwtAuthenticationFilter(JwtProvider jwtProvider, RefreshTokenRedisRepository redisRepository, UserRepository userRepository,PasswordEncoder passwordEncoder) {
         this.jwtProvider = jwtProvider;
         this.redisRepository = redisRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         setFilterProcessesUrl("/auth/login");
     }
 
@@ -63,6 +74,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try {
             LoginRequestDto loginRequestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
+            UserDetailsImpl userDetails = loadUserByUsername(loginRequestDto.getEmail());
+
+            if (userDetails == null) {
+                sendErrorResponse(response, "이메일이 올바르지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
+                return null;
+            }
+
+            if (!isPasswordValid(loginRequestDto.getPassword(), userDetails.getPassword())) {
+                sendErrorResponse(response, "비밀번호가 올바르지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
+                return null;
+            }
+
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequestDto.getEmail(),
@@ -75,6 +98,40 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    private void sendErrorResponse(HttpServletResponse response, String errorMessage, int statusCode) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(statusCode);
+
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .success(false)
+                .error(new ErrorResponse(errorMessage, statusCode))
+                .build();
+
+        String jsonResponse;
+        try {
+            jsonResponse = new ObjectMapper().writeValueAsString(apiResponse);
+            response.getWriter().write(jsonResponse);
+        } catch (IOException ex) {
+            log.error("에러 메시지 JSON 변환 중 예외 발생: {}", ex.getMessage());
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
+
+    private boolean isPasswordValid(String password, String encodedPassword) {
+
+        return passwordEncoder.matches(password, encodedPassword);
+    }
+
+    private UserDetailsImpl loadUserByUsername(String email) {
+
+        return userRepository.findByEmail(email)
+                .map(UserDetailsImpl::new)
+                .orElse(null);
+    }
+
 
     /**
      * 로그인 성공 시 JWT를 생성하여 응답에 추가합니다.

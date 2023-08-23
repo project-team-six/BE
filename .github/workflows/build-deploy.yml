@@ -45,7 +45,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./springboot-sobun-build.zip s3://$BUCKET_NAME/$PROJECT_NAME/$team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip
+        run: aws s3 cp --region ap-northeast-2 ./team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip s3://$BUCKET_NAME/$PROJECT_NAME/$team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip
 
       - name: Code Deploy To EC2 instance
         run: aws deploy create-deployment

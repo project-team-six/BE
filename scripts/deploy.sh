@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-REPOSITORY=/home/ubuntu/sobun
+REPOSITORY=/home/ubuntu/zzoget
 cd $REPOSITORY
 
-APP_NAME=sobun
+APP_NAME=zzoget
 JAR_NAME=$(ls $REPOSITORY/build/libs/ | grep 'SNAPSHOT.jar' | tail -n 1)
 JAR_PATH=$REPOSITORY/build/libs/$JAR_NAME
 

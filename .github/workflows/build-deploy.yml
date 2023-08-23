@@ -32,7 +32,7 @@ jobs:
 
       # --------------------------추가
       - name: Make Zip File
-        run: zip -r ./team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip .
+        run: zip -qq -r ./$GITHUB_SHA.zip .
         shell: bash
 
       - name: Configure AWS credentials
@@ -43,12 +43,12 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip s3://$BUCKET_NAME/$PROJECT_NAME/$team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://isntyet-deploy/$PROJECT_NAME/$GITHUB_SHA.zip
 
       - name: Code Deploy To EC2 instance
         run: aws deploy create-deployment
           --application-name $CODE_DEPLOY_APP_NAME
           --deployment-config-name CodeDeployDefault.AllAtOnce
           --deployment-group-name $DEPLOYMENT_GROUP_NAME
-          --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$team6.sobun.ZZOGET.0.0.1-SNAPSHOT.zip
+          --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
 # --------------------------추가

@@ -37,4 +37,6 @@ public class ApiResponse<T> {
                 .build();
     }
 
+    public void setError(ErrorResponse errorResponse) {
+    }
 }

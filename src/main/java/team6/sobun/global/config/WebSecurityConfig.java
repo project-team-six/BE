@@ -9,11 +9,13 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtAuthenticationFilter;
 import team6.sobun.global.jwt.JwtAuthorizationFilter;
 import team6.sobun.global.jwt.JwtExceptionFilter;
@@ -34,6 +36,8 @@ public class WebSecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final RefreshTokenRedisRepository redisRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * JwtExceptionFilter를 빈으로 생성합니다.
@@ -68,7 +72,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider, redisRepository);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider, redisRepository, userRepository,passwordEncoder);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }

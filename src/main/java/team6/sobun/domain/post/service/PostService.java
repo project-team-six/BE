@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.chat.dto.ChatRoom;
+import team6.sobun.domain.chat.entity.ChatRoomEntity;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.dto.PostRequestDto;
@@ -61,8 +62,8 @@ public class PostService {
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3Service.uploads(images);
-        postRepository.save(new Post(postRequestDto, imageUrlList, user));
-        chatService.createRoomByPost(postRequestDto.getTitle(),user);
+        String roomId = chatService.createRoomByPost(postRequestDto.getTitle(),user).getRoomId();
+        postRepository.save(new Post(postRequestDto, imageUrlList, user,roomId));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
         return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }

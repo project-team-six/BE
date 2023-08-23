@@ -42,6 +42,7 @@ public class PostResponseDto {
     private double popularity;
     private String profileImageUrl;
     private String originPrice;
+    private String chatroomId;
 
     // 전체 조회 시에 사용되는 생성자
     @QueryProjection
@@ -102,6 +103,7 @@ public class PostResponseDto {
         this.popularity = post.getPopularity();
         this.profileImageUrl = post.getProfileImageUrl();
         this.originPrice = post.getOriginPrice();
+        this.chatroomId = post.getChatroomId();
     }
 
     // 유저 조회 시에 사용하는 생성자

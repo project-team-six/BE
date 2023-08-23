@@ -76,6 +76,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 return null;
             }
 
+            if (userDetails.getUser().getRole() == UserRoleEnum.BLACK) {
+                sendErrorResponse(response, "관리자에 의해 정지된 계정입니다.", HttpServletResponse.SC_UNAUTHORIZED);
+                return null;
+            }
+
 
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(

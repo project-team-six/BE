@@ -203,8 +203,18 @@ public class UserService {
         }
     }
 
-    public void popularity(Long userId, User user) {
+    public ApiResponse<?> makeUserBlack(Long userId) {
+        User user = findUserById(userId);
+        user.setRole(UserRoleEnum.BLACK);
+        userRepository.save(user);
+        return ApiResponse.success(user.getNickname() + " 유저의 권한을 제한 하였습니다.");
+    }
 
+    public ApiResponse<?> makeUser(Long userId) {
+        User user = findUserById(userId);
+        user.setRole(UserRoleEnum.USER);
+        userRepository.save(user);
+        return ApiResponse.success(user.getNickname() + " 유저의 권한을 활성화 하였습니다.");
     }
 }
 

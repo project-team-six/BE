@@ -5,10 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -26,8 +23,6 @@ import team6.sobun.global.stringCode.ErrorCodeEnum;
 import team6.sobun.global.stringCode.SuccessCodeEnum;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static team6.sobun.global.utils.ResponseUtils.customError;
 import static team6.sobun.global.utils.ResponseUtils.okWithMessage;
@@ -81,10 +76,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 return null;
             }
 
-            if (!isPasswordValid(loginRequestDto.getPassword(), userDetails.getPassword())) {
-                sendErrorResponse(response, "비밀번호가 올바르지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
-                return null;
-            }
 
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(

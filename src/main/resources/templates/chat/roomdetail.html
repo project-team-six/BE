@@ -115,7 +115,7 @@
     </div>
     <div class="chat-box">
         <ul class="list-group">
-            <li class="list-group-item" v-for="(message, index) in messages.slice(0, 30).reverse()" :key="index">
+            <li class="list-group-item" v-for="(message, index) in messages.slice(0, 30)" :key="index">
                 <!-- 이미지 메시지인 경우 -->
                 <div v-if="message.type === 'IMAGE'" class="d-flex align-items-center">
                     <div>
@@ -218,9 +218,7 @@
         },
         mounted() {
             this.fetchChatMessages(); // 페이지가 로딩될 때 채팅 메시지를 불러옴
-            this.$nextTick(() => {
-                this.scrollToBottom();
-            });
+
         },
 
         methods: {
@@ -252,11 +250,7 @@
                     console.error('채팅 메시지 불러오기 에러:', error);
                 });
             },
-            scrollToBottom: function () {
-                const chatBox = this.$refs.chatBox;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            },
-            sendMessage: function (type, imageUrl) {
+                sendMessage: function (type, imageUrl) {
                 if (type === 'TALK' || (type === 'IMAGE' && imageUrl)) {
                     wss.send("/pub/chat/message", {"Authorization": accessToken},
                         JSON.stringify({type: type, roomId: this.roomId, message: this.message, imageUrl: imageUrl}));
@@ -271,10 +265,6 @@
                 } else {
                     this.messages.unshift({"type": recv.type, "sender": recv.sender, "message": recv.message});
                 }
-                // 새로운 메시지가 추가될 때마다 스크롤을 아래로 내리는 함수 호출
-                this.$nextTick(() => {
-                    this.scrollToBottom();
-                });
             },
             disconnectWebSocket: function () {
                 wss.disconnect(function () {

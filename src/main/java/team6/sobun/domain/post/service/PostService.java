@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import team6.sobun.domain.chat.dto.ChatRoom;
+import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.dto.PostResponseDto;
@@ -44,6 +46,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final S3Service s3Service;
+    private final ChatService chatService;
     @Autowired
     private final JwtProvider jwtProvider;
     private final PinRepository pinRepository;
@@ -59,6 +62,7 @@ public class PostService {
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3Service.uploads(images);
         postRepository.save(new Post(postRequestDto, imageUrlList, user));
+        chatService.createRoomByPost(postRequestDto.getTitle(),user);
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
         return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }

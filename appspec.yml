@@ -3,10 +3,10 @@ os: linux
 
 files:
   - source: /
-    destination: /home/ubuntu/
+    destination: /home/ubuntu/zzoget
     overwrite: yes
 permissions:
-  - object: /
+  - object: /home/ubuntu/zzoget/
     pattern: "**"
     owner: ubuntu
     group: ubuntu

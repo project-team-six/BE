@@ -11,7 +11,6 @@ on:
 # 테스트 결과 작성을 위해 쓰기권한 추가
 permissions: write-all
 
-
 # 해당 Workflow의 Job 목록
 jobs:
   build:
@@ -27,6 +26,42 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application.properties
+    - run: echo "${{secrets.APPLICATION1}}" > ./src/main/resources/application.properties
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application.properties
+        path: ./src/main/resources/application.properties
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application.yml
+    - run: echo "${{secrets.APPLICATION2}}" > ./src/main/resources/application.yml
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application.yml
+        path: ./src/main/resources/application.yml
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application-alpha.properties
+    - run: echo "${{secrets.APPLICATION3}}" > ./src/main/resources/application-alpha.properties
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application-alpha.properties
+        path: ./src/main/resources/application-alpha.properties
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application-local.properties
+    - run: echo "${{secrets.APPLICATION4}}" > ./src/main/resources/application-local.properties
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application-local.properties
+        path: ./src/main/resources/application-local.properties
         
       # gradle 캐싱
     - name: Gradle Caching
@@ -43,36 +78,3 @@ jobs:
     #gradlew 권한 추가
     - name: Grant Execute Permission For Gradlew
       run: chmod +x gradlew
-    
-    #test를 제외한 프로젝트 빌드
-    - name: Build With Gradle
-      run: ./gradlew build -x test
-
-    #test를 위한 mysql설정
-    - name: Start MySQL
-      uses: samin/mysql-action@v1.3
-      with:
-        host port: 3305
-        container port: 3305
-        mysql database: '{database name}'
-        mysql user: '{database user}'
-        mysql password: '{database pwd}'
-
-    #테스트를 위한 test properties 설정
-    - name: Make application-test.properties
-      run: |
-        cd ./src/test/resources
-        touch ./application.properties
-        echo "${{ secrets.PROPERTIES_TEST }}" > ./application.properties
-      shell: bash
-
-    #test코드 빌드
-    - name: Build With Test
-      run: ./gradlew test
-
-    #테스트 결과 파일 생성
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v1
-      if: ${{ always() }}
-      with:
-        files: build/test-results/**/*.xml

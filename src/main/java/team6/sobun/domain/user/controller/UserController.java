@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,7 +48,7 @@ public class UserController {
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
+    public ApiResponse<?> signup(@Valid @RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) throws MessagingException {
         return userService.signup(signupRequestDto, image);
     }

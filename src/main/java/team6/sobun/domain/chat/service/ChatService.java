@@ -90,7 +90,7 @@ public class ChatService {
         return chatRoom;
     }
 
-    public void createRoomByPost(String postTitle, User user) {
+    public ChatRoomEntity createRoomByPost(String postTitle, User user) {
         ChatRoom chatRoom = redisChatRepository.createChatRoom(postTitle);
 
         ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
@@ -98,7 +98,9 @@ public class ChatService {
         chatRoomEntity.setPostTitle(postTitle);
         chatRoomEntity.setNicknames(Collections.singletonList(user.getNickname()));
         chatRoomRepository.save(chatRoomEntity);
+        return chatRoomEntity;
     }
+
 
     @Transactional
     public ChatRoom addParticipantToChatRoomByPost(String roomId, User user) {

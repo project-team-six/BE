@@ -3,7 +3,8 @@ package team6.sobun.domain.user.entity;
 public enum UserRoleEnum {
     USER(Authority.USER),
     KAKAO(Authority.KAKAO),
-    ADMIN(Authority.ADMIN);
+    ADMIN(Authority.ADMIN),
+    BLACK(Authority.BLACK);
 
     private final String authority;
 
@@ -19,5 +20,6 @@ public enum UserRoleEnum {
         public static final String USER = "ROLE_USER";
         public static final String KAKAO = "ROLE_KAKAO";
         public static final String ADMIN = "ROLE_ADMIN";
+        public static final String BLACK = "ROLE_BLACK";
     }
 }

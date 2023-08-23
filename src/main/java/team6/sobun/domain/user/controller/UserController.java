@@ -64,6 +64,18 @@ public class UserController {
         return userService.makeUserAdmin(userId);
     }
 
+    @Operation(summary = "유저 권한 정지")
+    @PostMapping("/black/{userId}")
+    public ApiResponse<?> makeUserBlack(@PathVariable Long userId) {
+        return userService.makeUserBlack(userId);
+    }
+
+    @Operation(summary = "BLACK 유저 -> USER 유저로 변경")
+    @PostMapping("/user/{userId}")
+    public ApiResponse<?> makeUser(@PathVariable Long userId) {
+        return userService.makeUser(userId);
+    }
+
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     public ApiResponse<?> logout(@RequestHeader("Authorization") String token, HttpServletResponse response) {

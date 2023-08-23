@@ -3,9 +3,11 @@ os: linux
 
 files:
   - source: /
-    destination: /home/ubuntu/sobun
+    destination: /home/ubuntu/
+    overwrite: yes
 permissions:
-  - object: /home/ubuntu/sobun/
+  - object: /
+    pattern: "**"
     owner: ubuntu
     group: ubuntu
 hooks:

@@ -12,7 +12,9 @@ import team6.sobun.domain.notification.repository.EmitterRepository;
 import team6.sobun.domain.notification.repository.NotificationRepository;
 import team6.sobun.domain.notification.util.AlarmType;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
+import team6.sobun.global.stringCode.SuccessCodeEnum;
 
 import java.io.IOException;
 import java.util.List;
@@ -60,9 +62,7 @@ public class NotificationService {
         if (hasLostData(lastEventId)) {
             sendLostData(lastEventId, userId, emitterId, emitter);
         }
-
         return emitter;
-
     }
 
     private String makeTimeIncludeId(Long userId) {
@@ -93,6 +93,7 @@ public class NotificationService {
             log.info("data" + data);
             emitter.send(SseEmitter.event()
                     .id(eventId)
+                    .name("sse")
                     .data(data));
 
         } catch (IOException exception) {
@@ -100,7 +101,6 @@ public class NotificationService {
             emitterRepository.deleteById(emitterId);
         }
     }
-
 
     private boolean hasLostData(String lastEventId) {
         return !lastEventId.isEmpty();
@@ -114,9 +114,6 @@ public class NotificationService {
                 .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
     }
 
-
-
-
     private Notification createNotification(User receiver, AlarmType alarmType, String message, String senderUsername, String senderNickname, String senderProfileImageUrl, String url) {
         return Notification.builder()
                 .receiver(receiver)
@@ -129,7 +126,6 @@ public class NotificationService {
                 .build();
     }
 
-
     //받은 알림 전체 조회
     public List<NotificationResponseDto> getAllNotifications(Long userId) {
 
@@ -138,9 +134,7 @@ public class NotificationService {
         return notifications.stream()
                 .map(NotificationResponseDto::create )
                 .collect(Collectors.toList());
-
     }
-
 
     // 선택된 알림 삭제
     @Transactional
@@ -150,9 +144,14 @@ public class NotificationService {
 
         // 확인한 유저가 알림을 받은 대상자가 아니라면 예외 발생
         if (!notification.getReceiver().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("접근권한이 없습니다. ");
+            throw new IllegalArgumentException("접근권한이 없습니다.");
         }
         notificationRepository.deleteById(notificationId);
+    }
 
+    @Transactional
+    public void allDeleteNotification(User user) {
+        List<Notification> notificationList = notificationRepository.findAllByUser(user);
+        notificationRepository.deleteAll(notificationList);
     }
 }

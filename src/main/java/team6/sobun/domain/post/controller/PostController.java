@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import team6.sobun.domain.post.dto.PostReportRequestDto;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.service.PostService;
@@ -58,5 +59,13 @@ public class PostController {
     public ApiResponse<?> removePost(@PathVariable Long postId,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.deletePost(postId, userDetailsImpl.getUser());
+    }
+
+    @Operation(summary = "게시글 신고")
+    @PostMapping("/report/{postId}")
+    public ApiResponse<?> reportPost(@PathVariable Long postId,
+                                     @RequestBody PostReportRequestDto postReportRequestDto,
+                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return postService.reportPost(postId, postReportRequestDto, userDetailsImpl.getUser());
     }
 }

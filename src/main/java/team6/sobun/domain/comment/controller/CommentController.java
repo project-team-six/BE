@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import team6.sobun.domain.comment.dto.CommentReportRequestDto;
 import team6.sobun.domain.comment.dto.CommentRequestDto;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.comment.entity.Comment;
@@ -51,5 +52,13 @@ public class CommentController {
     public ApiResponse<?> removeComment(@PathVariable Long commentId,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return commentService.deleteComment(commentId, userDetailsImpl.getUser());
+    }
+
+    @Operation(summary = "댓글 신고")
+    @PostMapping("/report/{commentId}")
+    public ApiResponse<?> reportComment(@PathVariable Long commentId,
+                                        @RequestBody CommentReportRequestDto commentReportRequestDto,
+                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return commentService.reportComment(commentId, commentReportRequestDto, userDetails.getUser());
     }
 }

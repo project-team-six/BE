@@ -24,7 +24,9 @@ public enum SuccessCodeEnum {
     USER_IMAGE_SUCCESS("프로필 이미지 변경 성공"),
     FIND_EMAIL_SUCCESS("이메일 찾기 성공"),
     LOCATION_CHANGE_SUCCESS("위치정보 변경 성공"),
-    EMAIL_VERIFICATION_SUCCESS("이메일 인증 성공");
+    EMAIL_VERIFICATION_SUCCESS("이메일 인증 성공"),
+    POST_REPORT_SUCCESS("게시글 신고 성공"),
+    COMMENT_REPORT_SUCCESS("댓글 신고 성공");
 
 
     private final String message;

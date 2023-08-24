@@ -14,10 +14,13 @@ import team6.sobun.domain.chat.dto.ChatRoom;
 import team6.sobun.domain.chat.entity.ChatRoomEntity;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.pin.repository.PinRepository;
+import team6.sobun.domain.post.dto.PostReportRequestDto;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.entity.Post;
+import team6.sobun.domain.post.entity.PostReport;
+import team6.sobun.domain.post.repository.PostReportRepository;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.poststatus.repository.PostStatusRepository;
 import team6.sobun.domain.user.entity.User;
@@ -26,6 +29,7 @@ import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.util.List;
@@ -49,6 +53,7 @@ public class PostService {
     private final PinRepository pinRepository;
     private final PostStatusRepository postStatusRepository;
     private final UserRepository userRepository;
+    private final PostReportRepository postReportRepository;
 
     // 최신순 전체조회
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
@@ -144,6 +149,14 @@ public class PostService {
         return post;
     }
 
+
+    @Transactional
+    public ApiResponse<?> reportPost(Long postId, PostReportRequestDto postReportRequestDto, User user) {
+        Post post = findPost(postId);
+        PostReport postReport = new PostReport(user, post, postReportRequestDto.getReport());
+        postReportRepository.save(postReport);
+        return ApiResponse.okWithMessage(POST_REPORT_SUCCESS);
+    }
 }
 
 

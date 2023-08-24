@@ -48,24 +48,9 @@ public class PostController {
     @PutMapping("/{postId}")
     public ApiResponse<?> modifyPost(@PathVariable Long postId,
                                      @RequestPart(value = "data", required = false) PostRequestDto postRequestDto,
+                                     @RequestPart(value = "file",required = false) List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.updatePost(postId, postRequestDto, userDetailsImpl.getUser());
-    }
-
-    @Operation(summary = "게시글 이미지 추가")
-    @PutMapping("/append/{postId}")
-    public ApiResponse<?> postImageAppend(@PathVariable Long postId,
-                                     @RequestPart(value = "file", required = false) List<MultipartFile> images,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.postImageAppend(postId, images, userDetailsImpl.getUser());
-    }
-
-    @Operation(summary = "게시글 이미지 삭제")
-    @PutMapping("/delete/{postId}/{imageIndex}")
-    public ApiResponse<?> PostImageDelete(@PathVariable Long postId,
-                                     @PathVariable int imageIndex,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.postImageDelete(postId, imageIndex, userDetailsImpl.getUser());
+        return postService.updatePost(postId, postRequestDto, images, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "게시글 삭제")

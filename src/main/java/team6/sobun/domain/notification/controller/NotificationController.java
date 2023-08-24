@@ -49,4 +49,11 @@ public class NotificationController {
         notificationService.deleteNotification(notificationId,userDetails.getUser());
         return MessageStatusResponseDto.success(HttpStatus.OK,null);
     }
+
+    @Operation(summary = "알림 전체 삭제")
+    @DeleteMapping("/allDelete")
+    public MessageStatusResponseDto<List<NotificationResponseDto>> allDeleteNotification(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        notificationService.allDeleteNotification(userDetails.getUser());
+        return MessageStatusResponseDto.success(HttpStatus.OK, null);
+    }
 }

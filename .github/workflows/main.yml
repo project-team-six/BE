@@ -27,8 +27,9 @@ jobs:
 
     # application.properties 만들기
     - uses: actions/checkout@v2
-    - run: touch ./src/main/resources/application.properties
-    - run: echo "${{secrets.APPLICATION1}}" > ./src/main/resources/application.properties
+      run: |
+       touch ./src/main/resources/application.properties
+       echo "APPLICATION1=${{secrets.APPLICATION1}}"  >> ./src/main/resources/application.properties
     - uses: actions/upload-artifact@v2
       with:
         name: application.properties
@@ -36,30 +37,33 @@ jobs:
 
     # application.properties 만들기
     - uses: actions/checkout@v2
-    - run: touch ./src/main/resources/application.yml
-    - run: echo "${{secrets.APPLICATION2}}" > ./src/main/resources/application.yml
+      run: |
+        touch ./src/main/resources/application.yml
+        echo "APPLICATION2=${{secrets.APPLICATION2}}"  >> ./src/main/resources/c
     - uses: actions/upload-artifact@v2
       with:
         name: application.yml
         path: ./src/main/resources/application.yml
 
-    # application.properties 만들기
+      # application.properties 만들기
     - uses: actions/checkout@v2
-    - run: touch ./src/main/resources/application-alpha.properties
-    - run: echo "${{secrets.APPLICATION3}}" > ./src/main/resources/application-alpha.properties
+      run: |
+        touch ./src/main/resources/application.alpha.properties
+        echo "APPLICATION3=${{secrets.APPLICATION3}}"  >> ./src/main/resources/application.alpha.properties
     - uses: actions/upload-artifact@v2
       with:
-        name: application-alpha.properties
-        path: ./src/main/resources/application-alpha.properties
+        name: application.alpha.properties
+        path: ./src/main/resources/application.alpha.properties
 
-    # application.properties 만들기
+      # application.properties 만들기
     - uses: actions/checkout@v2
-    - run: touch ./src/main/resources/application-local.properties
-    - run: echo "${{secrets.APPLICATION4}}" > ./src/main/resources/application-local.properties
+      run: |
+        touch ./src/main/resources/application.local.properties
+        echo "APPLICATION4=${{secrets.APPLICATION4}}"  >> ./src/main/resources/application.local.properties
     - uses: actions/upload-artifact@v2
       with:
-        name: application-local.properties
-        path: ./src/main/resources/application-local.properties
+        name: application.local.properties
+        path: ./src/main/resources/application.local.properties
         
       # gradle 캐싱
     - name: Gradle Caching

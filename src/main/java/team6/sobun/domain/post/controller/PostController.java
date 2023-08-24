@@ -44,14 +44,17 @@ public class PostController {
         return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
     }
 
-    @Operation(summary = "게시글 수정")
+    @Operation(summary = "게시글 수정 = data { 게시글 수정 내용 }, delete [ 이미지 url ] -> 괄호 확인해주세요 !!, file (이미지 파일) ")
     @PutMapping("/{postId}")
     public ApiResponse<?> modifyPost(@PathVariable Long postId,
                                      @RequestPart(value = "data", required = false) PostRequestDto postRequestDto,
-                                     @RequestPart(value = "file",required = false) List<MultipartFile> images,
+                                     @RequestPart(value = "delete", required = false) List<String> delete,
+                                     @RequestPart(value = "file", required = false) List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.updatePost(postId, postRequestDto, images, userDetailsImpl.getUser());
+
+        return postService.updatePost(postId, postRequestDto, images, delete, userDetailsImpl.getUser());
     }
+
 
     @Operation(summary = "게시글 삭제")
     @DeleteMapping ("/{postId}")

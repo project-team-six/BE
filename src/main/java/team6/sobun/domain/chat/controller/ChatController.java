@@ -17,7 +17,6 @@ import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.security.UserDetailsImpl;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Tag(name = "채팅 관련 API", description = "채팅방 안에서 메세지 전송 및 이미지 전송관련")

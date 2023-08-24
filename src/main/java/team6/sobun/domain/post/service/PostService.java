@@ -28,6 +28,7 @@ import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
 import team6.sobun.global.utils.ResponseUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
@@ -90,26 +91,37 @@ public class PostService {
         return ok(new PostResponseDto(post, isPined, isComplete));
     }
 
+
     @Transactional
-    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto,List<MultipartFile> images, User user) {
+    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, List<MultipartFile> images, List<String> deletedImageUrls, User user) {
         Post post = confirmPost(postId, user);
         post.update(postRequestDto);
-        updatePostDetail(images,post);
+
+        List<String> newImageUrlList = new ArrayList<>();
+
+        if (images != null && !images.isEmpty()) {
+            newImageUrlList = s3Service.uploads(images);
+        }
+
+        // 기존 이미지 URL 리스트 가져오기
+        List<String> existingImageUrlList = post.getImageUrlList();
+
+        // 기존 이미지 URL 리스트에서 삭제할 이미지 URL 제거
+        if (deletedImageUrls != null && !deletedImageUrls.isEmpty()) {
+            existingImageUrlList.removeAll(deletedImageUrls);
+            s3Service.delete(deletedImageUrls); // 삭제할 이미지들 S3에서 삭제
+        }
+
+        // 새로운 이미지 URL 리스트와 기존 이미지 URL 리스트를 병합
+        existingImageUrlList.addAll(newImageUrlList);
+
+        // 병합된 이미지 URL 리스트를 사용하여 게시물 업데이트
+        post.setImage(existingImageUrlList);
+
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
 
-    private void updatePostDetail(List<MultipartFile> images, Post post) {
-        if (images != null && !images.isEmpty()) {
-            List<String> existingImageUrlList = post.getImageUrlList();
-            List<String> ImageUrlList = s3Service.uploads(images);
-            post.setImage(ImageUrlList);
-
-            if (StringUtils.hasText(String.valueOf(existingImageUrlList))) {
-                s3Service.delete(existingImageUrlList);
-            }
-        }
-    }
 
     @Transactional
     public ApiResponse<?> deletePost(Long postId, User user) {

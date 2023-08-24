@@ -62,7 +62,7 @@ public class CommentService {
         post.addComment(comment);
         commentRepository.save(comment);
         User Writer = findPostUser(postId);
-        notificationService.send(Writer, AlarmType.eventCreateComment, "새로운 댓글이 생성 되었습니다.", user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/post/" + post.getId());
+        notificationService.send(Writer, AlarmType.eventCreateComment, "새로운 댓글이 달렸어요.", user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/post/" + post.getId());
         return ResponseUtils.okWithMessage(SuccessCodeEnum.COMMENT_CREATE_SUCCESS);
     }
 

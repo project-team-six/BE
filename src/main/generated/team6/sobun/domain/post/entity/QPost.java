@@ -26,6 +26,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final EnumPath<Category> category = createEnum("category", Category.class);
 
+    public final StringPath chatroomId = createString("chatroomId");
+
     public final ListPath<team6.sobun.domain.comment.entity.Comment, team6.sobun.domain.comment.entity.QComment> commentList = this.<team6.sobun.domain.comment.entity.Comment, team6.sobun.domain.comment.entity.QComment>createList("commentList", team6.sobun.domain.comment.entity.Comment.class, team6.sobun.domain.comment.entity.QComment.class, PathInits.DIRECT2);
 
     public final StringPath consumerPeriod = createString("consumerPeriod");

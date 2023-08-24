@@ -51,9 +51,8 @@ public class ChatController {
     @Operation(summary = "채팅시 이미지 업로드")
     @PostMapping("/chat/image")
     @ResponseBody
-    public ApiResponse<?> uploadImage(
-            @RequestPart(value = "file", required = false) MultipartFile file,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ApiResponse<?> uploadImage(@RequestPart(value = "file", required = false) MultipartFile file,
+                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ApiResponse.success(chatService.uploadImage(file, userDetails.getUser()));
     }
 }

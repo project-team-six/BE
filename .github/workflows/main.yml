@@ -1,0 +1,78 @@
+name: sobunCI
+
+# main 브랜치에 PR 이벤트가 발생하면 Workflow가 실행된다.
+# 브랜치 구분이 없으면 on: [pull_request]로 해주어도 된다.
+on:
+  pull_request:
+    branches: [ "dev" ]
+
+# 테스트 결과 작성을 위해 쓰기권한 추가
+permissions: write-all
+
+# 해당 Workflow의 Job 목록
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # uses 키워드를 통해 Action을 불러올 수 있다.
+      # 해당 레포지토리로 check-out하여 레포지토리에 접근할 수 있는 Acion 불러오기
+    - uses: actions/checkout@v3
+    # 여기서 실행되는 커맨드에 대한 설명으로, Workflow에 표시된다. 
+    # jdk 세팅
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application.properties
+    - run: echo "${{secrets.APPLICATION1}}" > ./src/main/resources/application.properties
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application.properties
+        path: ./src/main/resources/application.properties
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application.yml
+    - run: echo "${{secrets.APPLICATION2}}" > ./src/main/resources/application.yml
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application.yml
+        path: ./src/main/resources/application.yml
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application-alpha.properties
+    - run: echo "${{secrets.APPLICATION3}}" > ./src/main/resources/application-alpha.properties
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application-alpha.properties
+        path: ./src/main/resources/application-alpha.properties
+
+    # application.properties 만들기
+    - uses: actions/checkout@v2
+    - run: touch ./src/main/resources/application-local.properties
+    - run: echo "${{secrets.APPLICATION4}}" > ./src/main/resources/application-local.properties
+    - uses: actions/upload-artifact@v2
+      with:
+        name: application-local.properties
+        path: ./src/main/resources/application-local.properties
+        
+      # gradle 캐싱
+    - name: Gradle Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+      
+    ### CI
+    #gradlew 권한 추가
+    - name: Grant Execute Permission For Gradlew
+      run: chmod +x gradlew

@@ -3,11 +3,10 @@ os: linux
 
 files:
   - source: /
-    destination: /home/ubuntu/BE
+    destination: /home/ubuntu/zzoget
     overwrite: yes
-    file_exists_behavior: OVERWRITE
 permissions:
-  - object: /
+  - object: /home/ubuntu/zzoget/
     pattern: "**"
     owner: ubuntu
     group: ubuntu

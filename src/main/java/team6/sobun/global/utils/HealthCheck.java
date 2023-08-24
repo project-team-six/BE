@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/health-check")
 public class HealthCheck {
     // EC2 상태검사용 200 뿌리기
+    // 테스트
 
     @Value("${targetGroupHealthCheckUrl}")
     private String targetGroupHealthCheckUrl;

@@ -18,7 +18,6 @@ import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtProvider;
-import team6.sobun.global.security.UserDetailsImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +79,94 @@ public class ChatService {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+    public ResponseEntity<List<ChatRoom>> getUserRooms(User user) {
+        String nickname = user.getNickname();
+
+        List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findByNicknames(nickname);
+
+        List<ChatRoom> userRooms = chatRoomEntities.stream()
+                .map(chatRoomEntity -> {
+                    ChatRoom chatRoom = redisChatRepository.findRoomById(chatRoomEntity.getRoomId());
+                    chatRoom.setUserCount(redisChatRepository.getUserCount(chatRoom.getRoomId()));
+                    return chatRoom;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(userRooms);
+    }
+    public ChatRoomEntity createRoomByPost(String postTitle, User user) {
+        ChatRoom chatRoom = redisChatRepository.createChatRoom(postTitle);
+
+        ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
+        chatRoomEntity.setRoomId(chatRoom.getRoomId());
+        chatRoomEntity.setPostTitle(postTitle);
+        chatRoomEntity.setNicknames(Collections.singletonList(user.getNickname()));
+        chatRoomRepository.save(chatRoomEntity);
+        return chatRoomEntity;
+    }
+
+    @Transactional
+    public ChatRoom addParticipantToChatRoomByPost(String roomId, User user) {
+
+        User newUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 정보입니다."));
+        String newUserNickname = newUser.getNickname();
+
+        ChatRoom chatRoom = redisChatRepository.findRoomById(roomId);
+        if (chatRoom == null) {
+            throw new IllegalArgumentException("유효하지 않은 채팅방 정보입니다.");
+        }
+        redisChatRepository.addUserToRoom(roomId, newUserNickname);
+
+        ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId).orElse(null);
+        if (chatRoomEntity != null) {
+            List<String> nicknames = new ArrayList<>(chatRoomEntity.getNicknames());
+            nicknames.add(newUserNickname);
+                chatRoomEntity.setNicknames(nicknames);
+                chatRoomRepository.save(chatRoomEntity);
+        }
+        return chatRoom;
+    }
+    @Transactional
+    public ResponseEntity<String> leaveRoomByPost(String roomId, User user) {
+        ChatRoom chatRoom = redisChatRepository.findRoomById(roomId);
+
+        // 채팅방이 존재하지 않는 경우
+        if (chatRoom == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String leavingUserNickname = user.getNickname();
+        ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId).orElse(null);
+        if (chatRoomEntity != null) {
+            List<String> roomNicknames = chatRoomEntity.getNicknames();
+            if (roomNicknames.size() > 1) {
+                // 2명 이상의 사용자가 참여하는 채팅방의 경우
+                boolean hasDeletePermission = roomNicknames.contains(leavingUserNickname);
+
+                if (!hasDeletePermission) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 권한이 없습니다.");
+                }
+                // 나가는 사용자의 닉네임과 연관 관계를 삭제
+                roomNicknames.remove(leavingUserNickname);
+                chatRoomEntity.setNicknames(roomNicknames);
+                chatRoomRepository.save(chatRoomEntity);
+            } else {
+                // 1명만 있는 채팅방인 경우
+                if (!roomNicknames.get(0).equals(leavingUserNickname)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 권한이 없습니다.");
+                }
+                // 채팅방 삭제
+                redisChatRepository.deleteChatRoom(roomId);
+                chatRoomRepository.deleteById(roomId); // 채팅방 엔티티 삭제
+            }
+        }
+        return ResponseEntity.ok("채팅방에서 나갔습니다.");
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+
     public ChatRoom createRoom(String nickname) {
         ChatRoom chatRoom = redisChatRepository.createChatRoom(nickname);
 
@@ -90,7 +177,6 @@ public class ChatService {
 
         return chatRoom;
     }
-
     @Transactional
     public ChatRoom startChatRoom(User user, Long userId) {
         String currentUserNickname = user.getNickname();
@@ -141,22 +227,6 @@ public class ChatService {
         }
 
         return chatRoom;
-    }
-
-    public ResponseEntity<List<ChatRoom>> getUserRooms(User user) {
-        String nickname = user.getNickname();
-
-        List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findByNicknames(nickname);
-
-        List<ChatRoom> userRooms = chatRoomEntities.stream()
-                .map(chatRoomEntity -> {
-                    ChatRoom chatRoom = redisChatRepository.findRoomById(chatRoomEntity.getRoomId());
-                    chatRoom.setUserCount(redisChatRepository.getUserCount(chatRoom.getRoomId()));
-                    return chatRoom;
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(userRooms);
     }
 
     public ResponseEntity<String> deleteRoom(String roomId, User user) {

@@ -69,6 +69,13 @@ public class RedisChatRepository {
         hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
         return chatRoom;
     }
+
+    public ChatRoom createChatRoom(String postTitle, String name) {
+        ChatRoom chatRoom = ChatRoom.create(name);
+        hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
+        return chatRoom;
+    }
+
     public void changeChatRoomName(String roomId, String newRoomName) {
         ChatRoom chatRoom = findRoomById(roomId);
         if (chatRoom != null) {

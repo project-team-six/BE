@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import team6.sobun.domain.chat.dto.ChatRoom;
+import team6.sobun.domain.chat.entity.ChatRoomEntity;
+import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.dto.PostReportRequestDto;
 import team6.sobun.domain.post.dto.PostRequestDto;
@@ -44,6 +47,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final S3Service s3Service;
+    private final ChatService chatService;
     @Autowired
     private final JwtProvider jwtProvider;
     private final PinRepository pinRepository;
@@ -59,7 +63,8 @@ public class PostService {
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3Service.uploads(images);
-        postRepository.save(new Post(postRequestDto, imageUrlList, user));
+        String roomId = chatService.createRoomByPost(postRequestDto.getTitle(),user).getRoomId();
+        postRepository.save(new Post(postRequestDto, imageUrlList, user,roomId));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
         return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }
@@ -91,9 +96,10 @@ public class PostService {
     }
 
     @Transactional
-    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, User user) {
+    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto,List<MultipartFile> images, User user) {
         Post post = confirmPost(postId, user);
         post.update(postRequestDto);
+        updatePostDetail(images,post);
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
@@ -126,7 +132,6 @@ public class PostService {
         }
     }
 
-
     private Post findPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
                 new InvalidConditionException(POST_NOT_EXIST));
@@ -144,39 +149,6 @@ public class PostService {
         return post;
     }
 
-    @Transactional
-    public ApiResponse<?> postImageDelete(Long postId, int imageIndex, User user) {
-        Post post = findPost(postId);
-        if (!post.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("게시글 수정에 대한 권한이 없습니다.");
-        }
-        List<String> loadImageList = post.getImageUrlList();
-
-        s3Service.del(loadImageList.get(imageIndex));
-
-        loadImageList.remove(imageIndex);
-
-        log.info(loadImageList.toString());
-        post.update(loadImageList);
-        postRepository.save(post);
-        return okWithMessage(POST_UPDATE_SUCCESS);
-    }
-
-    @Transactional
-    public ApiResponse<?> postImageAppend(Long postId, List<MultipartFile> images, User user) {
-        Post post = findPost(postId);
-        if (!post.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("게시글 수정에 대한 권한이 없습니다.");
-        }
-        List<String> loadImageList = post.getImageUrlList();
-        List<String> imageUrlList = s3Service.uploads(images);
-        for (String imageUrl : imageUrlList) {
-            loadImageList.add(imageUrl);
-        }
-        post.update(loadImageList);
-        postRepository.save(post);
-        return okWithMessage(POST_UPDATE_SUCCESS);
-    }
 
     @Transactional
     public ApiResponse<?> reportPost(Long postId, PostReportRequestDto postReportRequestDto, User user) {

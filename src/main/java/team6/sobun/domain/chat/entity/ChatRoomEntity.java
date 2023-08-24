@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import team6.sobun.domain.post.entity.Post;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -19,6 +20,8 @@ public class ChatRoomEntity implements Serializable {
     @Id
     @Column(unique = true)
     private String roomId;
+
+    private String postTitle;
 
     @ElementCollection
     private List<String> nicknames = new ArrayList<>(); // 채팅방 참여한 사용자의 닉네임 목록

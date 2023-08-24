@@ -9,6 +9,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.OnDelete;
 import org.springframework.format.annotation.DateTimeFormat;
+import team6.sobun.domain.chat.entity.ChatRoomEntity;
 import team6.sobun.domain.comment.entity.Comment;
 import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.dto.PostRequestDto;
@@ -107,8 +108,10 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String originPrice;
 
+    @Column
+    private String chatroomId;
 
-    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user) {
+    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId) {
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
@@ -121,6 +124,7 @@ public class Post extends Timestamped {
         this.location = user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong());
         this.price = postRequestDto.getPrice();
         this.user = user;
+        this.chatroomId = chatroomId;
         this.popularity = user.getPopularity();
         this.profileImageUrl = user.getProfileImageUrl();
         this.originPrice = postRequestDto.getOriginPrice();

@@ -103,11 +103,21 @@ public class UserController {
     @Operation(summary = "마이페이지 정보수정")
     @PutMapping("mypage/{userId}")
     public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
-                                            @RequestPart(value = "data", required = false) MypageRequestDto mypageRequestDto,
+                                            @RequestBody MypageRequestDto mypageRequestDto,
                                             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                             HttpServletResponse response) {
         return myPageService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser(), response);
     }
+
+    @Operation(summary = "마이페이지 비밀번호 수정")
+    @PutMapping("mypagePassword/{userId}")
+    public ApiResponse<?> updateUserPassword(@PathVariable Long userId,
+                                             @RequestBody PasswordRequestDto passwordRequestDto,
+                                             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl
+    ) {
+        return myPageService.updateUserPassword(userId, passwordRequestDto, userDetailsImpl.getUser());
+    }
+
 
     @Operation(summary = "마이페이지 프로필 이미지 수정")
     @PutMapping("mypageImage/{userId}")
@@ -117,15 +127,6 @@ public class UserController {
                                                  HttpServletResponse response) {
         User user = userDetailsImpl.getUser();
         return myPageService.updateUserProfileImage(userId, image, user, response);
-    }
-
-    @Operation(summary = "마이페이지 비밀번호 수정")
-    @PutMapping("mypagePassword/{userId}")
-    public ApiResponse<?> updateUserPassword(@PathVariable Long userId,
-                                             @RequestPart(value = "data", required = false) PasswordRequestDto passwordRequestDto,
-                                             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl
-    ) {
-        return myPageService.updateUserPassword(userId, passwordRequestDto, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "카카오 로그인")

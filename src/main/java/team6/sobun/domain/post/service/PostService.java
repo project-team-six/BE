@@ -11,27 +11,29 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.chat.dto.ChatRoom;
+import team6.sobun.domain.chat.entity.ChatRoomEntity;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.pin.repository.PinRepository;
+import team6.sobun.domain.post.dto.PostReportRequestDto;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.entity.Post;
+import team6.sobun.domain.post.entity.PostReport;
+import team6.sobun.domain.post.repository.PostReportRepository;
 import team6.sobun.domain.post.repository.PostRepository;
 import team6.sobun.domain.poststatus.repository.PostStatusRepository;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.exception.InvalidConditionException;
-import team6.sobun.global.exception.UploadException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
-import team6.sobun.global.stringCode.ErrorCodeEnum;
+import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static team6.sobun.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
 import static team6.sobun.global.stringCode.ErrorCodeEnum.USER_NOT_MATCH;
@@ -52,6 +54,7 @@ public class PostService {
     private final PinRepository pinRepository;
     private final PostStatusRepository postStatusRepository;
     private final UserRepository userRepository;
+    private final PostReportRepository postReportRepository;
 
     // 최신순 전체조회
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
@@ -61,8 +64,8 @@ public class PostService {
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3Service.uploads(images);
-        postRepository.save(new Post(postRequestDto, imageUrlList, user));
-        chatService.createRoomByPost(postRequestDto.getTitle(),user);
+        String roomId = chatService.createRoomByPost(postRequestDto.getTitle(),user).getRoomId();
+        postRepository.save(new Post(postRequestDto, imageUrlList, user,roomId));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
         return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }
@@ -93,25 +96,37 @@ public class PostService {
         return ok(new PostResponseDto(post, isPined, isComplete));
     }
 
+
     @Transactional
-    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, User user) {
+    public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, List<MultipartFile> images, List<String> deletedImageUrls, User user) {
         Post post = confirmPost(postId, user);
         post.update(postRequestDto);
+
+        List<String> newImageUrlList = new ArrayList<>();
+
+        if (images != null && !images.isEmpty()) {
+            newImageUrlList = s3Service.uploads(images);
+        }
+
+        // 기존 이미지 URL 리스트 가져오기
+        List<String> existingImageUrlList = post.getImageUrlList();
+
+        // 기존 이미지 URL 리스트에서 삭제할 이미지 URL 제거
+        if (deletedImageUrls != null && !deletedImageUrls.isEmpty()) {
+            existingImageUrlList.removeAll(deletedImageUrls);
+            s3Service.delete(deletedImageUrls); // 삭제할 이미지들 S3에서 삭제
+        }
+
+        // 새로운 이미지 URL 리스트와 기존 이미지 URL 리스트를 병합
+        existingImageUrlList.addAll(newImageUrlList);
+
+        // 병합된 이미지 URL 리스트를 사용하여 게시물 업데이트
+        post.setImage(existingImageUrlList);
+
         log.info("'{}'님이 게시물 ID '{}'의 정보를 업데이트했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_UPDATE_SUCCESS);
     }
 
-    private void updatePostDetail(List<MultipartFile> images, Post post) {
-        if (images != null && !images.isEmpty()) {
-            List<String> existingImageUrlList = post.getImageUrlList();
-            List<String> ImageUrlList = s3Service.uploads(images);
-            post.setImage(ImageUrlList);
-
-            if (StringUtils.hasText(String.valueOf(existingImageUrlList))) {
-                s3Service.delete(existingImageUrlList);
-            }
-        }
-    }
 
     @Transactional
     public ApiResponse<?> deletePost(Long postId, User user) {
@@ -128,7 +143,6 @@ public class PostService {
             s3Service.delete(imageUrlList);
         }
     }
-
 
     private Post findPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
@@ -147,38 +161,13 @@ public class PostService {
         return post;
     }
 
-    @Transactional
-    public ApiResponse<?> postImageDelete(Long postId, int imageIndex, User user) {
-        Post post = findPost(postId);
-        if (!post.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("게시글 수정에 대한 권한이 없습니다.");
-        }
-        List<String> loadImageList = post.getImageUrlList();
-
-        s3Service.del(loadImageList.get(imageIndex));
-
-        loadImageList.remove(imageIndex);
-
-        log.info(loadImageList.toString());
-        post.update(loadImageList);
-        postRepository.save(post);
-        return okWithMessage(POST_UPDATE_SUCCESS);
-    }
 
     @Transactional
-    public ApiResponse<?> postImageAppend(Long postId, List<MultipartFile> images, User user) {
+    public ApiResponse<?> reportPost(Long postId, PostReportRequestDto postReportRequestDto, User user) {
         Post post = findPost(postId);
-        if (!post.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("게시글 수정에 대한 권한이 없습니다.");
-        }
-        List<String> loadImageList = post.getImageUrlList();
-        List<String> imageUrlList = s3Service.uploads(images);
-        for (String imageUrl : imageUrlList) {
-            loadImageList.add(imageUrl);
-        }
-        post.update(loadImageList);
-        postRepository.save(post);
-        return okWithMessage(POST_UPDATE_SUCCESS);
+        PostReport postReport = new PostReport(user, post, postReportRequestDto.getReport());
+        postReportRepository.save(postReport);
+        return ApiResponse.okWithMessage(POST_REPORT_SUCCESS);
     }
 }
 

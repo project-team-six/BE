@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.entity.UserRoleEnum;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT p.post FROM Pin p WHERE p.user.id = :userId")
     List<Post> findPinnedPostsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT u FROM User u WHERE u.role = :role")
+    List<User> findAllByBlackUser(@Param("role")UserRoleEnum BLACK);
 
 }
 

@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import team6.sobun.domain.comment.dto.CommentReportRequestDto;
 import team6.sobun.domain.comment.dto.CommentRequestDto;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.comment.entity.Comment;
+import team6.sobun.domain.comment.entity.CommentReport;
+import team6.sobun.domain.comment.repository.CommentReportRepository;
 import team6.sobun.domain.comment.repository.CommentRepository;
 import team6.sobun.domain.notification.service.NotificationService;
 import team6.sobun.domain.notification.util.AlarmType;
@@ -36,6 +39,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
+    private final CommentReportRepository commentReportRepository;
 
 
     public Post findPostWithComments(Long postId) {
@@ -58,7 +62,7 @@ public class CommentService {
         post.addComment(comment);
         commentRepository.save(comment);
         User Writer = findPostUser(postId);
-        notificationService.send(Writer, AlarmType.eventCreateComment, "새로운 댓글이 생성 되었습니다.", user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/post/" + post.getId());
+        notificationService.send(Writer, AlarmType.eventCreateComment, "새로운 댓글이 달렸어요.", user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/post/" + post.getId());
         return ResponseUtils.okWithMessage(SuccessCodeEnum.COMMENT_CREATE_SUCCESS);
     }
 
@@ -100,5 +104,13 @@ public class CommentService {
     private User findPostUser(Long postId) {
         Post post = findPost(postId);
         return post.getUser();
+    }
+
+    public ApiResponse<?> reportComment(Long commentId, CommentReportRequestDto commentReportRequestDto, User user) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()
+                -> new IllegalArgumentException("존재하지 않는 댓글 입니다."));
+        CommentReport commentReport = new CommentReport(comment, commentReportRequestDto.getCommentReport(), user);
+        commentReportRepository.save(commentReport);
+        return ApiResponse.okWithMessage(SuccessCodeEnum.COMMENT_REPORT_SUCCESS);
     }
 }

@@ -88,7 +88,7 @@
             <h3>Login</h3>
             <form @submit.prevent="login">
                 <div class="form-group">
-                    <input type="text" class="form-control" v-model="loginData.email" placeholder="바보야">
+                    <input type="text" class="form-control" v-model="loginData.email" placeholder="Email">
                 </div>
                 <div class="form-group">
                     <input type="password" class="form-control" v-model="loginData.password" placeholder="Password">
@@ -116,6 +116,7 @@
                 <div class="form-group">
                     <input type="password" class="form-control" v-model="signupData.password" placeholder="Password">
                 </div>
+
                 <!-- 이미지 업로드를 위한 input 추가 -->
                 <div class="form-group">
                     <label for="profileImage" class="btn btn-success btn-block">
@@ -131,7 +132,7 @@
         <div class="container mt-4">
             <div class="row">
                 <div class="col-md-6">
-                    <h3>채팅방 목록</h3>
+                    <h3>바보야</h3>
                 </div>
                 <div class="col-md-6 text-right">
                     <button class="btn btn-primary btn-sm" @click="logout">로그아웃</button>
@@ -187,7 +188,7 @@
                 nickname: '',
                 phoneNumber: '',
                 username: '',
-                password: ''
+                password: '',
             },
             room_name: '',
             chatrooms: [],
@@ -284,6 +285,8 @@
             signup() {
                 // FormData 객체를 생성하고 데이터 추가
                 const formData = new FormData();
+
+                // JSON 데이터를 직접 추가 (Content-Type: application/json)
                 formData.append('data', JSON.stringify({
                     email: this.signupData.email,
                     nickname: this.signupData.nickname,
@@ -291,8 +294,11 @@
                     username: this.signupData.username,
                     password: this.signupData.password
                 }));
-                formData.append('file', this.signupData.image); // 이미지 파일 추가
 
+                // 이미지 파일 추가 (자동 처리됨)
+                formData.append('file', this.signupData.image, this.signupData.image.name);
+
+                // axios를 사용하여 POST 요청 보내기
                 axios.post('/auth/signup', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
@@ -307,6 +313,8 @@
                         console.error(error);
                     });
             },
+
+
             findAllRoom:function() {
                 axios.get('/chat/rooms', {
                 })

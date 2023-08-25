@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import team6.sobun.domain.post.dto.PostReportRequestDto;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.dto.PostSearchCondition;
 import team6.sobun.domain.post.service.PostService;
@@ -44,34 +45,30 @@ public class PostController {
         return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
     }
 
-    @Operation(summary = "게시글 수정")
+    @Operation(summary = "게시글 수정 = data { 게시글 수정 내용 }, delete [ 이미지 url ] -> 괄호 확인해주세요 !!, file (이미지 파일) ")
     @PutMapping("/{postId}")
     public ApiResponse<?> modifyPost(@PathVariable Long postId,
                                      @RequestPart(value = "data", required = false) PostRequestDto postRequestDto,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.updatePost(postId, postRequestDto, userDetailsImpl.getUser());
-    }
-
-    @Operation(summary = "게시글 이미지 추가")
-    @PutMapping("/append/{postId}")
-    public ApiResponse<?> postImageAppend(@PathVariable Long postId,
+                                     @RequestPart(value = "delete", required = false) List<String> delete,
                                      @RequestPart(value = "file", required = false) List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.postImageAppend(postId, images, userDetailsImpl.getUser());
+
+        return postService.updatePost(postId, postRequestDto, images, delete, userDetailsImpl.getUser());
     }
 
-    @Operation(summary = "게시글 이미지 삭제")
-    @PutMapping("/delete/{postId}/{imageIndex}")
-    public ApiResponse<?> PostImageDelete(@PathVariable Long postId,
-                                     @PathVariable int imageIndex,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.postImageDelete(postId, imageIndex, userDetailsImpl.getUser());
-    }
 
     @Operation(summary = "게시글 삭제")
     @DeleteMapping ("/{postId}")
     public ApiResponse<?> removePost(@PathVariable Long postId,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.deletePost(postId, userDetailsImpl.getUser());
+    }
+
+    @Operation(summary = "게시글 신고")
+    @PostMapping("/report/{postId}")
+    public ApiResponse<?> reportPost(@PathVariable Long postId,
+                                     @RequestBody PostReportRequestDto postReportRequestDto,
+                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return postService.reportPost(postId, postReportRequestDto, userDetailsImpl.getUser());
     }
 }

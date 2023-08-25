@@ -19,6 +19,8 @@ public enum ErrorCodeEnum {
     EXTRACT_INVALID(HttpStatus.BAD_REQUEST, "확장자를 추출할 수 없습니다."),
     UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "유효하지 않은 요청입니다."),
     TOKEN_REFRESH_FAIL(HttpStatus.BAD_REQUEST,"토큰 갱신에 실패했습니다."),
+
+    NO_PERMISSIONS(HttpStatus.FORBIDDEN, "관리자 권한이 없습니다."),
     USER_NOT_EXIST(HttpStatus.BAD_REQUEST,"존재하지 않는 사용자입니다." );
 
     private final HttpStatus status;

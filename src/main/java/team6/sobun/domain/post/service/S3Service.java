@@ -54,6 +54,7 @@ public class S3Service {
         }
     }
 
+
     public List<String> uploads(List<MultipartFile> multipartFiles) {
         List<String> imageUrlList = new ArrayList<>();
 
@@ -110,24 +111,6 @@ public class S3Service {
                 } catch (IllegalArgumentException e) {
                     throw new UploadException(ErrorCodeEnum.FILE_DECODE_FAIL, e);
                 }
-            }
-        }
-    }
-
-    public void del(String imageUrl) {
-        if (StringUtils.hasText(imageUrl)) {
-            log.info("삭제하는 이미지url = {}", imageUrl);
-            String fileName = extractObjectKeyFromUrl(imageUrl);
-            try {
-                String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-                if (amazonS3.doesObjectExist(bucket, decodedFileName)) {
-                    amazonS3.deleteObject(bucket, decodedFileName);
-                    log.info("파일 삭제: " + decodedFileName);
-                } else {
-                    log.warn("존재하지 않는 파일: " + decodedFileName);
-                }
-            } catch (IllegalArgumentException e) {
-                throw new UploadException(ErrorCodeEnum.FILE_DECODE_FAIL, e);
             }
         }
     }

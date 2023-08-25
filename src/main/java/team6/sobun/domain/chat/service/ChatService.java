@@ -79,18 +79,22 @@ public class ChatService {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-    public ChatRoom createRoom(String nickname) {
-        ChatRoom chatRoom = redisChatRepository.createChatRoom(nickname);
+    public ResponseEntity<List<ChatRoom>> getUserRooms(User user) {
+        String nickname = user.getNickname();
 
-        ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
-        chatRoomEntity.setRoomId(chatRoom.getRoomId());
-        chatRoomEntity.setNicknames(Collections.singletonList(chatRoom.getName()));
-        chatRoomRepository.save(chatRoomEntity);
+        List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findByNicknames(nickname);
 
-        return chatRoom;
+        List<ChatRoom> userRooms = chatRoomEntities.stream()
+                .map(chatRoomEntity -> {
+                    ChatRoom chatRoom = redisChatRepository.findRoomById(chatRoomEntity.getRoomId());
+                    chatRoom.setUserCount(redisChatRepository.getUserCount(chatRoom.getRoomId()));
+                    return chatRoom;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(userRooms);
     }
-
-    public void createRoomByPost(String postTitle, User user) {
+    public ChatRoomEntity createRoomByPost(String postTitle, User user) {
         ChatRoom chatRoom = redisChatRepository.createChatRoom(postTitle);
 
         ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
@@ -98,6 +102,7 @@ public class ChatService {
         chatRoomEntity.setPostTitle(postTitle);
         chatRoomEntity.setNicknames(Collections.singletonList(user.getNickname()));
         chatRoomRepository.save(chatRoomEntity);
+        return chatRoomEntity;
     }
 
     @Transactional
@@ -162,6 +167,16 @@ public class ChatService {
 
     ////////////////////////////////////////////////////////////////////////////////
 
+    public ChatRoom createRoom(String nickname) {
+        ChatRoom chatRoom = redisChatRepository.createChatRoom(nickname);
+
+        ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
+        chatRoomEntity.setRoomId(chatRoom.getRoomId());
+        chatRoomEntity.setNicknames(Collections.singletonList(chatRoom.getName()));
+        chatRoomRepository.save(chatRoomEntity);
+
+        return chatRoom;
+    }
     @Transactional
     public ChatRoom startChatRoom(User user, Long userId) {
         String currentUserNickname = user.getNickname();
@@ -212,22 +227,6 @@ public class ChatService {
         }
 
         return chatRoom;
-    }
-
-    public ResponseEntity<List<ChatRoom>> getUserRooms(User user) {
-        String nickname = user.getNickname();
-
-        List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findByNicknames(nickname);
-
-        List<ChatRoom> userRooms = chatRoomEntities.stream()
-                .map(chatRoomEntity -> {
-                    ChatRoom chatRoom = redisChatRepository.findRoomById(chatRoomEntity.getRoomId());
-                    chatRoom.setUserCount(redisChatRepository.getUserCount(chatRoom.getRoomId()));
-                    return chatRoom;
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(userRooms);
     }
 
     public ResponseEntity<String> deleteRoom(String roomId, User user) {

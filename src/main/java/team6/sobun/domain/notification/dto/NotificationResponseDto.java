@@ -8,12 +8,12 @@ import team6.sobun.domain.notification.entity.Notification;
 import team6.sobun.domain.notification.util.AlarmType;
 import team6.sobun.domain.notification.util.Chrono;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @Getter
 @Setter
 public class NotificationResponseDto {
-
-
 
     private Long notificationId;
 
@@ -48,6 +48,18 @@ public class NotificationResponseDto {
         this.senderProfileImageUrl = senderProfileImageUrl;
         this.createdAt = createdAt;
         this.url = url;
+    }
+
+    public NotificationResponseDto(Notification notification) {
+        this.notificationId = notification.getId();
+        this.message = notification.getMessage();
+        this.readStatus = notification.getIsRead();
+        this.alarmType = notification.getAlarmType();
+        this.createdAt = Chrono.timesAgo(notification.getCreatedAt());
+        this.senderUsername = notification.getSenderUsername();
+        this.senderNickname = notification.getSenderNickname();
+        this.senderProfileImageUrl = notification.getSenderProfileImageUrl();
+        this.url = notification.getUrl();
     }
 
     public static NotificationResponseDto create(Notification notification) {

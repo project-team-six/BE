@@ -15,4 +15,7 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
 
     @Query("SELECT n FROM notification n WHERE n.receiver = :user")
     List<Notification> findAllByUser(@Param("user") User user);
+
+    @Query("Select n FROM notification n WHERE n.isRead = :read AND n.receiver = :user")
+    List<Notification> findAllByUnread(@Param("read") boolean read, @Param("user") User user);
 }

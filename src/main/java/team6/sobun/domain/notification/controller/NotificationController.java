@@ -31,15 +31,18 @@ public class NotificationController {
                                 @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId)  {
         return notificationService.subscribe(userDetails, lastEventId);
     }
-        /*  subscribe() 메서드는 불필요한 코드가 아니며, 삭제하면 클라이언트(유저)는 SSE 구독을 요청할 수 없게 됩니다.
-    send() 메서드를 통해 알림 메시지를 전송할 수는 있지만,
-    클라이언트(유저)는 이를 수신할 수 있는 SSE 연결이 없기 때문에 알림 메시지를 실시간으로 받을 수 없게 됩니다. */
 
     @Operation(summary = "알림 전체 조회")
     @GetMapping("/all")
     public MessageStatusResponseDto<List<NotificationResponseDto>> getAllNotifications(@Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return MessageStatusResponseDto.success(HttpStatus.OK, notificationService.getAllNotifications(userDetails.getUser().getId()));
+    }
+
+    @Operation(summary = "않읽은 알림")
+    @GetMapping("/unread")
+    public MessageStatusResponseDto<List<NotificationResponseDto>> getUnreadNotification(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return MessageStatusResponseDto.success(HttpStatus.OK, notificationService.getUnreadNotification(userDetails.getUser()));
     }
 
     @Operation(summary = "알림 삭제")
@@ -54,6 +57,14 @@ public class NotificationController {
     @DeleteMapping("/allDelete")
     public MessageStatusResponseDto<List<NotificationResponseDto>> allDeleteNotification(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         notificationService.allDeleteNotification(userDetails.getUser());
+        return MessageStatusResponseDto.success(HttpStatus.OK, null);
+    }
+
+    @Operation(summary = "알림 읽기")
+    @PostMapping("/read/{notificationId}")
+    public MessageStatusResponseDto<NotificationResponseDto> readNotification(@PathVariable Long notificationId,
+                                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        notificationService.readNotification(notificationId, userDetails.getUser());
         return MessageStatusResponseDto.success(HttpStatus.OK, null);
     }
 }

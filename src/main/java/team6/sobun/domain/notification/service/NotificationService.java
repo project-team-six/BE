@@ -154,4 +154,17 @@ public class NotificationService {
         List<Notification> notificationList = notificationRepository.findAllByUser(user);
         notificationRepository.deleteAll(notificationList);
     }
+
+    @Transactional
+    public void readNotification(Long notificationId, User user) {
+        Notification notification = notificationRepository.findById(notificationId).orElseThrow(()
+                -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+        notification.read();
+        notificationRepository.save(notification);
+    }
+
+    public List<NotificationResponseDto> getUnreadNotification(User user) {
+        List<Notification> notificationList = notificationRepository.findAllByUnread(false, user);
+        return notificationList.stream().map(NotificationResponseDto::new).toList();
+    }
 }

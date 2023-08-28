@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="background-color: #FFFFFF;">
+<div style="width:100%;padding:40px 0;background-color:#ffffff;margin:0 auto">
+    <table class="m_-959506477112838652stb-container" cellpadding="0" cellspacing="0" align="center"
+           style="margin:0px auto;width:94%;max-width:630px;background: rgb(255, 255, 255);border:0">
+        <!-- 로고 이미지 -->
+        <tr>
+            <td style="padding:15px 0 15px 0;line-height:10px;border-width:0px">
+                <table class="m_-959506477112838652stb-cell-wrap" border="0" cellpadding="0" cellspacing="0"
+                       style="table-layout:fixed;padding:0px 5px" width="100%">
+                    <tbody>
+                    <tr>
+                        <td style="padding:0px 15px;line-height:10px" width="100%">
+                            <div>
+                                <p style="text-align:justify;margin-bottom:40px;width:100%;display:flex;justify-content: center">
+                                    <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FcwJvE3%2FbtsqDcfY7IB%2F9DVdHTXEqzECi71HAlbDj1%2Fimg.png"
+                                         style="width:80%;display:inline;vertical-align:bottom;max-width:100%;border-width:0px;border-color:#ffffff;text-align:justify"
+                                         width="590" class="CToWUd a6T" data-bit="iit" tabindex="0"
+                                         alt="소분소분">
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <!-- 이메일 내용 -->
+        <tr>
+            <td style="padding:15px 0 15px 0;line-height:1.8;border-width:0px;font-size:14px">
+                <table class="m_-959506477112838652stb-cell-wrap" border="0" cellpadding="0" cellspacing="0"
+                       style="padding:0px 5px" width="100%">
+                    <tbody>
+                    <tr>
+                        <td class="m_-959506477112838652stb-text-box"
+                            style="padding:0px 15px;line-height:1.8;word-break:break-word;font-size:14px;font-family:AppleSDGothic,apple sd gothic neo,noto sans korean,noto sans korean regular,noto sans cjk kr,noto sans cjk,nanum gothic,malgun gothic,dotum,arial,helvetica,MS Gothic,sans-serif!important;color:#333333"
+                            width="100%">
+                            <div bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <div align="center" border="0" cellpadding="0" cellspacing="0" width="560">
+                                    <div style="text-align:left;font-size:16px"><b
+                                            style="font-size:12px"><span style="font-size:16px"> 이메일 인증하기 </span></b><br>
+                                    </div>
+                                    <div style="font-size:16px">
+                                        <div border="0" cellpadding="0" cellspacing="0" width="100%"
+                                             style="font-size:16px">
+                                            <div style="text-align:left;font-size:14px"><b
+                                                    style="font-size:12px"><span style="font-size:16px"><br></span></b>
+                                            </div>
+                                            <div style="text-align:left;font-size:14px">안녕하세요!
+                                            </div>
+                                            <div style="text-align:left;font-size:14px">가입해 주셔서 감사합니다.
+                                            </div>
+                                            <div style="text-align:left;font-size:14px">아래 링크를 클릭하여 이메일을
+                                                인증해주세요.<br></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <!-- 이메일 인증 링크 -->
+        <tr>
+            <td style="padding:20px 0 20px 0;line-height:1.8;border-width:0px;font-size:14px">
+                <table class="m_-959506477112838652stb-cell-wrap" border="0" cellpadding="0" cellspacing="0"
+                       style="padding:0px 5px" width="100%">
+                    <tbody>
+                    <tr>
+                        <td class="m_-959506477112838652stb-text-box"
+                            style="padding:0px 15px;line-height:1.8;word-break:break-word;font-size:14px;font-family:AppleSDGothic,apple sd gothic neo,noto sans korean,noto sans korean regular,noto sans cjk kr,noto sans cjk,nanum gothic,malgun gothic,dotum,arial,helvetica,MS Gothic,sans-serif!important;color:#333333"
+                            width="100%">
+                            <div style="text-align:center">
+                                <!-- Thymeleaf를 사용하여 링크 동적 생성 -->
+                                <p>
+                                    <a th:href="${verificationLink}"
+                                       style="display:inline-block;padding:14px 20px 11px;text-decoration:none;background-color:#1B5E20;color:#ffffff;text-align:center;font-size:16px;border-radius:3px;border:0"
+                                       target="_blank">이메일 인증하기</a>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <!-- 이메일 및 저작권 정보 -->
+        <tr>
+            <td style="padding:15px 0 15px 0;border-width:0px">
+                <table class="m_-959506477112838652stb-cell-wrap" border="0" cellpadding="0" cellspacing="0"
+                       style="padding:0px 5px" width="100%">
+                    <tbody>
+                    <tr>
+                        <td class="m_-959506477112838652stb-text-box" width="100%"
+                            style="padding:0px 10px;line-height:1.8;word-break:break-word;font-size:12px;font-family:AppleSDGothic,apple sd gothic neo,noto sans korean,noto sans korean regular,noto sans cjk kr,noto sans cjk,nanum gothic,malgun gothic,dotum,arial,helvetica,MS Gothic,sans-serif!important;text-align:center;color:#606060">
+                            SOBUNSOBUN<br><a href="mailto:kyuni9786@naver.com"
+                                             target="_blank">kyuni9786@sobun.sobun</a><br>경상북도
+                            경주시 소금강로 61번길 53 4층<b></b></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

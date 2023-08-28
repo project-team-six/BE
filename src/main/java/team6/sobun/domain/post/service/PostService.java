@@ -29,7 +29,6 @@ import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
-import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.util.ArrayList;

@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.chat.dto.ChatMessage;
+import team6.sobun.domain.chat.dto.ChatMessageSearchCondition;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.global.jwt.JwtProvider;
@@ -42,10 +45,11 @@ public class ChatController {
     @Operation(summary = "이전 메세지 목록 가져오기")
     @GetMapping("/chat/{roomId}")
     @ResponseBody
-    public List<ChatMessage> getChatMessages(@PathVariable String roomId) {
-        return redisChatRepository.findMessagesByRoom(roomId);
+    public Slice<ChatMessage> getChatMessages(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                              @PathVariable String roomId,
+                                              Pageable page) {
+        return chatService.getChatMessages(userDetails.getUser(),roomId, page);
     }
-
 
     @Operation(summary = "채팅시 이미지 업로드")
     @PostMapping("/chat/image")

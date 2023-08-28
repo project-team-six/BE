@@ -39,6 +39,7 @@ out/
 .vscode/
 
 ### .gitignore ###
-/src/main/resources
+/src/main/resources/application.properties
+/src/main/resources/application.yml
 
-
+/logs

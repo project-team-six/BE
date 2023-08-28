@@ -22,6 +22,7 @@ import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
+import team6.sobun.domain.user.service.util.IdenticonService;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.jwt.entity.RefreshToken;
@@ -51,6 +52,7 @@ public class UserService {
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
     private final RedisChatRepository redisChatRepository;
+    private final IdenticonService identiconService;
 
     @Value("${spring.mail.username}")
     private String from;
@@ -70,6 +72,8 @@ public class UserService {
         if (image != null && !image.isEmpty()) {
             // 이미지가 있을 경우에만 S3에 업로드하고 URL을 가져옴
             profileImageUrl = s3Service.upload(image);
+        } else {
+            profileImageUrl = identiconService.makeIdenticonUrl(signupRequestDto.getNickname());
         }
 
         // 프로필 이미지 URL을 사용하여 User 객체 생성

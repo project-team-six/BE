@@ -51,8 +51,8 @@
 
         /* 기존 스타일 유지하면서 추가될 스타일 */
         .chat-box {
-            max-height: 500px; /* 채팅창 최대 높이 조정 */
-            overflow-y: scroll; /* 항상 스크롤바 표시 */
+            max-height: 700px; /* 채팅창 최대 높이 조정 */
+            overflow-y: auto; /* 항상 스크롤바 표시 */
             border: 1px solid #ddd;
             padding: 10px;
             background-color: #f7f7f7;
@@ -133,8 +133,8 @@
         </div>
     </div>
     <div class="chat-box">
-        <ul class="list-group" style="max-height: 600px; overflow-y: auto;">
-            <li class="list-group-item" v-for="(message, index) in messages.slice(0, 30)" :key="index">
+        <ul class="list-group" style="max-height: 1000px; overflow-y: auto;">
+            <li class="list-group-item" v-for="(message, index) in messages.slice(0, 100)" :key="index">
                 <!-- 이미지 메시지인 경우 -->
                 <div v-if="message.type === 'IMAGE'" class="d-flex align-items-center">
                     <div>
@@ -220,7 +220,7 @@
             currentUserNickname: '',
             selectedImageUrl: '',
             selectedImagePreview: '',
-            isImageModalOpen: false
+            pageNumber: 0
         },
         created() {
             this.roomId = localStorage.getItem('wschat.roomId');
@@ -229,28 +229,23 @@
             wss.connect({'Authorization': accessToken}, function (frame) {
                 wss.subscribe("/sub/chat/room/" + _this.roomId, function (message) {
                     var recv = JSON.parse(message.body);
+                    _this.fetchChatMessages();
                     _this.recvMessage(recv);
                 },{'Authorization': accessToken});
-
-
             }, function (error) {
                 alert("서버 연결에 실패하였습니다. 다시 접속해 주십시요.");
                 location.href = "/chat/room";
             });
         },
-        mounted() {
-            this.fetchChatMessages(); // 페이지가 로딩될 때 채팅 메시지를 불러옴
-
-        },
 
         methods: {
             fetchChatMessages: function () {
-                axios.get(`/chat/${this.roomId}`, {
+                axios.get(`/chat/${this.roomId}?page=${this.pageNumber}`, {
                     headers: {
                         Authorization: accessToken
                     }
                 }).then(response => {
-                    this.messages = response.data.map(message => {
+                    this.messages = response.data.content.map(message => {
                         if (message.type === 'IMAGE') {
                             return {
                                 type: message.type,
@@ -265,9 +260,6 @@
                             };
                         }
                     });
-
-                    // 채팅 메시지 리스트를 뒤집어서 추가하여 아래로 스크롤되도록 함
-                    this.messages.reverse();
                 }).catch(error => {
                     console.error('채팅 메시지 불러오기 에러:', error);
                 });

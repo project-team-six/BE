@@ -6,6 +6,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -16,12 +17,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import team6.sobun.domain.chat.dto.ChatMessage;
+import team6.sobun.domain.chat.entity.ChatMessageEntity;
+import team6.sobun.domain.chat.entity.ChatRoomEntity;
+import team6.sobun.domain.chat.repository.ChatMessageRepository;
+import team6.sobun.domain.chat.repository.ChatRoomRepository;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtProvider;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -95,7 +101,6 @@ public class StompHandler implements ChannelInterceptor {
             redisChatRepository.minusUserCount(roomId);
             if (jwtToken != null) {
                 String name = jwtProvider.getNickNameFromToken(jwtToken);
-
                 // 클라이언트 퇴장 메시지를 채팅방에 발송한다.(redis publish)
                 chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.QUIT).roomId(roomId).sender(name).build());
                 User user = userRepository.findBySessionId(sessionId);

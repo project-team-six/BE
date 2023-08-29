@@ -27,7 +27,6 @@ import java.util.Map;
 public class ChatRoomController {
 
     private final RedisChatRepository redisChatRepository;
-    private final ChatRoomRepository chatRoomRepository;
     private final ChatService chatService;
 
     @Operation(summary = "전체 채팅방 조회 -> 테스트 용도 ")

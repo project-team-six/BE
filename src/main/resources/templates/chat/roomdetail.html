@@ -133,7 +133,7 @@
         </div>
     </div>
     <div class="chat-box">
-        <ul class="list-group" style="max-height: 1000px; overflow-y: auto;">
+        <ul class="list-group" style="max-height: 1000px; overflow-y: auto;" ref="chatList">
             <li class="list-group-item" v-for="(message, index) in messages.slice(0, 100)" :key="index">
                 <!-- 이미지 메시지인 경우 -->
                 <div v-if="message.type === 'IMAGE'" class="d-flex align-items-center">
@@ -225,11 +225,11 @@
         created() {
             this.roomId = localStorage.getItem('wschat.roomId');
             this.roomName = localStorage.getItem('wschat.roomName');
+            this.fetchChatMessages();
             var _this = this;
             wss.connect({'Authorization': accessToken}, function (frame) {
                 wss.subscribe("/sub/chat/room/" + _this.roomId, function (message) {
                     var recv = JSON.parse(message.body);
-                    _this.fetchChatMessages();
                     _this.recvMessage(recv);
                 },{'Authorization': accessToken});
             }, function (error) {
@@ -240,7 +240,7 @@
 
         methods: {
             fetchChatMessages: function () {
-                axios.get(`/chat/${this.roomId}?page=${this.pageNumber}`, {
+                axios.get(`/chat/${this.roomId}`, {
                     headers: {
                         Authorization: accessToken
                     }

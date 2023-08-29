@@ -18,6 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ChatMessageEntity extends Timestamped implements Serializable {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,6 +36,10 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
 
     private Long userCount;
 
+    private String profileImageUrl;
+
+    private long readCount;
+
 
     public ChatMessageEntity(ChatMessage chatMessage) {
         this.type = chatMessage.getType();
@@ -43,6 +48,10 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
         this.message = chatMessage.getMessage();
         this.imageUrl = chatMessage.getImageUrl();
         this.userCount = chatMessage.getUserCount();
+        this.profileImageUrl = chatMessage.getProfileImageUrl();
+        this.createdAt = chatMessage.getCreatedAt();
+        this.modifiedAt = chatMessage.getModifiedAt();
+        this.readCount = chatMessage.getReadCount();
     }
 
     public ChatMessage toDto() {
@@ -53,9 +62,15 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
                 .message(message)
                 .imageUrl(imageUrl)
                 .userCount(userCount)
+                .profileImageUrl(profileImageUrl)
+                .createdAt(createdAt)
+                .modifiedAt(modifiedAt)
+                .readCount(readCount)
                 .build();
     }
     public static ChatMessageEntity fromDto(ChatMessage chatMessage) {
-        return new ChatMessageEntity(chatMessage);
+        ChatMessageEntity entity = new ChatMessageEntity(chatMessage);
+        entity.setReadCount(chatMessage.getReadCount());
+        return entity;
     }
 }

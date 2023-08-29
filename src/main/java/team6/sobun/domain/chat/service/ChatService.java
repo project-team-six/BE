@@ -21,9 +21,12 @@ import team6.sobun.domain.chat.entity.ChatRoomEntity;
 import team6.sobun.domain.chat.repository.ChatMessageRepository;
 import team6.sobun.domain.chat.repository.ChatRoomRepository;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
+import team6.sobun.domain.post.dto.PostRequestDto;
+import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
+import team6.sobun.global.jwt.JwtProvider;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,6 +43,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final RedisTemplate redisTemplate;
     private final ChannelTopic channelTopic;
+    private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     
 
@@ -55,27 +59,19 @@ public class ChatService {
 
     @Transactional
     public void sendChatMessage(ChatMessage chatMessage) {
-        // 채팅방 내 인원 수 갱신
-        chatMessage.setUserCount(redisChatRepository.getUserCount(chatMessage.getRoomId()));
-
-        if (!ChatMessage.MessageType.ENTER.equals(chatMessage.getType()) &&
-                !ChatMessage.MessageType.QUIT.equals(chatMessage.getType())) {
-            // 일반 대화 메시지일 경우만 엔티티에 저장하고 발송
             ChatMessageEntity chatMessageEntity = new ChatMessageEntity(chatMessage);
             ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(chatMessage.getRoomId())
                     .orElseThrow(() -> new NotFoundException("채팅방을 찾을 수 없습니다."));
-            chatRoomEntity.updateLastMessage(chatMessage.getMessage(), chatMessage.getSender(), LocalDateTime.now());
+            long userCount =  redisChatRepository.getUserCount(chatRoomEntity.getRoomId());
+            // 채팅방 내 인원 수 갱신
+            long allUserCount = chatRoomEntity.getNicknames().size();
+            // 읽은 사용자 수 계산 (채팅방 구독자 수 - 채팅방 접속자 수)
+            long readCount = allUserCount - userCount;
+            chatMessage.setReadCount(readCount);
+            chatMessage.setUserCount(userCount);
+            chatRoomEntity.updateLastMessage(chatMessage.getMessage(), chatMessage.getSender(), chatMessage.getProfileImageUrl(),LocalDateTime.now());
             chatMessageRepository.save(chatMessageEntity);
-        }
-        if (ChatMessage.MessageType.ENTER.equals(chatMessage.getType())) {
-            // 입장 메시지 처리
-            chatMessage.setMessage(chatMessage.getSender() + "님이 방에 입장했습니다.");
-            chatMessage.setSender("[알림]");
-        } else if (ChatMessage.MessageType.QUIT.equals(chatMessage.getType())) {
-            chatMessage.setMessage(chatMessage.getSender() + "님이 방에서 나갔습니다.");
-            chatMessage.setSender("[알림]");
-            // 퇴장 메시지 처리 및 마지막 메시지 ID 업데이트
-        }
+
 
         // 메시지를 Redis Pub/Sub 채널로 발송
         redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
@@ -106,7 +102,7 @@ public class ChatService {
         return uploadedImageUrl;
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////// 대화창
 
     public ResponseEntity<List<ChatRoom>> getUserRooms(User user) {
         String nickname = user.getNickname();
@@ -116,24 +112,33 @@ public class ChatService {
         List<ChatRoom> userRooms = chatRoomEntities.stream()
                 .map(chatRoomEntity -> {
                     ChatRoom chatRoom = redisChatRepository.findRoomById(chatRoomEntity.getRoomId());
+                    chatRoom.setName(chatRoomEntity.getTitle());
+                    chatRoom.setTitleImageUrl(chatRoomEntity.getTitleImageUrl());
                     chatRoom.setUserCount(redisChatRepository.getUserCount(chatRoom.getRoomId()));
+                    chatRoom.setParticipants(chatRoomEntity.getNicknames());
+                    chatRoom.setLastMessage(chatRoomEntity.getLastMessage());
+                    chatRoom.setLastMessageSender(chatRoomEntity.getLastMessageSender());
+                    chatRoom.setLastMessageSenderProfileImageUrl(chatRoomEntity.getLastMessageSenderProfileImageUrl());
+                    chatRoom.setLastMessageTime(chatRoomEntity.getLastMessageTime());
                     return chatRoom;
                 })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(userRooms);
     }
-    public ChatRoomEntity createRoomByPost(String postTitle, User user) {
-        ChatRoom chatRoom = redisChatRepository.createChatRoom(postTitle);
+    public ChatRoomEntity createRoomByPost(PostRequestDto postRequestDto, User user) {
+        ChatRoom chatRoom = redisChatRepository.createChatRoom(postRequestDto.getTitle());
 
         ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
         chatRoomEntity.setRoomId(chatRoom.getRoomId());
-        chatRoomEntity.setTitle(postTitle);
+        chatRoomEntity.setTitle(postRequestDto.getTitle());
+        chatRoomEntity.setTitleImageUrl(postRequestDto.getImageUrlList().get(0));
         chatRoomEntity.setNicknames(Collections.singletonList(user.getNickname()));
         Map<String, LocalDateTime> entryTimes = new HashMap<>(chatRoomEntity.getEntryTimes());
         entryTimes.put(user.getNickname(), LocalDateTime.now()); // 최초 입장 시간 기록
         chatRoomEntity.setEntryTimes(entryTimes);
         chatRoomRepository.save(chatRoomEntity);
+        redisChatRepository.addUserToRoom(chatRoomEntity.getRoomId(),user.getNickname());
         return chatRoomEntity;
     }
 
@@ -160,10 +165,17 @@ public class ChatService {
                     entryTimes.put(newUserNickname, LocalDateTime.now()); // 최초 입장 시간 기록
                     chatRoomEntity.setEntryTimes(entryTimes);
                 }
+                    ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.setType(ChatMessage.MessageType.ENTER);
+                    chatMessage.setRoomId(roomId);
+                    chatMessage.setSender("[알림]");
+                    chatMessage.setMessage(newUserNickname + "님이 방에 입장했습니다.");
+                    chatMessage.setProfileImageUrl(""); // 필요에 따라 프로필 이미지 URL 설정
+                    sendChatMessage(chatMessage);
 
                 chatRoomRepository.save(chatRoomEntity);
+                redisChatRepository.addUserToRoom(roomId,newUserNickname);
 
-                redisChatRepository.addUserToRoom(roomId, newUserNickname);
             }
         }
         return chatRoom;
@@ -197,6 +209,13 @@ public class ChatService {
                 chatRoomEntity.setEntryTimes(entryTimes);
 
                 chatRoomRepository.save(chatRoomEntity);
+                ChatMessage chatMessage = new ChatMessage();
+                chatMessage.setType(ChatMessage.MessageType.QUIT);
+                chatMessage.setRoomId(roomId);
+                chatMessage.setSender("[알림]");
+                chatMessage.setMessage(leavingUserNickname + "님이 방을 나갔습니다.");
+                chatMessage.setProfileImageUrl(""); // 필요에 따라 프로필 이미지 URL 설정
+                sendChatMessage(chatMessage);
             } else {
                 // 1명만 있는 채팅방인 경우
                 if (!roomNicknames.get(0).equals(leavingUserNickname)) {
@@ -204,13 +223,14 @@ public class ChatService {
                 }
                 // 채팅방 삭제
                 chatRoomRepository.deleteById(roomId);
+                redisChatRepository.deleteChatRoom(roomId);
             }
         }
         return ResponseEntity.ok("채팅방에서 나갔습니다.");
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////// 채팅 목록
 
     public ChatRoom createRoom(String nickname) {
         ChatRoom chatRoom = redisChatRepository.createChatRoom(nickname);

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.Hibernate;
 import team6.sobun.global.utils.Timestamped;
 
 import java.io.Serializable;
@@ -30,7 +29,9 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
 
     private String title;
 
-    @ElementCollection
+    private String titleImageUrl;
+
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> nicknames = new ArrayList<>(); // 채팅방 참여한 사용자의 닉네임 목록
 
 
@@ -45,6 +46,9 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
     @Column(name = "last_message_sender")
     private String lastMessageSender; // 가장 최근 메시지 보낸 사람
 
+    @Column(name = "last_message_sender_profile_image_url")
+    private String lastMessageSenderProfileImageUrl; // 가장 최근 메시지 보낸 사람
+
     @Column(name = "last_message_time")
     private LocalDateTime lastMessageTime; // 가장 최근 메시지 시간
 
@@ -55,9 +59,10 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
         }
     }
 
-    public void updateLastMessage(String message, String sender, LocalDateTime time) {
+    public void updateLastMessage(String message, String sender, String profileimage, LocalDateTime time) {
         this.lastMessage = message;
         this.lastMessageSender = sender;
+        this.lastMessageSenderProfileImageUrl = profileimage;
         this.lastMessageTime = time;
     }
 }

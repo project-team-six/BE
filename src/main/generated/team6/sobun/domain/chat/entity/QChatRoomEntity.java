@@ -31,6 +31,8 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public final StringPath lastMessageSender = createString("lastMessageSender");
 
+    public final StringPath lastMessageSenderProfileImageUrl = createString("lastMessageSenderProfileImageUrl");
+
     public final DateTimePath<java.time.LocalDateTime> lastMessageTime = createDateTime("lastMessageTime", java.time.LocalDateTime.class);
 
     //inherited
@@ -41,6 +43,8 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
     public final StringPath roomId = createString("roomId");
 
     public final StringPath title = createString("title");
+
+    public final StringPath titleImageUrl = createString("titleImageUrl");
 
     public QChatRoomEntity(String variable) {
         super(ChatRoomEntity.class, forVariable(variable));

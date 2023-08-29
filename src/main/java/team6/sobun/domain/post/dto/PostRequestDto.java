@@ -6,6 +6,8 @@ import lombok.Setter;
 import team6.sobun.domain.post.entity.Category;
 
 import java.util.Date;
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 public class PostRequestDto {
@@ -18,4 +20,9 @@ public class PostRequestDto {
     private String purchaseDate;
     private String price;
     private String originPrice;
+    private List<String> imageUrlList;
+
+    public void setImageUrlList(List<String> imageUrlList) {
+        this.imageUrlList = imageUrlList;
+    }
 }

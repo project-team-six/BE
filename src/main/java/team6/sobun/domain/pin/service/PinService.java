@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import team6.sobun.domain.notification.service.NotificationService;
+import team6.sobun.domain.notification.util.AlarmType;
 import team6.sobun.domain.pin.entity.Pin;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.entity.Post;
@@ -23,6 +25,7 @@ public class PinService {
 
     private final PinRepository pinRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
     public ApiResponse<?> updatePin(Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(() ->
@@ -35,10 +38,14 @@ public class PinService {
             createPin(post, user);
             post.increasePin();
             log.info("'{}'님이 '{}'에 관심을 추가했습니다.", nickname, postTitle);
+            notificationService.send(post.getUser(), AlarmType.eventSystem, user.getNickname() + "님이 당신의 게시글에 관심을 보였습니다.",
+                    user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "post/"+postId);
         } else {
             removePin(post, user);
             post.decreasePin();
             log.info("'{}'님이 '{}'의 관심을 취소했습니다.", nickname, postTitle);
+            notificationService.send(post.getUser(), AlarmType.eventSystem, user.getNickname() + "님이 당신의 게시글에 관심을 접었습니다.",
+                    user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "post/"+postId);
         }
         String statusMessage = isPinedPost(post,user) ? "관심을 추가했습니다." : "관심을 취소했습니다.";
         return ApiResponse.success(statusMessage);

@@ -164,9 +164,12 @@ public class PostService {
 
 
     @Transactional
-    public ApiResponse<?> reportPost(Long postId, PostReportRequestDto postReportRequestDto, User user) {
-        Post post = findPost(postId);
-        PostReport postReport = new PostReport(user, post, postReportRequestDto.getReport());
+    public ApiResponse<?> reportPost(Long postId, PostReportRequestDto postReportRequestDto,List<MultipartFile> images, User user) {
+        List<String> imageUrlList = s3Service.uploads(images);
+        Post post = postRepository.findById(postId).orElseThrow(()
+                -> new IllegalArgumentException("존재하지 않는 게시물 입니다."));
+        PostReport postReport = new PostReport(user,post.getUser().getId(), post, imageUrlList, postReportRequestDto.getReport());
+        post.increaseReportCount();
         postReportRepository.save(postReport);
         return ApiResponse.okWithMessage(POST_REPORT_SUCCESS);
     }

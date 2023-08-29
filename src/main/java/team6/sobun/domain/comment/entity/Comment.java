@@ -37,6 +37,8 @@ public class Comment extends Timestamped {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
+    private long reportCount;
+
 
     public Comment(CommentRequestDto commentRequestDto, User user) {
         this.content = commentRequestDto.getContent();
@@ -50,5 +52,9 @@ public class Comment extends Timestamped {
 
     public void initPost(Post post) {
         this.post = post;
+    }
+
+    public void increaseReportCount(){
+        this.reportCount ++;
     }
 }

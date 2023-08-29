@@ -26,9 +26,15 @@ public class QCommentReport extends EntityPathBase<CommentReport> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final ListPath<String, StringPath> imageUrlList = this.<String, StringPath>createList("imageUrlList", String.class, StringPath.class, PathInits.DIRECT2);
+
     public final EnumPath<CommentReportEnum> report = createEnum("report", CommentReportEnum.class);
 
+    public final NumberPath<Long> reportedUserId = createNumber("reportedUserId", Long.class);
+
     public final team6.sobun.domain.user.entity.QUser reporter;
+
+    public final StringPath type = createString("type");
 
     public QCommentReport(String variable) {
         this(CommentReport.class, forVariable(variable), INITS);

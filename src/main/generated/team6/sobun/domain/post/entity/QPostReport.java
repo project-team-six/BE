@@ -29,6 +29,8 @@ public class QPostReport extends EntityPathBase<PostReport> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final ListPath<String, StringPath> imageUrlList = this.<String, StringPath>createList("imageUrlList", String.class, StringPath.class, PathInits.DIRECT2);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
@@ -36,7 +38,11 @@ public class QPostReport extends EntityPathBase<PostReport> {
 
     public final EnumPath<PostReportEnum> report = createEnum("report", PostReportEnum.class);
 
+    public final NumberPath<Long> reportedUserId = createNumber("reportedUserId", Long.class);
+
     public final team6.sobun.domain.user.entity.QUser reporter;
+
+    public final StringPath type = createString("type");
 
     public QPostReport(String variable) {
         this(PostReport.class, forVariable(variable), INITS);

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.comment.dto.CommentReportRequestDto;
 import team6.sobun.domain.comment.dto.CommentRequestDto;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
@@ -15,6 +16,7 @@ import team6.sobun.domain.notification.service.NotificationService;
 import team6.sobun.domain.notification.util.AlarmType;
 import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.repository.PostRepository;
+import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.service.UserService;
@@ -40,6 +42,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final NotificationService notificationService;
     private final CommentReportRepository commentReportRepository;
+    private final S3Service s3Service;
 
 
     public Post findPostWithComments(Long postId) {
@@ -105,11 +108,13 @@ public class CommentService {
         Post post = findPost(postId);
         return post.getUser();
     }
-
-    public ApiResponse<?> reportComment(Long commentId, CommentReportRequestDto commentReportRequestDto, User user) {
+    @Transactional
+    public ApiResponse<?> reportComment(Long commentId, List<MultipartFile> images, CommentReportRequestDto commentReportRequestDto, User user) {
+        List<String> imageUrlList = s3Service.uploads(images);
         Comment comment = commentRepository.findById(commentId).orElseThrow(()
                 -> new IllegalArgumentException("존재하지 않는 댓글 입니다."));
-        CommentReport commentReport = new CommentReport(comment, commentReportRequestDto.getCommentReport(), user);
+        CommentReport commentReport = new CommentReport(comment, imageUrlList,commentReportRequestDto.getReport(),comment.getPost().getUser().getId(), user);
+        comment.increaseReportCount();
         commentReportRepository.save(commentReport);
         return ApiResponse.okWithMessage(SuccessCodeEnum.COMMENT_REPORT_SUCCESS);
     }

@@ -4,8 +4,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.comment.entity.CommentReportEnum;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 public class CommentReportRequestDto {
-    private CommentReportEnum commentReport;
+    private CommentReportEnum report;
+    private List<String> imageUrlList;
 }

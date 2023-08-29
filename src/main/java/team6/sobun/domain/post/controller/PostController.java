@@ -67,8 +67,9 @@ public class PostController {
     @Operation(summary = "게시글 신고")
     @PostMapping("/report/{postId}")
     public ApiResponse<?> reportPost(@PathVariable Long postId,
-                                     @RequestBody PostReportRequestDto postReportRequestDto,
+                                     @RequestPart(value = "data") PostReportRequestDto postReportRequestDto,
+                                     @RequestPart(value = "file") List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.reportPost(postId, postReportRequestDto, userDetailsImpl.getUser());
+        return postService.reportPost(postId, postReportRequestDto, images, userDetailsImpl.getUser());
     }
 }

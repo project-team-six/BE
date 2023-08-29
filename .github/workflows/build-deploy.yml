@@ -1,124 +1,124 @@
-#name: Deploy to Amazon EC2
-#on:
-#  push:
-#    branches:
-#      - dev
-## 본인이 설정한 값을 여기서 채워넣습니다.
-## 리전, 버킷 이름, CodeDeploy 앱 이름, CodeDeploy 배포 그룹 이름
-#env:
-#  AWS_REGION: ap-northeast-2
-#  S3_BUCKET_NAME: cicdcicd-bucket
-#  CODE_DEPLOY_APPLICATION_NAME: cicdcicd
-#  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: cicdcicd
-#permissions:
-#  contents: read
-#jobs:
-#  deploy:
-#    name: Deploy
-#    runs-on: ubuntu-latest
-#    environment: production
-#    steps:
-#      # (1) 기본 체크아웃
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      # (2) JDK 17 세팅
-#      - name: Set up JDK 17
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '17'
-#      # (3) Gradle build (Test 제외)
-#      - name: Build with Gradle
-#        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
-#        with:
-#          arguments: clean build -x test
-#      # (4) AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
-#      - name: Configure AWS credentials
-#        uses: aws-actions/configure-aws-credentials@v1
-#        with:
-#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-#          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-#          aws-region: ${{ env.AWS_REGION }}
-#      # (5) 빌드 결과물을 S3 버킷에 업로드
-#      - name: Upload to AWS S3
-#        run: |
-#          aws deploy push \
-#            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-#            --ignore-hidden-files \
-#            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-#            --source .
-#      # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
-#      - name: Deploy to AWS EC2 from S3
-#        run: |
-#          aws deploy create-deployment \
-#            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-#            --deployment-config-name CodeDeployDefault.AllAtOnce \
-#            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-#            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
-
-name: CD
-
+name: Deploy to Amazon EC2
 on:
-  push: #해당 브랜치에 push(merge) 했을 때
+  push:
     branches:
       - dev
-
-permissions: write-all #테스트 결과 작성을 위해 쓰기권한 추가
-
+# 본인이 설정한 값을 여기서 채워넣습니다.
+# 리전, 버킷 이름, CodeDeploy 앱 이름, CodeDeploy 배포 그룹 이름
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET_NAME: cicdcicd-bucket
+  CODE_DEPLOY_APPLICATION_NAME: cicdcicd
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: cicdcicd
+permissions:
+  contents: read
 jobs:
-  build:
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
-
+    environment: production
     steps:
-      #jdk 세팅
-      - uses: actions/checkout@v3
+      # (1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v3
+      # (2) JDK 17 세팅
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
           distribution: 'temurin'
-
-      #gradle 캐싱
-      - name: Gradle Caching
-        uses: actions/cache@v3
+          java-version: '17'
+      # (3) Gradle build (Test 제외)
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      ### CD
-      #배포를 위한 prod properties 설정
-      - name: Make application-prod.properties
-        run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.PROPERTIES_PROD }}" > ./src/main/resources/application-prod.properties
-        shell: bash
-
-
-      #test를 제외한 프로젝트 빌드
-      - name: Build With Gradle
-        run: ./gradlew build -x test
-
-      #도커 빌드 & 이미지 push
-      - name: Docker build & Push
-        run: |
-          docker login -u ${{ secrets.DOCKER_ID }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/goorm .
-          docker push ${{ secrets.DOCKER_REPO }}/goorm
-      #docker-compose 파일을 ec2 서버에 배포
-      - name: Deploy to Prod
-        uses: appleboy/ssh-action@master
-        id: deploy-prod
+          arguments: clean build -x test
+      # (4) AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: GITHUB_SHA
-          script: |
-            docker stop goorm
-            docker rm goorm
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/goorm
-            docker run -d --name goorm -p 8080:8080 ${{ secrets.DOCKER_REPO }}/goorm
-            docker rmi -f $(docker images -f "dangling=true" -q)
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      # (5) 빌드 결과물을 S3 버킷에 업로드
+      - name: Upload to AWS S3
+        run: |
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source .
+      # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
+      - name: Deploy to AWS EC2 from S3
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
+
+#name: CD
+#
+#on:
+#  push: #해당 브랜치에 push(merge) 했을 때
+#    branches:
+#      - dev
+#
+#permissions: write-all #테스트 결과 작성을 위해 쓰기권한 추가
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      #jdk 세팅
+#      - uses: actions/checkout@v3
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#
+#      #gradle 캐싱
+#      - name: Gradle Caching
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            ~/.gradle/caches
+#            ~/.gradle/wrapper
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#          restore-keys: |
+#            ${{ runner.os }}-gradle-
+#      ### CD
+#      #배포를 위한 prod properties 설정
+#      - name: Make application-prod.properties
+#        run: |
+#          mkdir -p ./src/main/resources
+#          echo "${{ secrets.PROPERTIES_PROD }}" > ./src/main/resources/application-prod.properties
+#        shell: bash
+#
+#
+#      #test를 제외한 프로젝트 빌드
+#      - name: Build With Gradle
+#        run: ./gradlew build -x test
+#
+#      #도커 빌드 & 이미지 push
+#      - name: Docker build & Push
+#        run: |
+#          docker login -u ${{ secrets.DOCKER_ID }} -p ${{ secrets.DOCKER_PASSWORD }}
+#          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/goorm .
+#          docker push ${{ secrets.DOCKER_REPO }}/goorm
+#      #docker-compose 파일을 ec2 서버에 배포
+#      - name: Deploy to Prod
+#        uses: appleboy/ssh-action@master
+#        id: deploy-prod
+#        with:
+#          host: ${{ secrets.EC2_HOST }}
+#          username: ${{ secrets.EC2_USERNAME }}
+#          key: ${{ secrets.EC2_PRIVATE_KEY }}
+#          envs: GITHUB_SHA
+#          script: |
+#            docker stop goorm
+#            docker rm goorm
+#            sudo docker pull ${{ secrets.DOCKER_REPO }}/goorm
+#            docker run -d --name goorm -p 8080:8080 ${{ secrets.DOCKER_REPO }}/goorm
+#            docker rmi -f $(docker images -f "dangling=true" -q)

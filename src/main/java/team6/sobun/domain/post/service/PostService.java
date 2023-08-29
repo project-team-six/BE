@@ -63,7 +63,8 @@ public class PostService {
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3Service.uploads(images);
-        ChatRoomEntity chatRoom = chatService.createRoomByPost(postRequestDto.getTitle(),user);
+        postRequestDto.setImageUrlList(imageUrlList);
+        ChatRoomEntity chatRoom = chatService.createRoomByPost(postRequestDto,user);
         String roomId = chatRoom.getRoomId();
         postRepository.save(new Post(postRequestDto, imageUrlList, user, roomId));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());

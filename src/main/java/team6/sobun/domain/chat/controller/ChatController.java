@@ -36,10 +36,10 @@ public class ChatController {
     @MessageMapping("/chat/message")
     public void message(ChatMessage message, @Header("Authorization") String token) {
         String nickname = jwtProvider.getNickNameFromToken(token.substring(9));
+        String profileImageUrl = jwtProvider.getProfileImageUrlFromToken(token.substring(9));
         message.setSender(nickname);
-        message.setUserCount(redisChatRepository.getUserCount(message.getRoomId()));
+        message.setProfileImageUrl(profileImageUrl);
         chatService.sendChatMessage(message);
-        log.info("메시지 전송: sender={}, roomId={}, message={}", nickname, message.getRoomId(), message.getMessage());
     }
 
     @Operation(summary = "이전 메세지 목록 가져오기")

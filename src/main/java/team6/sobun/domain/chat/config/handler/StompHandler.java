@@ -6,6 +6,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -16,12 +17,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import team6.sobun.domain.chat.dto.ChatMessage;
+import team6.sobun.domain.chat.entity.ChatMessageEntity;
+import team6.sobun.domain.chat.entity.ChatRoomEntity;
+import team6.sobun.domain.chat.repository.ChatMessageRepository;
+import team6.sobun.domain.chat.repository.ChatRoomRepository;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtProvider;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -75,17 +81,13 @@ public class StompHandler implements ChannelInterceptor {
             redisChatRepository.setUserEnterInfo(sessionId, roomId);
             // 채팅방의 인원수를 +1한다.
             redisChatRepository.plusUserCount(roomId);
-            // 인증된 사용자의 이름 가져오기
             String email = jwtProvider.getEmailFromToken(jwtToken); // jwtProvider를 이용해 토큰에서 사용자 이름 추출
-            String name = jwtProvider.getNickNameFromToken(jwtToken);
-            log.info("SUBSCRIBED 메소드 :인증된 사용자입니다: {}", name);
             User user = userRepository.findByEmail(email).orElseThrow(
                     () -> new NullPointerException("왜 안돼"));
             user.setSessionId(sessionId);
             user.setRoomId(roomId);
             userRepository.save(user);
-            chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.ENTER).roomId(roomId).sender(name).build());
-            log.info("SUBSCRIBED 메소드 :SUBSCRIBED {}, {}", name, roomId);
+            log.info("SUBSCRIBED 메소드 :SUBSCRIBED {}, {}", sessionId, roomId);
 
         } else if (StompCommand.DISCONNECT == accessor.getCommand()) {
             // 연결이 종료된 클라이언트 sesssionId로 채팅방 id를 얻는다.
@@ -93,20 +95,15 @@ public class StompHandler implements ChannelInterceptor {
             String roomId = redisChatRepository.getUserEnterRoomId(sessionId);
             // 채팅방의 인원수를 -1한다.
             redisChatRepository.minusUserCount(roomId);
-            if (jwtToken != null) {
-                String name = jwtProvider.getNickNameFromToken(jwtToken);
-
-                // 클라이언트 퇴장 메시지를 채팅방에 발송한다.(redis publish)
-                chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.QUIT).roomId(roomId).sender(name).build());
                 User user = userRepository.findBySessionId(sessionId);
                 user.setSessionId(null);
                 user.setRoomId(null);
+
                 userRepository.save(user);
                 redisChatRepository.removeUserEnterInfo(sessionId);
-                log.info("DISCONNECT 메소드 : DISCONNECTED {}, {}, {}", name, sessionId, roomId);
+                log.info("DISCONNECT 메소드 : DISCONNECTED  {}, {}", sessionId, roomId);
 
             }
-        }
 
         return message;
     }

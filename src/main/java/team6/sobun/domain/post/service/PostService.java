@@ -29,7 +29,6 @@ import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
-import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.util.ArrayList;
@@ -64,8 +63,10 @@ public class PostService {
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3Service.uploads(images);
-        String roomId = chatService.createRoomByPost(postRequestDto.getTitle(),user).getRoomId();
-        postRepository.save(new Post(postRequestDto, imageUrlList, user,roomId));
+        postRequestDto.setImageUrlList(imageUrlList);
+        ChatRoomEntity chatRoom = chatService.createRoomByPost(postRequestDto,user);
+        String roomId = chatRoom.getRoomId();
+        postRepository.save(new Post(postRequestDto, imageUrlList, user, roomId));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
         return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }

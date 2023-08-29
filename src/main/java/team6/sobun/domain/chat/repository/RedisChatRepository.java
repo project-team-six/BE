@@ -70,21 +70,6 @@ public class RedisChatRepository {
         return chatRoom;
     }
 
-    public ChatRoom createChatRoom(String postTitle, String name) {
-        ChatRoom chatRoom = ChatRoom.create(name);
-        hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
-        return chatRoom;
-    }
-
-    public void changeChatRoomName(String roomId, String newRoomName) {
-        ChatRoom chatRoom = findRoomById(roomId);
-        if (chatRoom != null) {
-            chatRoom.setName(newRoomName);
-            hashOpsChatRoom.put(CHAT_ROOMS, roomId, chatRoom);
-        } else {
-            log.warn("채팅방이 존재하지 않습니다. roomId={}", roomId);
-        }
-    }
 
     public void deleteChatRoom(String roomId) {
         // 해당 채팅방의 메시지를 해시에서 삭제
@@ -101,22 +86,6 @@ public class RedisChatRepository {
         valueOps.getOperations().delete(USER_COUNT + "_" + roomId);
     }
 
-    public void saveMessage(String roomId, ChatMessage chatMessage) {
-        String key = "CHAT_MESSAGES:" + roomId;
-        long messageId = hashOpsChatMessage.size(key) + 1; // 이전 메시지 개수 + 1
-        chatMessage.setMessageId(messageId); // 메시지에 고유한 messageId 추가
-        hashOpsChatMessage.put(key, String.valueOf(messageId), chatMessage);
-    }
-
-    public List<ChatMessage> findMessagesByRoom(String roomId) {
-        String key = "CHAT_MESSAGES:" + roomId;
-        Map<String, ChatMessage> messages = hashOpsChatMessage.entries(key);
-        List<ChatMessage> sortedMessages = new ArrayList<>(messages.values());
-
-        sortedMessages.sort(Comparator.comparingLong(ChatMessage::getMessageId));
-
-        return sortedMessages;
-    }
 
 
     // 유저가 입장한 채팅방ID와 유저 세션ID 맵핑 정보 저장

@@ -60,6 +60,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final StringPath purchaseDate = createString("purchaseDate");
 
+    public final NumberPath<Long> reportCount = createNumber("reportCount", Long.class);
+
     public final EnumPath<PostStatus> status = createEnum("status", PostStatus.class);
 
     public final StringPath title = createString("title");

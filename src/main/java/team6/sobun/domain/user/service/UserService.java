@@ -17,8 +17,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
+import team6.sobun.domain.comment.entity.Comment;
+import team6.sobun.domain.comment.entity.CommentReport;
+import team6.sobun.domain.comment.repository.CommentReportRepository;
+import team6.sobun.domain.post.entity.Post;
+import team6.sobun.domain.post.entity.PostReport;
+import team6.sobun.domain.post.repository.PostReportRepository;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.SignupRequestDto;
+import team6.sobun.domain.user.dto.UserReportResponseDto;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
@@ -33,6 +40,8 @@ import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -53,9 +62,90 @@ public class UserService {
     private final RedisTemplate redisTemplate;
     private final RedisChatRepository redisChatRepository;
     private final IdenticonService identiconService;
+    private final PostReportRepository postReportRepository;
+    private final CommentReportRepository commentReportRepository;
 
     @Value("${spring.mail.username}")
     private String from;
+    @Transactional
+    public List<UserReportResponseDto> searchAllUserReports(User user) {
+        if (user.getRole() != UserRoleEnum.ADMIN) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
+        List<UserReportResponseDto> userReports = new ArrayList<>();
+
+        List<CommentReport> commentReportEntities = commentReportRepository.findAll();
+        for (CommentReport commentReport : commentReportEntities) {
+            userReports.add(new UserReportResponseDto(
+                    commentReport.getReportedUserId(),
+                    commentReport.getComment().getReportCount(),
+                    commentReport.getComment().getPost().getReportCount(),
+                    commentReport.getComment().getUser().getEmail(),
+                    commentReport.getComment().getUser().getProfileImageUrl(),
+                    commentReport.getComment().getUser().getNickname()
+            ));
+        }
+
+        List<PostReport> postReportEntities = postReportRepository.findAll();
+        for (PostReport postReport : postReportEntities) {
+            userReports.add(new UserReportResponseDto(
+                    postReport.getReportedUserId(),
+                    postReport.getPost().getReportCount(),
+                    null,
+                    postReport.getPost().getUser().getEmail(),
+                    postReport.getPost().getUser().getProfileImageUrl(),
+                    postReport.getPost().getUser().getNickname()
+            ));
+        }
+
+        return UserReportResponseDto.removeDuplicateByPostId(userReports);
+    }
+
+    @Transactional
+    public List<UserReportResponseDto> searchUserReportDetail(User user, Long reportedUserId) {
+        if (user.getRole() != UserRoleEnum.ADMIN) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
+        List<UserReportResponseDto> userReports = new ArrayList<>();
+
+        List<CommentReport> commentReports = commentReportRepository.findByComment_User_Id(reportedUserId);
+        for (CommentReport commentReport : commentReports) {
+            Comment comment = commentReport.getComment();
+            UserReportResponseDto userReport = new UserReportResponseDto(
+                    comment.getUser().getId(),
+                    comment.getPost().getId(),
+                    comment.getId(),
+                    commentReport.getType(),
+                    comment.getContent(),
+                    commentReport.getReport(),
+                    commentReport.getImageUrlList()
+            );
+            userReports.add(userReport);
+        }
+
+        List<PostReport> postReports = postReportRepository.findByPost_User_Id(reportedUserId);
+        for (PostReport postReport : postReports) {
+            Post post = postReport.getPost();
+            UserReportResponseDto userReport = new UserReportResponseDto(
+                    post.getUser().getId(),
+                    post.getId(),
+                    postReport.getType(),
+                    post.getTitle(),
+                    postReport.getReport(),
+                    postReport.getImageUrlList()
+            );
+            userReports.add(userReport);
+        }
+
+        if (userReports.isEmpty()) {
+            throw new IllegalArgumentException("신고내역을 조회할 수 없습니다.");
+        }
+
+        return userReports;
+    }
+
 
 
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) throws MessagingException {

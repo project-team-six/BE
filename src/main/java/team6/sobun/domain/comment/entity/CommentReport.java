@@ -3,7 +3,11 @@ package team6.sobun.domain.comment.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import team6.sobun.domain.user.entity.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -18,6 +22,9 @@ public class CommentReport {
     @JoinColumn(name = "reporter_id")
     private User reporter;
 
+    @Column
+    private Long reportedUserId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")
     private Comment comment;
@@ -25,9 +32,19 @@ public class CommentReport {
     @Enumerated(EnumType.STRING)
     private CommentReportEnum report;
 
-    public CommentReport(Comment comment, CommentReportEnum commentReport, User user) {
+    @Column
+    private String type = "COMMENT";
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 5)
+    @Column
+    private List<String> imageUrlList = new ArrayList<>();
+
+    public CommentReport(Comment comment, List<String> imageUrlList,CommentReportEnum report,Long reportedUserId, User user) {
         this.comment = comment;
-        this.report = commentReport;
+        this.report =  report;
         this.reporter = user;
+        this.reportedUserId = reportedUserId;
+        this.imageUrlList = imageUrlList;
     }
 }

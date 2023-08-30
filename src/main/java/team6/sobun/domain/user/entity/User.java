@@ -45,7 +45,7 @@ public class User extends Timestamped {
     private String password;
 
     @Column
-    private String profileImageUrl;
+    private String profileImageUrl = " ";
 
     private Long popularity = 0L;
 

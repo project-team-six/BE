@@ -120,7 +120,8 @@ public class UserService {
                     commentReport.getType(),
                     comment.getContent(),
                     commentReport.getReport(),
-                    commentReport.getImageUrlList()
+                    commentReport.getImageUrlList(),
+                    commentReport.getCreatedAt()
             );
             userReports.add(userReport);
         }
@@ -134,7 +135,8 @@ public class UserService {
                     postReport.getType(),
                     post.getTitle(),
                     postReport.getReport(),
-                    postReport.getImageUrlList()
+                    postReport.getImageUrlList(),
+                    postReport.getCreatedAt()
             );
             userReports.add(userReport);
         }
@@ -162,7 +164,7 @@ public class UserService {
             // 이미지가 있을 경우에만 S3에 업로드하고 URL을 가져옴
             profileImageUrl = s3Service.upload(image);
         } else {
-            profileImageUrl = identiconService.makeIdenticonUrl(signupRequestDto.getNickname());
+            profileImageUrl = "nonImage";
         }
 
         // 프로필 이미지 URL을 사용하여 User 객체 생성

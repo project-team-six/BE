@@ -23,6 +23,7 @@ import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
 import team6.sobun.domain.user.dto.password.PasswordRequestDto;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.domain.user.repository.UserPopularityRepository;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.domain.user.service.UserService;
 import team6.sobun.global.responseDto.ApiResponse;
@@ -49,6 +50,7 @@ public class MyPageService {
     private final SpringTemplateEngine templateEngine;
     private final JavaMailSender mailSender;
     private final S3Service s3Service;
+    private final UserPopularityRepository userPopularityRepository;
 
     @Transactional
     public MypageResponseDto getCurrentUserDetails(Long requestingUserId) {
@@ -57,7 +59,7 @@ public class MyPageService {
             User user = optionalUser.get();
             List<Post> userPosts = userRepository.findPostsByUserId(requestingUserId);
             List<Post> pinedPost = userRepository.findPinnedPostsByUserId(requestingUserId);
-
+            boolean isPopularity = false;
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
             MypageResponseDto responseDto = new MypageResponseDto(
                     user.getId(),
@@ -67,7 +69,10 @@ public class MyPageService {
                     user.isVerified(),
                     user.getPopularity(),
                     userPosts,
-                    pinedPost
+                    pinedPost,
+                    user.getEmail(),
+                    user.getLocation(),
+                    isPopularity
             );
             return responseDto;
         } else {
@@ -77,22 +82,29 @@ public class MyPageService {
     }
 
     @Transactional
-    public MypageResponseDto getUserDetails(Long userId) {
+    public MypageResponseDto getUserDetails(Long userId, User user) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
+            User findUser = optionalUser.get();
             List<Post> userPosts = userRepository.findPostsByUserId(userId);
+            boolean isPopularity = false;
+            if (userPopularityRepository.findByReceiverAndGiver(findUser, user) != null) {
+                isPopularity = true;
+            }
 
             // 조회한 정보를 DTO로 변환하여 리턴합니다.
             MypageResponseDto responseDto = new MypageResponseDto(
-                    user.getId(),
-                    user.getNickname(),
-                    user.getProfileImageUrl(),
-                    user.getPhoneNumber(),
-                    user.isVerified(),
-                    user.getPopularity(),
+                    findUser.getId(),
+                    findUser.getNickname(),
+                    findUser.getProfileImageUrl(),
+                    findUser.getPhoneNumber(),
+                    findUser.isVerified(),
+                    findUser.getPopularity(),
                     userPosts,
-                    null
+                    null,
+                    findUser.getEmail(),
+                    findUser.getLocation(),
+                    isPopularity
             );
             return responseDto;
         } else {

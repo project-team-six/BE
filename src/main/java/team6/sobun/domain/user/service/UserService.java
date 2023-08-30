@@ -26,6 +26,7 @@ import team6.sobun.domain.post.repository.PostReportRepository;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.dto.UserReportResponseDto;
+import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
@@ -148,8 +149,6 @@ public class UserService {
         return userReports;
     }
 
-
-
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) throws MessagingException {
         String email = signupRequestDto.getEmail();
         String phoneNumber = signupRequestDto.getPhoneNumber();
@@ -177,7 +176,6 @@ public class UserService {
         userRepository.save(user);
         sendVerificationEmail(user.getEmail(), verificationToken);
         log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
-
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_SIGNUP_SUCCESS);
     }
 
@@ -213,9 +211,9 @@ public class UserService {
     // 소셜 로그인시 토큰생성 로직
     public ApiResponse<?> addToken(User user, HttpServletResponse response) {
         String token = jwtProvider.createToken(String.valueOf(user.getId()), user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation() == null ? "서울시 구로구 가산동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+                user.getProfileImageUrl(), user.getLocation() == null ? "서울특별시 강남구 역삼동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()), user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation() == null ? "서울시 구로구 가산동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+                user.getProfileImageUrl(), user.getLocation() == null ? "서울특별시 감남구 역삼동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
 
         jwtProvider.addJwtHeaders(token, refreshToken, response);
 

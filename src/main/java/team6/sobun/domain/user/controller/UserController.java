@@ -95,7 +95,7 @@ public class UserController {
         } else {
             // 로그인한 사용자와 조회 대상 사용자가 다른 경우 (일반 사용자 페이지 조회)
             log.info("사용자 ID '{}'가 다른 사용자 페이지를 조회합니다.", userid);
-            MypageResponseDto responseDto = myPageService.getUserDetails(userid);
+            MypageResponseDto responseDto = myPageService.getUserDetails(userid, userDetails.getUser());
             return success(responseDto);
         }
     }

@@ -261,6 +261,8 @@
                         }
                     });
                 }).catch(error => {
+                    alert("권한이 없습니다.");
+                    location.href = "/chat/room";
                     console.error('채팅 메시지 불러오기 에러:', error);
                 });
             },
@@ -270,12 +272,19 @@
                 return formattedTime;
             },
 
+
             sendMessage: function (type, imageUrl) {
-                if (type === 'TALK' || (type === 'IMAGE' && imageUrl)) {
-                    wss.send("/pub/chat/message", {"Authorization": accessToken},
-                        JSON.stringify({type: type, roomId: this.roomId, message: this.message, imageUrl: imageUrl}));
-                    this.message = '';
-                    this.selectedImagePreview = ''; // 이미지 전송 후 미리보기 초기화
+                try {
+                    if (type === 'TALK' || (type === 'IMAGE' && imageUrl)) {
+                        wss.send("/pub/chat/message", {"Authorization": accessToken},
+                            JSON.stringify({type: type, roomId: this.roomId, message: this.message, imageUrl: imageUrl}));
+                        this.message = '';
+                        this.selectedImagePreview = '';
+                    }
+                } catch (error) {
+                    console.error("메시지 전송 중에 오류가 발생하였습니다.", error);
+                    alert("메시지 전송 중에 오류가 발생하였습니다. 다시 시도해주세요.");
+                    // 에러 발생 시 사용자에게 알림을 표시하거나 다른 조치를 취할 수 있습니다.
                 }
             },
             recvMessage: function (recv) {

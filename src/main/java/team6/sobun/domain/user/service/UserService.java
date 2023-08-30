@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import team6.sobun.domain.chat.entity.ChatMessageEntity;
+import team6.sobun.domain.chat.entity.ChatReportEntity;
+import team6.sobun.domain.chat.repository.ChatReportRepository;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.comment.entity.Comment;
 import team6.sobun.domain.comment.entity.CommentReport;
@@ -40,10 +43,7 @@ import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -61,7 +61,7 @@ public class UserService {
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
     private final RedisChatRepository redisChatRepository;
-    private final IdenticonService identiconService;
+    private final ChatReportRepository chatReportRepository;
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
 
@@ -73,34 +73,58 @@ public class UserService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        List<UserReportResponseDto> userReports = new ArrayList<>();
+        Map<Long, UserReportResponseDto> userReportMap = new HashMap<>();
 
         List<CommentReport> commentReportEntities = commentReportRepository.findAll();
         for (CommentReport commentReport : commentReportEntities) {
-            userReports.add(new UserReportResponseDto(
-                    commentReport.getReportedUserId(),
-                    commentReport.getComment().getReportCount(),
-                    commentReport.getComment().getPost().getReportCount(),
-                    commentReport.getComment().getUser().getEmail(),
-                    commentReport.getComment().getUser().getProfileImageUrl(),
-                    commentReport.getComment().getUser().getNickname()
-            ));
+            Long userId = commentReport.getReportedUserId();
+            UserReportResponseDto reportDto = userReportMap.getOrDefault(userId, new UserReportResponseDto());
+            reportDto.setCommentReportCount(
+                    Math.max(reportDto.getCommentReportCount() != null ? reportDto.getCommentReportCount() : 0L,
+                            commentReport.getComment().getReportCount())
+            );
+            reportDto.setReportedUserId(commentReport.getReportedUserId());
+            reportDto.setEmail(commentReport.getComment().getUser().getEmail());
+            reportDto.setProfileImageUrl(commentReport.getComment().getUser().getProfileImageUrl());
+            reportDto.setNickname(commentReport.getComment().getUser().getNickname());
+            userReportMap.put(userId, reportDto);
         }
 
         List<PostReport> postReportEntities = postReportRepository.findAll();
         for (PostReport postReport : postReportEntities) {
-            userReports.add(new UserReportResponseDto(
-                    postReport.getReportedUserId(),
-                    postReport.getPost().getReportCount(),
-                    null,
-                    postReport.getPost().getUser().getEmail(),
-                    postReport.getPost().getUser().getProfileImageUrl(),
-                    postReport.getPost().getUser().getNickname()
-            ));
+            Long userId = postReport.getReportedUserId();
+            UserReportResponseDto reportDto = userReportMap.getOrDefault(userId, new UserReportResponseDto());
+            reportDto.setPostReportCount(
+                    Math.max(reportDto.getPostReportCount() != null ? reportDto.getPostReportCount() : 0L,
+                            postReport.getPost().getReportCount())
+            );
+            reportDto.setReportedUserId(postReport.getReportedUserId());
+            reportDto.setEmail(postReport.getPost().getUser().getEmail());
+            reportDto.setProfileImageUrl(postReport.getPost().getUser().getProfileImageUrl());
+            reportDto.setNickname(postReport.getPost().getUser().getNickname());
+            userReportMap.put(userId, reportDto);
         }
 
-        return UserReportResponseDto.removeDuplicateByPostId(userReports);
+        List<ChatReportEntity> chatReportEntities = chatReportRepository.findAll();
+        for (ChatReportEntity chatReport : chatReportEntities) {
+            Long userId = chatReport.getReportedUserId();
+            UserReportResponseDto reportDto = userReportMap.getOrDefault(userId, new UserReportResponseDto());
+            reportDto.setChatReportCount(
+                    Math.max(reportDto.getChatReportCount() != null ? reportDto.getChatReportCount() : 0L,
+                            chatReport.getChatMessageEntity().getReportCount())
+            );
+            reportDto.setReportedUserId(chatReport.getReportedUserId());
+            reportDto.setEmail(chatReport.getChatMessageEntity().getSender());
+            reportDto.setProfileImageUrl(chatReport.getChatMessageEntity().getProfileImageUrl());
+            reportDto.setNickname(chatReport.getChatMessageEntity().getSender());
+            userReportMap.put(userId, reportDto);
+        }
+
+        return new ArrayList<>(userReportMap.values());
     }
+
+
+
 
     @Transactional
     public List<UserReportResponseDto> searchUserReportDetail(User user, Long reportedUserId) {
@@ -125,7 +149,6 @@ public class UserService {
             );
             userReports.add(userReport);
         }
-
         List<PostReport> postReports = postReportRepository.findByPost_User_Id(reportedUserId);
         for (PostReport postReport : postReports) {
             Post post = postReport.getPost();
@@ -137,6 +160,21 @@ public class UserService {
                     postReport.getReport(),
                     postReport.getImageUrlList(),
                     postReport.getCreatedAt()
+            );
+            userReports.add(userReport);
+        }
+
+        List<ChatReportEntity> chatReports = chatReportRepository.findByReportedUserId(reportedUserId);
+        for (ChatReportEntity chatReport : chatReports) {
+            ChatMessageEntity chatMessageEntity = chatReport.getChatMessageEntity();
+            UserReportResponseDto userReport = new UserReportResponseDto(
+                    chatMessageEntity.getSenderId(),
+                    chatMessageEntity.getId(),
+                    chatReport.getType(),
+                    chatMessageEntity.getMessage(),
+                    chatReport.getReport(),
+                    chatReport.getImageUrlList(),
+                    chatMessageEntity.getCreatedAt()
             );
             userReports.add(userReport);
         }

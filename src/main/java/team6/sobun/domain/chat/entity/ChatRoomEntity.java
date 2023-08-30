@@ -31,14 +31,12 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
 
     private String titleImageUrl;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> nicknames = new ArrayList<>(); // 채팅방 참여한 사용자의 닉네임 목록
+    private Long MasterId;
 
+    private String MasterNickname;
 
-    @ElementCollection
-    @MapKeyColumn(name = "nickname")
-    @Column(name = "entry_time")
-    private Map<String, LocalDateTime> entryTimes = new HashMap<>();
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    private List<ChatRoomParticipant> chatRoomparticipants = new ArrayList<>();
 
     @Column(name = "last_message")
     private String lastMessage; // 가장 최근 메시지 내용
@@ -52,12 +50,6 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
     @Column(name = "last_message_time")
     private LocalDateTime lastMessageTime; // 가장 최근 메시지 시간
 
-    public void addUser(String nickname) {
-        if (!nicknames.contains(nickname)) {
-            nicknames.add(nickname);
-            entryTimes.put(nickname, LocalDateTime.now());
-        }
-    }
 
     public void updateLastMessage(String message, String sender, String profileimage, LocalDateTime time) {
         this.lastMessage = message;

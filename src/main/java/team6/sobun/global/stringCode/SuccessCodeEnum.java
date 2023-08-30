@@ -27,6 +27,7 @@ public enum SuccessCodeEnum {
     EMAIL_VERIFICATION_SUCCESS("이메일 인증 성공"),
     POST_REPORT_SUCCESS("게시글 신고 성공"),
     COMMENT_REPORT_SUCCESS("댓글 신고 성공"),
+    CHAT_REPORT_SUCCESS("채팅 신고 성공"),
     NOTIFICATION_ALL_DELETE_SUCCESS("알림 전체 삭제");
 
 

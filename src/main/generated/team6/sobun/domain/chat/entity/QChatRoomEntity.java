@@ -22,10 +22,10 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public final team6.sobun.global.utils.QTimestamped _super = new team6.sobun.global.utils.QTimestamped(this);
 
+    public final ListPath<ChatRoomParticipant, QChatRoomParticipant> chatRoomparticipants = this.<ChatRoomParticipant, QChatRoomParticipant>createList("chatRoomparticipants", ChatRoomParticipant.class, QChatRoomParticipant.class, PathInits.DIRECT2);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
-
-    public final MapPath<String, java.time.LocalDateTime, DateTimePath<java.time.LocalDateTime>> entryTimes = this.<String, java.time.LocalDateTime, DateTimePath<java.time.LocalDateTime>>createMap("entryTimes", String.class, java.time.LocalDateTime.class, DateTimePath.class);
 
     public final StringPath lastMessage = createString("lastMessage");
 
@@ -35,10 +35,12 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public final DateTimePath<java.time.LocalDateTime> lastMessageTime = createDateTime("lastMessageTime", java.time.LocalDateTime.class);
 
+    public final NumberPath<Long> MasterId = createNumber("MasterId", Long.class);
+
+    public final StringPath MasterNickname = createString("MasterNickname");
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
-
-    public final ListPath<String, StringPath> nicknames = this.<String, StringPath>createList("nicknames", String.class, StringPath.class, PathInits.DIRECT2);
 
     public final StringPath roomId = createString("roomId");
 

@@ -55,7 +55,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         chain.doFilter(req, res);
     }
 
-
     /**
      * 주어진 사용자 이름을 기반으로 인증을 설정합니다.
      *

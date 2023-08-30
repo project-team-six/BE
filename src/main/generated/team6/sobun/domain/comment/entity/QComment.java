@@ -38,6 +38,8 @@ public class QComment extends EntityPathBase<Comment> {
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
+    public final NumberPath<Long> reportCount = createNumber("reportCount", Long.class);
+
     public final team6.sobun.domain.user.entity.QUser user;
 
     public QComment(String variable) {

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.comment.dto.CommentReportRequestDto;
 import team6.sobun.domain.comment.dto.CommentRequestDto;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
@@ -57,8 +58,9 @@ public class CommentController {
     @Operation(summary = "댓글 신고")
     @PostMapping("/report/{commentId}")
     public ApiResponse<?> reportComment(@PathVariable Long commentId,
-                                        @RequestBody CommentReportRequestDto commentReportRequestDto,
+                                        @RequestPart(value = "data") CommentReportRequestDto commentReportRequestDto,
+                                        @RequestPart(value = "file") List<MultipartFile> images,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return commentService.reportComment(commentId, commentReportRequestDto, userDetails.getUser());
+        return commentService.reportComment(commentId, images, commentReportRequestDto, userDetails.getUser());
     }
 }

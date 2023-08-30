@@ -103,6 +103,8 @@ public class Post extends Timestamped {
 
     private long pined ;
 
+    private long reportCount;
+
     private String profileImageUrl;
 
     @Column(nullable = false)
@@ -171,6 +173,9 @@ public class Post extends Timestamped {
         if (this.pined > 0) {
             this.pined -= 1;
         }
+    }
+    public void increaseReportCount(){
+        this.reportCount ++;
     }
 
     public void setImage(List<String> imageUrlList) {

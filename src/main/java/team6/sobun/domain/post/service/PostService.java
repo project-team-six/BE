@@ -60,8 +60,10 @@ public class PostService {
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3Service.uploads(images);
-        String roomId = chatService.createRoomByPost(postRequestDto.getTitle(),user).getRoomId();
-        postRepository.save(new Post(postRequestDto, imageUrlList, user,roomId));
+        postRequestDto.setImageUrlList(imageUrlList);
+        ChatRoomEntity chatRoom = chatService.createRoomByPost(postRequestDto,user);
+        String roomId = chatRoom.getRoomId();
+        postRepository.save(new Post(postRequestDto, imageUrlList, user, roomId));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
         return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }
@@ -159,9 +161,12 @@ public class PostService {
 
 
     @Transactional
-    public ApiResponse<?> reportPost(Long postId, PostReportRequestDto postReportRequestDto, User user) {
-        Post post = findPost(postId);
-        PostReport postReport = new PostReport(user, post, postReportRequestDto.getReport());
+    public ApiResponse<?> reportPost(Long postId, PostReportRequestDto postReportRequestDto,List<MultipartFile> images, User user) {
+        List<String> imageUrlList = s3Service.uploads(images);
+        Post post = postRepository.findById(postId).orElseThrow(()
+                -> new IllegalArgumentException("존재하지 않는 게시물 입니다."));
+        PostReport postReport = new PostReport(user,post.getUser().getId(), post, imageUrlList, postReportRequestDto.getReport());
+        post.increaseReportCount();
         postReportRepository.save(postReport);
         return ApiResponse.okWithMessage(POST_REPORT_SUCCESS);
     }

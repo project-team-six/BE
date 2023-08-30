@@ -39,13 +39,13 @@ public class PinService {
             post.increasePin();
             log.info("'{}'님이 '{}'에 관심을 추가했습니다.", nickname, postTitle);
             notificationService.send(post.getUser(), AlarmType.eventSystem, user.getNickname() + "님이 당신의 게시글에 관심을 보였습니다.",
-                    user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "post/"+postId);
+                    user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/feed/"+postId);
         } else {
             removePin(post, user);
             post.decreasePin();
             log.info("'{}'님이 '{}'의 관심을 취소했습니다.", nickname, postTitle);
             notificationService.send(post.getUser(), AlarmType.eventSystem, user.getNickname() + "님이 당신의 게시글에 관심을 접었습니다.",
-                    user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "post/"+postId);
+                    user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/feed/"+postId);
         }
         String statusMessage = isPinedPost(post,user) ? "관심을 추가했습니다." : "관심을 취소했습니다.";
         return ApiResponse.success(statusMessage);

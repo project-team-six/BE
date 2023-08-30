@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import team6.sobun.domain.post.dto.PostResponseDto;
 import team6.sobun.domain.post.entity.Post;
+import team6.sobun.domain.user.entity.Location;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,17 +24,21 @@ public class MypageResponseDto {
     private Boolean emailOk;
     private List<PostResponseDto> userPosts;
     private List<PostResponseDto> pinedPosts;
+    private String email;
+    private String location;
+    private Boolean isPopularity;
 
 
 
-    public MypageResponseDto(Long userId, String nickname, String profileImageUrl, String phoneNumber,Boolean emailOk, double popularity, List<Post> userPosts, List<Post> pinedPosts) {
+    public MypageResponseDto(Long userId, String nickname, String profileImageUrl,
+                             String phoneNumber,Boolean emailOk, double popularity, List<Post> userPosts, List<Post> pinedPosts,
+                             String email, Location location, boolean isPopularity) {
         this.userId = userId;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
         this.phoneNumber = phoneNumber;
         this.emailOk = emailOk;
         this.popularity = popularity;
-
         // 사용자의 게시물 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.userPosts = userPosts.stream()
                 .map(post -> new PostResponseDto(post.getId(), post.getUser().getId(), post.getCategory(),post.getStatus().name(), post.getTitle(), post.getUser().getNickname(),
@@ -53,5 +58,9 @@ public class MypageResponseDto {
                         post.getTransactionStartDate(), post.getTransactionEndDate(), post.getConsumerPeriod(), post.getPurchaseDate(), post.getLocation(),
                         post.getPrice(), post.getOriginPrice()))
                 .collect(Collectors.toList());
+
+        this.email = email;
+        this.location = location.myAddress(location.getSido(), location.getSigungu(), location.getDong());
+        this.isPopularity = isPopularity;
     }
 }

@@ -39,3 +39,6 @@ out/
 .vscode/
 
 ### .gitignore ###
+src/main/resources/
+
+logs/

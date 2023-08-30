@@ -128,25 +128,6 @@ public class MyPageService {
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
     }
 
-    private void updateUserImageDetail(MultipartFile image, User user) {
-        String existingImageUrl = user.getProfileImageUrl();
-        if (image != null && !image.isEmpty()) {
-            String imageUrl = s3Service.upload(image);
-            user.setProfileImageUrl(imageUrl);
-
-            // 기존 이미지가 존재하고 S3에 해당 파일이 있는 경우에만 삭제 처리
-            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
-                s3Service.delete(Collections.singletonList(existingImageUrl));
-            }
-        } else {
-            // 이미지가 없을 경우 기존 이미지를 삭제 처리
-            if (StringUtils.hasText(existingImageUrl) && s3Service.fileExists(existingImageUrl)) {
-                s3Service.delete(Collections.singletonList(existingImageUrl));
-                user.setProfileImageUrl(null); // DB의 프로필 이미지 URL을 null로 설정
-            }
-        }
-    }
-
     @Transactional
     public ApiResponse<?> findPassword(PasswordFindRequestDto requestDto) throws Exception {
         User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
@@ -208,6 +189,11 @@ public class MyPageService {
 
         userService.addToken(existingUser, response);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
+    }
+    private void updateUserImageDetail(MultipartFile image, User user) {
+        String imageUrl = s3Service.upload(image);
+        user.setProfileImageUrl(imageUrl);
+        // 기존 게시물 프로필 이미지 유지를 위해 기존 이미지 삭제 X
     }
 
 

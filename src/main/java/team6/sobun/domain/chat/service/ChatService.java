@@ -43,7 +43,6 @@ public class ChatService {
     private final UserRepository userRepository;
     private final RedisTemplate redisTemplate;
     private final ChannelTopic channelTopic;
-    private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     
 

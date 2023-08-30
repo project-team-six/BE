@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 import team6.sobun.domain.user.entity.User;
+import team6.sobun.global.utils.Timestamped;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-public class CommentReport {
+public class CommentReport extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

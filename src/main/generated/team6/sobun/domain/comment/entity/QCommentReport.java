@@ -22,11 +22,19 @@ public class QCommentReport extends EntityPathBase<CommentReport> {
 
     public static final QCommentReport commentReport = new QCommentReport("commentReport");
 
+    public final team6.sobun.global.utils.QTimestamped _super = new team6.sobun.global.utils.QTimestamped(this);
+
     public final QComment comment;
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final ListPath<String, StringPath> imageUrlList = this.<String, StringPath>createList("imageUrlList", String.class, StringPath.class, PathInits.DIRECT2);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final EnumPath<CommentReportEnum> report = createEnum("report", CommentReportEnum.class);
 

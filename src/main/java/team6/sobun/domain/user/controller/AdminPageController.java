@@ -49,7 +49,7 @@ public class AdminPageController {
     }
     @Operation(summary = "신고내역 상세 조회")
     @GetMapping("/admin/reportList/{reportedUserId}")
-    public ApiResponse<?> searchAllUserReportDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ApiResponse<?> searchUserReportDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                     @PathVariable Long reportedUserId) {
         return ApiResponse.success( userService.searchUserReportDetail(userDetails.getUser(),reportedUserId));
     }

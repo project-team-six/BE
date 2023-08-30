@@ -42,7 +42,8 @@ public class JwtProvider {
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final EncryptionUtils encryptionUtils;
 
-    @Value("${jwt.secret.key}")
+    // @Value("${jwt.secret.key}")
+    @Value(value = "${jwt.secret.key}")
     private String secretKey;
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;

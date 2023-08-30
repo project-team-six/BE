@@ -9,6 +9,7 @@ import team6.sobun.domain.comment.dto.CommentReportRequestDto;
 import team6.sobun.domain.comment.dto.CommentRequestDto;
 import team6.sobun.domain.comment.dto.CommentResponseDto;
 import team6.sobun.domain.comment.entity.Comment;
+import team6.sobun.domain.comment.entity.CommentReport;
 import team6.sobun.domain.comment.repository.CommentReportRepository;
 import team6.sobun.domain.comment.repository.CommentRepository;
 import team6.sobun.domain.notification.service.NotificationService;

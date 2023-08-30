@@ -35,11 +35,13 @@ public class QChatMessageEntity extends EntityPathBase<ChatMessageEntity> {
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
-    public final NumberPath<Long> readCount = createNumber("readCount", Long.class);
+    public final NumberPath<Long> reportCount = createNumber("reportCount", Long.class);
 
     public final StringPath roomId = createString("roomId");
 
     public final StringPath sender = createString("sender");
+
+    public final NumberPath<Long> senderId = createNumber("senderId", Long.class);
 
     public final EnumPath<team6.sobun.domain.chat.dto.ChatMessage.MessageType> type = createEnum("type", team6.sobun.domain.chat.dto.ChatMessage.MessageType.class);
 

@@ -23,10 +23,13 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     @Enumerated(EnumType.STRING)
     private ChatMessage.MessageType type;
 
     private String roomId;
+
+    private Long senderId;
 
     private String sender;
 
@@ -38,20 +41,21 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
 
     private String profileImageUrl;
 
-    private long readCount;
+    private long reportCount;
+
 
 
     public ChatMessageEntity(ChatMessage chatMessage) {
         this.type = chatMessage.getType();
         this.roomId = chatMessage.getRoomId();
         this.sender = chatMessage.getSender();
+        this.senderId = chatMessage.getSenderId();
         this.message = chatMessage.getMessage();
         this.imageUrl = chatMessage.getImageUrl();
         this.userCount = chatMessage.getUserCount();
         this.profileImageUrl = chatMessage.getProfileImageUrl();
         this.createdAt = chatMessage.getCreatedAt();
         this.modifiedAt = chatMessage.getModifiedAt();
-        this.readCount = chatMessage.getReadCount();
     }
 
     public ChatMessage toDto() {
@@ -65,12 +69,9 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
                 .profileImageUrl(profileImageUrl)
                 .createdAt(createdAt)
                 .modifiedAt(modifiedAt)
-                .readCount(readCount)
                 .build();
     }
-    public static ChatMessageEntity fromDto(ChatMessage chatMessage) {
-        ChatMessageEntity entity = new ChatMessageEntity(chatMessage);
-        entity.setReadCount(chatMessage.getReadCount());
-        return entity;
+    public void increaseReportCount(){
+        this.reportCount ++;
     }
 }

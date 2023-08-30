@@ -109,6 +109,10 @@ public class JwtProvider {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.get("nickname", String.class);
     }
+    public String getUserIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("userId", String.class);
+    }
     public String getProfileImageUrlFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.get("profileImageUrl", String.class);

@@ -11,7 +11,5 @@ import java.util.List;
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, String> {
 
-    List<ChatRoomEntity> findByNicknames(String userId);
-
-
+    List<ChatRoomEntity> findByChatRoomparticipants_UserId(Long userId);
 }

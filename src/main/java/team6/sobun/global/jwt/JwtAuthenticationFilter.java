@@ -150,7 +150,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUserId();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
         String profileImageUrl = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getProfileImageUrl() ;
-        String location = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation() == null ? "서울특별시 강남구 역삼동" : ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().myAddress(
+        String location = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation() == null ? "서울시 강남구 역삼동" : ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().myAddress(
                 ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().getSido(),
                 ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().getSigungu(),
                 ((UserDetailsImpl) authResult.getPrincipal()).getUser().getLocation().getDong());

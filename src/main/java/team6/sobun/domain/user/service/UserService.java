@@ -249,9 +249,9 @@ public class UserService {
     // 소셜 로그인시 토큰생성 로직
     public ApiResponse<?> addToken(User user, HttpServletResponse response) {
         String token = jwtProvider.createToken(String.valueOf(user.getId()), user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation() == null ? "서울특별시 강남구 역삼동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+                user.getProfileImageUrl(), user.getLocation() == null ? "서울시 강남구 역삼동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
         String refreshToken = jwtProvider.createRefreshToken(String.valueOf(user.getId()), user.getEmail(), user.getNickname(), user.getRole(),
-                user.getProfileImageUrl(), user.getLocation() == null ? "서울특별시 감남구 역삼동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
+                user.getProfileImageUrl(), user.getLocation() == null ? "서울시 감남구 역삼동" : user.getLocation().myAddress(user.getLocation().getSido(), user.getLocation().getSigungu(), user.getLocation().getDong()));
 
         jwtProvider.addJwtHeaders(token, refreshToken, response);
 

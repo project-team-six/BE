@@ -13,8 +13,8 @@ public class EncryptionUtils {
 
     private static final String AES_ALGORITHM = "AES";
 
-    //@Value("${aes.secret.key}")
-    private String secretKey="5gyz+Y6h6ZPxUYOR8O5Rlw==";
+    @Value("${aes.secret.key}")
+    private String secretKey;
 
 
     private SecretKeySpec getSecretKeySpec() {

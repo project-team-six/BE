@@ -296,7 +296,7 @@ public class UserService {
         context.setVariable("verificationToken", verificationToken);
 
         // 사용자가 확인할 수 있는 링크 생성
-        String verificationLink = "http://localhost:8080/auth/email?verificationToken=" + verificationToken;
+        String verificationLink = "https://soubun2.shop/auth/email?verificationToken=" + verificationToken;
         context.setVariable("verificationLink", verificationLink);
 
         return templateEngine.process("verificationTemplate", context);

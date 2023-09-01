@@ -23,6 +23,6 @@ public class CommentResponseDto {
         this.nickname = comment.getUser().getNickname();
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
-        this.profileImageUrl = comment.getProfileImageUrl();
+        this.profileImageUrl = comment.getUser().getProfileImageUrl();
     }
 }

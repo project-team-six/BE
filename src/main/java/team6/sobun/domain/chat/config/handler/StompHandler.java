@@ -53,7 +53,7 @@ public class StompHandler implements ChannelInterceptor {
         String jwtToken = token != null ? token.substring(9) : null;
         log.info("어떤 preSend 메소드일까?: {}", accessor.getCommand());
 
-
+        // STOMP 연결
         if (StompCommand.CONNECT == accessor.getCommand()) {
             if (StringUtils.hasText(jwtToken)) {
                 log.info("CONNECT 메소드 : CONNECT {}", jwtToken);
@@ -78,7 +78,7 @@ public class StompHandler implements ChannelInterceptor {
                     return null; // 토큰 검증 실패 시 연결을 막습니다.
                 }
             }
-
+    // 참가 ( 구독 )
     } else if (StompCommand.SUBSCRIBE == accessor.getCommand()) {// 채팅룸 구독요청
         // header 정보에서 구독 destination 정보를 얻고, roomId를 추출한다.
         String roomId = chatService.getRoomId(
@@ -121,6 +121,8 @@ public class StompHandler implements ChannelInterceptor {
         user.setRoomId(roomId);
         userRepository.save(user);
         log.info("SUBSCRIBED 메소드 :SUBSCRIBED {}, {}", sessionId, roomId);
+
+        // 연결 해제
     }else if (StompCommand.DISCONNECT == accessor.getCommand()) {
             // 연결이 종료된 클라이언트 sesssionId로 채팅방 id를 얻는다.
             String sessionId = (String) message.getHeaders().get("simpSessionId");
@@ -140,6 +142,7 @@ public class StompHandler implements ChannelInterceptor {
         return message;
     }
 
+    // 특정 유저 강퇴 메소드
     @Transactional
     public ResponseEntity<String> disconnectUser(User user, Long targetId, String roomId) {
         ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId).orElse(null);
@@ -150,6 +153,7 @@ public class StompHandler implements ChannelInterceptor {
 
         User targetUser = userRepository.findById(targetId).orElse(null);
         if (targetUser == null) {
+           log.error("찾을 수 없는 사용자입니다.={}",targetUser);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("찾을 수 없는 사용자입니다.");
         }
 
@@ -161,6 +165,7 @@ public class StompHandler implements ChannelInterceptor {
                     .orElse(null);
 
             if (targetParticipant == null) {
+                log.error("찾을 수 없는 참가자입니다.={}",targetParticipant);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("찾을 수 없는 참가자입니다.");
             }
 
@@ -173,6 +178,7 @@ public class StompHandler implements ChannelInterceptor {
 
             return ResponseEntity.ok(targetUser.getNickname() + "님을 강제로 강퇴했습니다.");
         } else {
+            log.error("권한이 없습니다, 방장만 강퇴할 수 있습니다. 방장 = {}, 유저 = {}",chatRoomEntity.getMasterId(),user.getId());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("방장만 강퇴할 수 있습니다.");
         }
     }

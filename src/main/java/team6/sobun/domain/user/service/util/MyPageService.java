@@ -153,7 +153,7 @@ public class MyPageService {
         }
 
         String changePassword = UUID.randomUUID().toString();
-        changePassword = changePassword.substring(0, 8);
+        changePassword = changePassword.substring(0, 6) +"!a";
 
         // Thymeleaf를 사용하여 HTML 템플릿 생성
         String htmlContent = generateHtmlTemplate(changePassword);

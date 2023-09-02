@@ -23,6 +23,7 @@ public class RedisChatRepository {
     public static final String USER_COUNT = "USER_COUNT"; // 채팅룸에 입장한 클라이언트수 저장
     public static final String ENTER_INFO = "ENTER_INFO"; // 채팅룸에 입장한 클라이언트의 sessionId와 채팅룸 id를 맵핑한 정보 저장
 
+    public static final String AUTH_EMAIL = "AUTH_EMAIL";
     @Resource(name = "redisTemplate")
     private HashOperations<String, String, ChatRoom> hashOpsChatRoom;
     @Resource(name = "redisTemplate")
@@ -31,8 +32,24 @@ public class RedisChatRepository {
     private HashOperations<String, String, ChatMessage> hashOpsChatMessage;
     @Resource(name = "redisTemplate")
     private ValueOperations<String, String> valueOps;
+    @Resource(name = "redisTemplate")
+    private HashOperations<String, String, String> hashOpsAuthEmail;
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+
+    // 임시 이메일 인증 로직
+    public void addAuthEmail(String email, String authNumber) {
+        hashOpsAuthEmail.put(AUTH_EMAIL, email, authNumber);
+    }
+
+    public boolean getAuthNumber(String email, String authNumber) {
+        String findAuthNumber = hashOpsAuthEmail.get("AUTH_EMAIL", email);
+        if (authNumber.equals(findAuthNumber)) {
+            return true;
+        }
+        return false;
+    }
 
     // 모든 채팅방 조회
     public List<ChatRoom> findAllRoom() {

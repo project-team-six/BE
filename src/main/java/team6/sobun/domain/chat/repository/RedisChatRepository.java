@@ -15,6 +15,7 @@ import team6.sobun.domain.chat.dto.ChatMessage;
 import team6.sobun.domain.chat.dto.ChatRoom;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,11 +45,11 @@ public class RedisChatRepository {
 
     // 임시 이메일 인증 로직
     public void addAuthEmail(String email, String authNumber) {
-        hashOpsAuthEmail.put(AUTH_EMAIL, email, authNumber);
+        redisTemplate.opsForValue().set(email, authNumber);
     }
 
     public boolean getAuthNumber(String email, String authNumber) {
-        String findAuthNumber = hashOpsAuthEmail.get("AUTH_EMAIL", email);
+        String findAuthNumber = redisTemplate.opsForValue().get(email).toString();
         if (authNumber.equals(findAuthNumber)) {
             return true;
         }

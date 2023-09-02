@@ -46,6 +46,7 @@ import team6.sobun.global.stringCode.SuccessCodeEnum;
 import team6.sobun.global.utils.ResponseUtils;
 
 import java.net.URLDecoder;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -364,6 +365,8 @@ public class UserService {
         mailSender.send(mimeMessage);
 
         redisChatRepository.addAuthEmail(email, authNumber);
+
+        redisTemplate.expire(email ,Duration.ofMinutes(5));
         return ApiResponse.okWithMessage(SuccessCodeEnum.EMAIL_VERIFICATION_SUCCESS);
     }
 

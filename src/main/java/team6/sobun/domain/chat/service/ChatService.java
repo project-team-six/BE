@@ -204,6 +204,13 @@ public class ChatService {
 
                 chatRoomRepository.save(chatRoomEntity);
                 redisChatRepository.addUserToRoom(roomId, newUserNickname);
+                ChatMessage chatMessage = new ChatMessage();
+                chatMessage.setType(ChatMessage.MessageType.ENTER);
+                chatMessage.setRoomId(roomId);
+                chatMessage.setSender("[알림]");
+                chatMessage.setMessage(newUserNickname + "님이 입장했습니다.");
+                chatMessage.setProfileImageUrl(null);
+                sendChatMessage(chatMessage);
             }
         }
 

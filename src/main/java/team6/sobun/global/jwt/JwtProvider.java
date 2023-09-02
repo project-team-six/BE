@@ -296,16 +296,30 @@ public class JwtProvider {
     public void refreshAccessToken(String refreshTokenValue, HttpServletResponse response) {
         if (StringUtils.hasText(refreshTokenValue)) {
             String decryptedRefreshToken = decryptRefreshToken(refreshTokenValue);
-            log.info("복호화 넘어왔나?={}", decryptedRefreshToken);
+            log.info("리프레시 토큰 넘어왔나?={}", decryptedRefreshToken);
+
             if (StringUtils.hasText(decryptedRefreshToken) && validateToken(decryptedRefreshToken)) {
-                String redisStoredRefreshToken = getRefreshTokenFromRedis(decryptedRefreshToken); // 이 부분 수정
-                log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
-                if (redisStoredRefreshToken != null && redisStoredRefreshToken.equals(decryptedRefreshToken)) {
-                    String newAccessToken = createAccessTokenFromRefreshToken(decryptedRefreshToken);
-                    addJwtHeader(newAccessToken, response);
-                    log.info("리프레시 토큰으로 새로운 액세스 토큰 발급");
+                String redisStoredRefreshToken = getRefreshTokenFromRedis(decryptedRefreshToken);
+
+                if (redisStoredRefreshToken != null && validateToken(redisStoredRefreshToken)) {
+                    String RefreshTokenByUserId = getUserIdFromToken(decryptedRefreshToken);
+                    String RefreshTokenByEmail = getEmailFromToken(decryptedRefreshToken);
+
+                    String redisRfTokenByUserId = getUserIdFromToken(redisStoredRefreshToken);
+                    String redisRfTokenByEmail = getEmailFromToken(redisStoredRefreshToken);
+
+                    log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
+
+                    if (RefreshTokenByUserId.equals(redisRfTokenByUserId)
+                            && RefreshTokenByEmail.equals(redisRfTokenByEmail)) {
+                        String newAccessToken = createAccessTokenFromRefreshToken(decryptedRefreshToken);
+                        addJwtHeader(newAccessToken, response);
+                        log.info("리프레시 토큰으로 새로운 액세스 토큰 발급");
+                    } else {
+                        log.error("레디스에 저장된 리프레시 토큰과 정보가 일치하지 않습니다.");
+                    }
                 } else {
-                    log.error("레디스에 저장된 리프레시 토큰과 일치하지 않습니다.");
+                    log.error("레디스에 저장된 리프레시 토큰이 없습니다.");
                 }
             } else {
                 log.error("리프레시 토큰이 유효하지 않습니다.");
@@ -314,6 +328,7 @@ public class JwtProvider {
             log.error("리프레시 토큰이 없습니다.");
         }
     }
+
 
 
     public String getRefreshTokenFromRedis(String decryptedRefreshToken) {

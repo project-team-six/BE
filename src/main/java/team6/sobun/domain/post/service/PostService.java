@@ -96,7 +96,6 @@ public class PostService {
         return ok(new PostResponseDto(post, isPined, isComplete));
     }
 
-
     @Transactional
     public ApiResponse<?> updatePost(Long postId, PostRequestDto postRequestDto, List<MultipartFile> images, List<String> deletedImageUrls, User user) {
         Post post = confirmPost(postId, user);

@@ -4,7 +4,6 @@ on:
     branches: [ "dev" ]
 
 
-
 permissions:
   contents: read
 jobs:
@@ -26,6 +25,10 @@ jobs:
         with:
           name: application.properties
           path: ./src/main/resources/application.properties
+
+      - name: Access aes.secret.key
+        run: |
+          echo "aes.secret.key : ${{ secrets.AES_SECRET_KEY }}"
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

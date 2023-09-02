@@ -66,7 +66,7 @@ public class PostResponseDto {
             this.status = post.getStatus().name();
         }
         this.popularity = post.getPopularity();
-        this.profileImageUrl = post.getProfileImageUrl();
+        this.profileImageUrl = post.getUser().getProfileImageUrl();
         this.originPrice = post.getOriginPrice();
     }
 
@@ -101,7 +101,7 @@ public class PostResponseDto {
             this.status = post.getStatus().name();
         }
         this.popularity = post.getPopularity();
-        this.profileImageUrl = post.getProfileImageUrl();
+        this.profileImageUrl = post.getUser().getProfileImageUrl();
         this.originPrice = post.getOriginPrice();
         this.chatroomId = post.getChatroomId();
     }

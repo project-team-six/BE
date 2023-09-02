@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import team6.sobun.domain.user.dto.AuthEmailInputRequestDto;
+import team6.sobun.domain.user.dto.AuthEmailRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageRequestDto;
 import team6.sobun.domain.user.dto.mypage.MypageResponseDto;
@@ -53,10 +55,22 @@ public class UserController {
         return userService.signup(signupRequestDto, image);
     }
 
+    @Operation(summary = "이메일 인증번호 생성")
     @GetMapping("/email")
-    public ApiResponse<?> verifyEmail(@RequestParam String verificationToken) {
-        return userService.verifyEmail(verificationToken);
+    public ApiResponse<?> authEmail(@Valid @RequestBody AuthEmailRequestDto authEmailRequestDto) throws MessagingException {
+        return userService.authEmail(authEmailRequestDto);
     }
+
+    @Operation(summary = "이메일 인증 확인")
+    @GetMapping("/authEmail")
+    public ApiResponse<?> authEmailInput(@Valid @RequestBody AuthEmailInputRequestDto authEmailInputRequestDto) {
+        return userService.authEmailInput(authEmailInputRequestDto.getEmail(), authEmailInputRequestDto.getAuthNumber());
+    }
+
+//    @GetMapping("/email")
+//    public ApiResponse<?> verifyEmail(@RequestParam String verificationToken) {
+//        return userService.verifyEmail(verificationToken);
+//    }
 
     @Operation(summary = "관리자 권한 부여")
     @PostMapping("/admin/{userId}")

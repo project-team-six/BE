@@ -30,7 +30,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     //DEFAULT_TIMEOUT을 기본값으로 설정
-    private static final Long DEFAULT_TIMEOUT = 15 * 60 * 10000L;
+    private static final Long DEFAULT_TIMEOUT = 60 * 60 * 1000L;
 
 
     public SseEmitter subscribe(UserDetailsImpl userDetails, String lastEventId) {

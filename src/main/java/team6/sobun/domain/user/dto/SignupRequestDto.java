@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 public class SignupRequestDto {
     @Email(message = "잘못된 이메일 형식입니다.")
-    @NotBlank(message = "아이디는 필수 입력 값입니다.")
+    @NotBlank(message = "이메일은 필수 입력 값입니다.")
     private String email;
 
     @Pattern(regexp = "^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]*$", message = "닉네임은 한글, 영문 대소문자, 숫자만 입력하여야 합니다.")

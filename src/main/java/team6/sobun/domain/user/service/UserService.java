@@ -27,6 +27,8 @@ import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.entity.PostReport;
 import team6.sobun.domain.post.repository.PostReportRepository;
 import team6.sobun.domain.post.service.S3Service;
+import team6.sobun.domain.user.dto.AuthEmailInputRequestDto;
+import team6.sobun.domain.user.dto.AuthEmailRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.dto.UserReportResponseDto;
 import team6.sobun.domain.user.entity.Location;
@@ -346,6 +348,30 @@ public class UserService {
         user.setRole(UserRoleEnum.USER);
         userRepository.save(user);
         return ApiResponse.success(user.getNickname() + " 유저의 권한을 활성화 하였습니다.");
+    }
+
+    public ApiResponse<?> authEmail(AuthEmailRequestDto authEmailRequestDto) throws MessagingException {
+        String authNumber = UUID.randomUUID().toString().substring(0, 6);
+        String email = authEmailRequestDto.getEmail();
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        MimeMessageHelper authEmailMessage = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        authEmailMessage.setFrom(from);
+        authEmailMessage.setTo(email);
+        authEmailMessage.setSubject("회원가입 이메일 인증");
+        authEmailMessage.setText("인증 번호 입니다 : " + authNumber);
+        mailSender.send(mimeMessage);
+
+        redisChatRepository.addAuthEmail(email, authNumber);
+        return ApiResponse.okWithMessage(SuccessCodeEnum.EMAIL_VERIFICATION_SUCCESS);
+    }
+
+    public ApiResponse<?> authEmailInput(String email, String authNumber) {
+        if (!redisChatRepository.getAuthNumber(email, authNumber)) {
+            throw new IllegalArgumentException("잘못된 인증번호 입니다.");
+        }
+        return ApiResponse.okWithMessage(SuccessCodeEnum.EMAIL_VERIFICATION_SUCCESS);
     }
 }
 

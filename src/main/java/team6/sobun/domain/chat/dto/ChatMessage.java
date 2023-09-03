@@ -2,6 +2,7 @@ package team6.sobun.domain.chat.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.querydsl.core.annotations.QueryProjection;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import team6.sobun.domain.chat.entity.ChatMessageEntity;
 import team6.sobun.global.utils.Timestamped;
@@ -25,11 +26,14 @@ public class ChatMessage extends Timestamped implements Serializable {
     private String roomId; // 방번호
     private Long senderId;
     private Long messageId; // 메시지 아이디
+
     private String sender; // 메시지 보낸사람
-    private String message; // 메시지
+    @NotBlank(message = "메시지를 입력하세요.")
+    private String message;
     private String imageUrl;
-    private long userCount; // 채팅방 인원수, 채팅방 내에서 메시지가 전달될때 인원수 갱신시 사용
+    private long userCount;
     private String profileImageUrl;
+
     @JsonIgnore
     private String lastMessage; // 가장 최근 메시지 내용
     @JsonIgnore

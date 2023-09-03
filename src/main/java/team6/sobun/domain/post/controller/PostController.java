@@ -3,6 +3,7 @@ package team6.sobun.domain.post.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +40,7 @@ public class PostController {
 
     @Operation(summary = "게시글 작성")
     @PostMapping
-    public ApiResponse<?> createPost(@RequestPart(value = "data") PostRequestDto postRequestDto,
+    public ApiResponse<?> createPost(@Valid @RequestPart(value = "data") PostRequestDto postRequestDto,
                                      @RequestPart(value = "file", required = false) List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
@@ -47,7 +48,7 @@ public class PostController {
 
     @Operation(summary = "게시글 수정 = data { 게시글 수정 내용 }, delete [ 이미지 url ] -> 괄호 확인해주세요 !!, file (이미지 파일) ")
     @PutMapping("/{postId}")
-    public ApiResponse<?> modifyPost(@PathVariable Long postId,
+    public ApiResponse<?> modifyPost(@Valid @PathVariable Long postId,
                                      @RequestPart(value = "data", required = false) PostRequestDto postRequestDto,
                                      @RequestPart(value = "delete", required = false) List<String> delete,
                                      @RequestPart(value = "file", required = false) List<MultipartFile> images,
@@ -66,7 +67,7 @@ public class PostController {
 
     @Operation(summary = "게시글 신고")
     @PostMapping("/report/{postId}")
-    public ApiResponse<?> reportPost(@PathVariable Long postId,
+    public ApiResponse<?> reportPost(@Valid @PathVariable Long postId,
                                      @RequestPart(value = "data") PostReportRequestDto postReportRequestDto,
                                      @RequestPart(value = "file") List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {

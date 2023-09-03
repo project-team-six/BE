@@ -2,6 +2,7 @@ package team6.sobun.domain.chat.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public class ChatController {
 
     @Operation(summary = "메세지 보내기")
     @MessageMapping("/chat/message")
-    public void message(ChatMessage message, @Header("Authorization") String token) {
+    public void message(ChatMessage message, @Valid @Header("Authorization") String token) {
         chatService.sendChatMessage(chatService.getUserDetail(message,token));
     }
 
@@ -62,7 +63,7 @@ public class ChatController {
     @Operation(summary = "채팅 메세지 신고")
     @PostMapping("/chat/report/{messageId}")
     @ResponseBody
-    public ApiResponse<?> reportPost(@PathVariable Long messageId,
+    public ApiResponse<?> reportPost(@Valid @PathVariable Long messageId,
                                      @RequestPart(value = "data") ChatReportRequestDto chatReportRequestDto,
                                      @RequestPart(value = "file") List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {

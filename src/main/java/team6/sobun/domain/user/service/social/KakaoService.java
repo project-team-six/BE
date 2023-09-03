@@ -47,6 +47,14 @@ public class KakaoService {
 
         KakaoDto kakaoUserDto = getKakaoUserInfo(accessToken);
         log.info("카카오 사용자 정보: id={}, nickname={}, email={}", kakaoUserDto.getId(), kakaoUserDto.getNickname(), kakaoUserDto.getEmail());
+        // 이메일이 없는 사용자 처리
+        if (kakaoUserDto.getEmail() == null || kakaoUserDto.getEmail().isEmpty()) {
+            log.info("카카오 이메일 동의를 안했습니다.. Default 값 추가");
+
+            String defaultEmail = kakaoUserDto.getId() + "kakao@sobun.com";
+            kakaoUserDto.setEmail(defaultEmail);
+
+        }
 
         User user = userRepository.findByEmail(kakaoUserDto.getEmail()).orElse(null);
         if (user == null) {
@@ -80,14 +88,19 @@ public class KakaoService {
 
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
         Long id = jsonNode.get("id").asLong();
-        String email = jsonNode.get("kakao_account").get("email").asText();
+        String email = null;
+        JsonNode emailNode = jsonNode.get("kakao_account").get("email");
+        if (emailNode != null && !emailNode.isNull()) {
+            email = emailNode.asText();
+        }
         String phoneNumber = String.valueOf(id);
         String username = jsonNode.get("properties").get("nickname").asText();
-        String nickname = "카카오유저"+ id;
+        String nickname = "카카오유저" + id;
         String profileImageUrl = jsonNode.get("properties").get("profile_image").asText();
         log.info("카카오 사용자 정보: " + id + ", " + username + ", " + email);
-        return new KakaoDto(id, email, phoneNumber, username, nickname, profileImageUrl); // 프로필 이미지 URL도 KakaoDto에 추가해서 반환
+        return new KakaoDto(id, email, phoneNumber, username, nickname, profileImageUrl);
     }
+
     public String getToken(String code) {
         // Use the secret key from the environment
         String kakaoAuthUrl = "https://kauth.kakao.com/oauth/token";

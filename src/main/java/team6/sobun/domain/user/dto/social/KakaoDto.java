@@ -1,9 +1,11 @@
 package team6.sobun.domain.user.dto.social;
 
 import lombok.Getter;
+import lombok.Setter;
 import team6.sobun.domain.user.entity.Location;
 
 @Getter
+@Setter
 public class KakaoDto {
     private Long id;
     private String email;

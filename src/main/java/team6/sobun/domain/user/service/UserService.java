@@ -27,15 +27,12 @@ import team6.sobun.domain.post.entity.Post;
 import team6.sobun.domain.post.entity.PostReport;
 import team6.sobun.domain.post.repository.PostReportRepository;
 import team6.sobun.domain.post.service.S3Service;
-import team6.sobun.domain.user.dto.AuthEmailInputRequestDto;
 import team6.sobun.domain.user.dto.AuthEmailRequestDto;
 import team6.sobun.domain.user.dto.SignupRequestDto;
 import team6.sobun.domain.user.dto.UserReportResponseDto;
-import team6.sobun.domain.user.entity.Location;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.entity.UserRoleEnum;
 import team6.sobun.domain.user.repository.UserRepository;
-import team6.sobun.domain.user.service.util.IdenticonService;
 import team6.sobun.global.exception.InvalidConditionException;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.jwt.entity.RefreshToken;
@@ -190,34 +187,76 @@ public class UserService {
     }
 
     public ApiResponse<?> signup(SignupRequestDto signupRequestDto, MultipartFile image) throws MessagingException {
-        String email = signupRequestDto.getEmail();
-        String phoneNumber = signupRequestDto.getPhoneNumber();
-        String username = signupRequestDto.getUsername();
-        String nickname = signupRequestDto.getNickname();
-        String password = passwordEncoder.encode(signupRequestDto.getPassword());
+        List<String> errorMessages = validateSignupRequest(signupRequestDto);
 
-        checkDuplicatedEmail(email);
-        UserRoleEnum role = UserRoleEnum.USER;
-        String profileImageUrl = null;
-        if (image != null && !image.isEmpty()) {
-            // 이미지가 있을 경우에만 S3에 업로드하고 URL을 가져옴
-            profileImageUrl = s3Service.upload(image);
-        } else {
-            profileImageUrl = "nonImage";
+        if (!errorMessages.isEmpty()) {
+            throw new IllegalArgumentException(validateSignupRequest(signupRequestDto).get(0));
         }
 
-        // 프로필 이미지 URL을 사용하여 User 객체 생성
-        User user = new User(email, phoneNumber, nickname, password, username, profileImageUrl, role);
-        String verificationToken = UUID.randomUUID().toString();
+        String email = signupRequestDto.getEmail();
+            String phoneNumber = signupRequestDto.getPhoneNumber();
+            String username = signupRequestDto.getUsername();
+            String nickname = signupRequestDto.getNickname();
+            String password = passwordEncoder.encode(signupRequestDto.getPassword());
 
-        saveVerificationTokenToRedis(email, verificationToken);
-        log.info("레디스에 이메일 토큰 저장되었나? = {}", verificationToken);
+            checkDuplicatedEmail(email);
+            UserRoleEnum role = UserRoleEnum.USER;
+            String profileImageUrl = null;
+            if (image != null && !image.isEmpty()) {
+                // 이미지가 있을 경우에만 S3에 업로드하고 URL을 가져옴
+                profileImageUrl = s3Service.upload(image);
+            } else {
+                profileImageUrl = "nonImage";
+            }
 
-        userRepository.save(user);
-        sendVerificationEmail(user.getEmail(), verificationToken);
-        log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
-        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_SIGNUP_SUCCESS);
+            // 프로필 이미지 URL을 사용하여 User 객체 생성
+            User user = new User(email, phoneNumber, nickname, password, username, profileImageUrl, role);
+            String verificationToken = UUID.randomUUID().toString();
+
+            saveVerificationTokenToRedis(email, verificationToken);
+            log.info("레디스에 이메일 토큰 저장되었나? = {}", verificationToken);
+
+            userRepository.save(user);
+            sendVerificationEmail(user.getEmail(), verificationToken);
+            log.info("'{}' 이메일을 가진 사용자가 가입했습니다.", email);
+            return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_SIGNUP_SUCCESS);
     }
+    public List<String> validateSignupRequest(SignupRequestDto signupRequestDto) {
+        List<String> errorMessages = new ArrayList<>();
+
+        // 이메일 유효성 검사
+        String email = signupRequestDto.getEmail();
+        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            errorMessages.add("잘못된 이메일 형식입니다.");
+        }
+
+        // 닉네임 유효성 검사
+        String nickname = signupRequestDto.getNickname();
+        if (nickname == null || !nickname.matches("^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]*$")) {
+            errorMessages.add("닉네임은 한글, 영문 대소문자, 숫자만 입력하여야 합니다.");
+        }
+
+        // 전화번호 유효성 검사
+        String phoneNumber = signupRequestDto.getPhoneNumber();
+        if (phoneNumber == null || !phoneNumber.matches("^(\\+?82|0)1[0-9]{1}[0-9]{3,4}[0-9]{4}$")) {
+            errorMessages.add("휴대전화 형식이 잘못 되었습니다.");
+        }
+
+        // 이름 유효성 검사
+        String username = signupRequestDto.getUsername();
+        if (username == null || !username.matches("^[A-Za-z가-힣]+$")) {
+            errorMessages.add("이름은 영문 또는 한글만 가능합니다.");
+        }
+
+        // 비밀번호 유효성 검사
+        String password = signupRequestDto.getPassword();
+        if (password == null || !password.matches("^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,25}$")) {
+            errorMessages.add("비밀번호는 영문 대소문자 중 1개 이상, 특수문자 1개 이상을 포함한 8~25자 여야 합니다.");
+        }
+
+        return errorMessages;
+    }
+
 
     public ApiResponse<?> logout(String token, HttpServletResponse response) {
         try {

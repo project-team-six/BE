@@ -2,6 +2,7 @@ package team6.sobun.domain.comment.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,7 @@ public class CommentController {
 
     @Operation(summary = "댓글 작성")
     @PostMapping
-    public ApiResponse<?> createComment(@PathVariable Long postId,
+    public ApiResponse<?> createComment(@Valid @PathVariable Long postId,
                                         @RequestBody CommentRequestDto commentRequestDto,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return commentService.createComment(postId, commentRequestDto, userDetailsImpl.getUser());
@@ -43,21 +44,21 @@ public class CommentController {
 
     @Operation(summary = "댓글 수정")
     @PutMapping("/{commentId}")
-    public ApiResponse<?> updateComment(@PathVariable Long commentId,
+    public ApiResponse<?> updateComment(@Valid @PathVariable Long commentId,
                                         @RequestBody CommentRequestDto commentRequestDto,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return commentService.updateComment(commentId, commentRequestDto, userDetailsImpl.getUser());
     }
     @Operation(summary = "댓글 삭제")
     @DeleteMapping("/{commentId}")
-    public ApiResponse<?> removeComment(@PathVariable Long commentId,
+    public ApiResponse<?> removeComment(@Valid @PathVariable Long commentId,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return commentService.deleteComment(commentId, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "댓글 신고")
     @PostMapping("/report/{commentId}")
-    public ApiResponse<?> reportComment(@PathVariable Long commentId,
+    public ApiResponse<?> reportComment(@Valid @PathVariable Long commentId,
                                         @RequestPart(value = "data") CommentReportRequestDto commentReportRequestDto,
                                         @RequestPart(value = "file") List<MultipartFile> images,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {

@@ -50,7 +50,7 @@ public class UserController {
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    public ApiResponse<?> signup(@Valid @RequestPart(value = "data") SignupRequestDto signupRequestDto,
+    public ApiResponse<?> signup(@RequestPart(value = "data") SignupRequestDto signupRequestDto,
                                  @RequestPart(value = "file", required = false) MultipartFile image) throws MessagingException {
         return userService.signup(signupRequestDto, image);
     }
@@ -116,7 +116,7 @@ public class UserController {
 
     @Operation(summary = "마이페이지 정보수정")
     @PutMapping("mypage/{userId}")
-    public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
+    public ApiResponse<?> updateUserProfile(@Valid @PathVariable Long userId,
                                             @RequestBody MypageRequestDto mypageRequestDto,
                                             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                             HttpServletResponse response) {
@@ -125,7 +125,7 @@ public class UserController {
 
     @Operation(summary = "마이페이지 비밀번호 수정")
     @PutMapping("mypagePassword/{userId}")
-    public ApiResponse<?> updateUserPassword(@PathVariable Long userId,
+    public ApiResponse<?> updateUserPassword(@Valid @PathVariable Long userId,
                                              @RequestBody PasswordRequestDto passwordRequestDto,
                                              @AuthenticationPrincipal UserDetailsImpl userDetailsImpl
     ) {

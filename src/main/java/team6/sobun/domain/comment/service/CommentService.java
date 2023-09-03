@@ -43,10 +43,6 @@ public class CommentService {
     private final S3Service s3Service;
 
 
-    public Post findPostWithComments(Long postId) {
-        return postRepository.findPostWithComments(postId);
-    }
-
     public List<CommentResponseDto> findCommentsResponseByPostId(Long postId) {
         Post post = postRepository.findPostWithComments(postId);
         List<Comment> comments = post.getCommentList();

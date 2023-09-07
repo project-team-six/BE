@@ -19,6 +19,7 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.commentList WHERE p.id = :postId")
     Post findPostWithComments(@Param("postId") Long postId);
 
+    Post findByChatroomId(String roomId);
 }
 
 

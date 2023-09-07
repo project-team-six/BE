@@ -3,6 +3,7 @@ package team6.sobun.domain.user.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,12 +23,10 @@ import team6.sobun.global.security.repository.RefreshTokenRedisRepository;
 public class LocationController {
 
     private final LocationService locationService;
-    private final RefreshTokenRedisRepository redisRepository;
-    private final JwtProvider jwtProvider;
 
     @Operation(summary = "위치정보 저장 및 수정")
     @PutMapping("/auth/location")
-    public ApiResponse<?> locationUpdate(@RequestBody LocationRquestDto locationRquestDto,
+    public ApiResponse<?> locationUpdate(@Valid @RequestBody LocationRquestDto locationRquestDto,
                                          HttpServletResponse response,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return locationService.locationUpdate(locationRquestDto, userDetails.getUser(),response);

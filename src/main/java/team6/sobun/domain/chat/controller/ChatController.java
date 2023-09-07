@@ -63,7 +63,7 @@ public class ChatController {
     @Operation(summary = "채팅 메세지 신고")
     @PostMapping("/chat/report/{messageId}")
     @ResponseBody
-    public ApiResponse<?> reportPost(@Valid @PathVariable Long messageId,
+    public ApiResponse<?> reportPost(@PathVariable Long messageId,
                                      @RequestPart(value = "data") ChatReportRequestDto chatReportRequestDto,
                                      @RequestPart(value = "file") List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {

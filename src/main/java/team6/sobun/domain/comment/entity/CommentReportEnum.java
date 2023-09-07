@@ -1,10 +1,10 @@
 package team6.sobun.domain.comment.entity;
 
 public enum CommentReportEnum {
-    ABUSIVE_COMMENT("욕설 댓글이예요"),
-    FRAUD("사기 글이예요"),
-    DISPUTE_INDUCEMENT("분쟁 유도 댓글이예요"),
-    ADVERTISEMENT("광고성 댓글이예요"),
+    SEXUAL_CONTENT("성적인 콘텐츠"),
+    BULLYING("폭력적 또는 괴롭힘"),
+    MISINFORMATION("잘못된 정보"),
+    SPAM("스팸 또는 광고성 콘텐츠"),
     OTHER("기타");
 
     private final String description;

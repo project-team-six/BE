@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import team6.sobun.global.utils.Timestamped;
 
 import java.io.Serializable;
@@ -35,7 +37,8 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
 
     private String MasterNickname;
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(FetchMode.JOIN)
     private List<ChatRoomParticipant> chatRoomparticipants = new ArrayList<>();
 
     @Column(name = "last_message")

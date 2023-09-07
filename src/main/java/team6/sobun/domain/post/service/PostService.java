@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import team6.sobun.domain.chat.entity.ChatRoomEntity;
+import team6.sobun.domain.chat.repository.ChatReportRepository;
+import team6.sobun.domain.chat.repository.ChatRoomRepository;
+import team6.sobun.domain.chat.repository.RedisChatRepository;
 import team6.sobun.domain.chat.service.ChatService;
 import team6.sobun.domain.pin.repository.PinRepository;
 import team6.sobun.domain.post.dto.PostReportRequestDto;
@@ -45,6 +48,7 @@ import static team6.sobun.global.utils.ResponseUtils.okWithMessage;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final S3Service s3Service;
     private final ChatService chatService;
     @Autowired
@@ -53,6 +57,8 @@ public class PostService {
     private final PostStatusRepository postStatusRepository;
     private final UserRepository userRepository;
     private final PostReportRepository postReportRepository;
+    private final RedisChatRepository redisChatRepository;
+
 
     // 최신순 전체조회
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
@@ -132,6 +138,8 @@ public class PostService {
         Post post = confirmPost(postId, user);
         deleteImage(post);
         postRepository.delete(post);
+        chatRoomRepository.deleteById(post.getChatroomId());
+        redisChatRepository.deleteChatRoom(post.getChatroomId());
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
     }

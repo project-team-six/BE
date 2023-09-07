@@ -4,6 +4,7 @@ public enum AlarmType {
     eventAudioClipUploaded,
     eventAudioClipLike,
     eventCreateComment,
+    eventAddChatUser,
     eventFollower,
     eventSystem,
 }

@@ -13,5 +13,4 @@ public class CommentReportRequestDto {
 
     @NotBlank(message = "신고내용을 입력하세요.")
     private CommentReportEnum report;
-    private List<String> imageUrlList;
 }

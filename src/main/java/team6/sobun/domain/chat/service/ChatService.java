@@ -24,15 +24,20 @@ import team6.sobun.domain.chat.repository.ChatMessageRepository;
 import team6.sobun.domain.chat.repository.ChatReportRepository;
 import team6.sobun.domain.chat.repository.ChatRoomRepository;
 import team6.sobun.domain.chat.repository.RedisChatRepository;
+import team6.sobun.domain.notification.service.NotificationService;
+import team6.sobun.domain.notification.util.AlarmType;
 import team6.sobun.domain.post.dto.PostRequestDto;
 import team6.sobun.domain.post.service.S3Service;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.domain.user.repository.UserRepository;
 import team6.sobun.global.jwt.JwtProvider;
 import team6.sobun.global.responseDto.ApiResponse;
+import team6.sobun.global.stringCode.SuccessCodeEnum;
+import team6.sobun.global.utils.ResponseUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static team6.sobun.global.stringCode.SuccessCodeEnum.CHAT_REPORT_SUCCESS;
@@ -48,6 +53,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatReportRepository chatReportRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
     private final RedisTemplate redisTemplate;
     private final ChannelTopic channelTopic;
     private final JwtProvider jwtProvider;
@@ -211,6 +217,10 @@ public class ChatService {
                 chatMessage.setMessage(newUserNickname + "님이 입장했습니다.");
                 chatMessage.setProfileImageUrl(null);
                 sendChatMessage(chatMessage);
+
+                User Master = userRepository.findById(chatRoomEntity.getMasterId()).
+                        orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 정보입니다."));
+                notificationService.send(Master, AlarmType.eventCreateComment," '" +chatRoomEntity.getTitle() + "'방에 입장하셨습니다.", user.getUsername(), user.getNickname(), user.getProfileImageUrl(), "/feed/" + chatRoomEntity.getMasterId());
             }
         }
 
@@ -262,6 +272,7 @@ public class ChatService {
                     chatMessage.setProfileImageUrl(null);
                     sendChatMessage(chatMessage);
                     return ResponseEntity.ok("채팅방(" + roomId + ")에서 나갔습니다.");
+
                 }
             }
         } else {

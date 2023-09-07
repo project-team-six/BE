@@ -9,7 +9,7 @@ import team6.sobun.domain.user.entity.User;
 import team6.sobun.global.utils.Timestamped;
 
 @Entity(name = "notification")
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = "id", callSuper = true)
 @Getter //각 래퍼 클래스에 대한 추출 메소드이다.
 @NoArgsConstructor
 public class Notification extends Timestamped {

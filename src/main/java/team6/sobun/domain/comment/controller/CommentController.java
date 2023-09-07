@@ -36,29 +36,29 @@ public class CommentController {
 
     @Operation(summary = "댓글 작성")
     @PostMapping
-    public ApiResponse<?> createComment(@Valid @PathVariable Long postId,
-                                        @RequestBody CommentRequestDto commentRequestDto,
+    public ApiResponse<?> createComment(@PathVariable Long postId,
+                                        @Valid @RequestBody CommentRequestDto commentRequestDto,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return commentService.createComment(postId, commentRequestDto, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "댓글 수정")
     @PutMapping("/{commentId}")
-    public ApiResponse<?> updateComment(@Valid @PathVariable Long commentId,
-                                        @RequestBody CommentRequestDto commentRequestDto,
+    public ApiResponse<?> updateComment(@PathVariable Long commentId,
+                                        @Valid @RequestBody CommentRequestDto commentRequestDto,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return commentService.updateComment(commentId, commentRequestDto, userDetailsImpl.getUser());
     }
     @Operation(summary = "댓글 삭제")
     @DeleteMapping("/{commentId}")
-    public ApiResponse<?> removeComment(@Valid @PathVariable Long commentId,
+    public ApiResponse<?> removeComment(@PathVariable Long commentId,
                                         @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return commentService.deleteComment(commentId, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "댓글 신고")
     @PostMapping("/report/{commentId}")
-    public ApiResponse<?> reportComment(@Valid @PathVariable Long commentId,
+    public ApiResponse<?> reportComment(@PathVariable Long commentId,
                                         @RequestPart(value = "data") CommentReportRequestDto commentReportRequestDto,
                                         @RequestPart(value = "file") List<MultipartFile> images,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {

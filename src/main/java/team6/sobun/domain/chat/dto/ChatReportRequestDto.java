@@ -12,6 +12,5 @@ public class ChatReportRequestDto {
 
     @NotBlank(message = "신고내용을 입력하세요.")
     private ChatReportEnum report;
-    private List<String> imageUrlList;
 
 }

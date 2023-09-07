@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import team6.sobun.domain.chat.dto.ChatReportEnum;
 import team6.sobun.domain.user.entity.User;
 import team6.sobun.global.utils.Timestamped;
@@ -35,7 +37,8 @@ public class ChatReportEntity extends Timestamped {
     @Column
     private String type = "CHAT";
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
+    @Fetch(FetchMode.JOIN)
     @BatchSize(size = 5)
     @Column
     private List<String> imageUrlList = new ArrayList<>();

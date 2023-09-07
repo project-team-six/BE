@@ -14,5 +14,4 @@ public class PostReportRequestDto {
 
     @NotBlank(message = "신고내용을 입력하세요.")
     private PostReportEnum report;
-    private List<String> imageUrlList;
 }

@@ -54,6 +54,7 @@
 소분소분의 6주간의 여정이 궁금하다면 노션 페이지를 확인해주세요!
 
 [🔜 소분소분 노션 페이지 바로가기] (https://teamsparta.notion.site/c94d6d3e3b7a4964a9dc7ce4029c2725)
+<br>
 [🔜 소분소분 바로가기] (https://www.sobunsobun.co.kr)
 <br>
 <br>

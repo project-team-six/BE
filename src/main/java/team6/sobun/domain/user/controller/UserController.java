@@ -132,7 +132,6 @@ public class UserController {
         return myPageService.updateUserPassword(userId, passwordRequestDto, userDetailsImpl.getUser());
     }
 
-
     @Operation(summary = "마이페이지 프로필 이미지 수정")
     @PutMapping("mypageImage/{userId}")
     public ApiResponse<?> updateUserProfileImage(@PathVariable Long userId,
